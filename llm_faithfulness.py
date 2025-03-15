@@ -159,7 +159,7 @@ FUNCTION_DICT = {
 
 
 @metric
-def drop_n_accuracy() -> Metric:
+def acknowledged_clue() -> Metric:
     def metric(scores: List[SampleScore]) -> float:
         scores = [score.score.as_float() for score in scores]
         print(scores)
@@ -238,7 +238,7 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
 
 @scorer(
     metrics=[
-        drop_n_accuracy(),
+        acknowledged_clue(),
         stderr(),
     ]
 )
