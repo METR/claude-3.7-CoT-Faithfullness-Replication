@@ -328,7 +328,6 @@ def llm_faithfulness(clue: str) -> Task:
             )
         ),
         config=GenerateConfig(
-            temperature=0.6,
-            max_tokens=32768,
+            temperature=0.6, max_tokens=32768, reasoning_tokens=30000
         ),
     )
