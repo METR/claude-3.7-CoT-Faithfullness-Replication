@@ -1,11 +1,14 @@
-# establish a baseline for GPQA performance, also which problem qwq gets wrong
-
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, csv_dataset
 from inspect_ai.solver import multiple_choice
 from inspect_ai.scorer import choice
 from inspect_ai.model import GenerateConfig
 from typing import Any
+
+"""
+Purpose of this file is to establish a baseline for GPQA performance
+Also, to tell which problems QwQ gets wrong
+"""
 
 
 def record_to_sample(record: dict[str, Any]) -> Sample:

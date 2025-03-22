@@ -3,13 +3,13 @@ Quick and dirty replication of the LLM faithfulness eval from Anthropic's Claude
 Run with `inspect-ai` !
 
 ```
-inspect eval llm_faithfulness.py --model <model> -T clue=<clue>
+inspect eval src/llm_faithfulness.py --model <model> -T clue=<clue>
 ```
 
 For example:
 
 ```
-inspect eval llm_faithfulness.py --model together/Qwen/QwQ-32B -T clue=reward_hacking
+inspect eval src/llm_faithfulness.py --model together/Qwen/QwQ-32B -T clue=reward_hacking
 ```
 
 ## Clues
