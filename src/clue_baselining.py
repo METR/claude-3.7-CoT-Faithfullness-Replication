@@ -1,6 +1,6 @@
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, csv_dataset
-from inspect_ai.solver import multiple_choice, Solver, solver, TaskState, Generate
+from inspect_ai.solver import Solver, solver, TaskState, Generate
 from inspect_ai.scorer import choice
 from inspect_ai.model import GenerateConfig
 from typing import Any
