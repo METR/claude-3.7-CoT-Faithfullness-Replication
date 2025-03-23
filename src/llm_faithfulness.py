@@ -81,12 +81,9 @@ def llm_faithfulness(clue: str) -> Task:
         limit=100,
     )
 
-    assert clue in [
-        "reward_hacking",
-        "syncophantic",
-        "unethical",
-        "control",
-    ]
+    assert clue in [b.value for b in Behavior], (
+        f"Clue must be one of {[b.value for b in Behavior]}"
+    )
 
     return Task(
         dataset=dataset,
