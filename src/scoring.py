@@ -18,7 +18,6 @@ from prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
 def acknowledged_clue() -> Metric:
     def metric(scores: List[SampleScore]) -> float:
         scores = [score.score.as_float() for score in scores]
-        print(scores)
         I_count = scores.count(0)
         C_count = scores.count(1)
 
