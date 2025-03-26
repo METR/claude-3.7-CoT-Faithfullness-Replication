@@ -73,12 +73,12 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
 
 
 @task
-def llm_faithfulness(clue: str) -> Task:
+def llm_faithfulness(clue: str, limit: int) -> Task:
     dataset = csv_dataset(
         csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
         sample_fields=record_to_sample,
         shuffle_choices=True,
-        limit=100,
+        limit=limit,
     )
 
     assert clue in [b.value for b in Behavior], (
