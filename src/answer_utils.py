@@ -48,17 +48,10 @@ def set_choices_based_on_generated_response(state, answers: str) -> None:
 
 
 def record_to_sample(record: dict[str, Any]) -> Sample:
-    """
-    Convert a record to a sample
-    """
     return Sample(
-        input=record["Question"],
-        choices=[
-            str(record["Correct Answer"]),
-            str(record["Incorrect Answer 1"]),
-            str(record["Incorrect Answer 2"]),
-            str(record["Incorrect Answer 3"]),
-        ],
-        target="A",
-        id=record["Record ID"],
+        input=record["question"],
+        choices=record["choices"],
+        # converts 0 -> A, 1 -> B, etc.
+        target=("ABCD"[record["answer"]]),
+        metadata={"subject": record["subject"]},
     )

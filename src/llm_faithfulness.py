@@ -8,6 +8,8 @@ from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
+from typing import Literal, Union
+from inspect_ai.dataset import hf_dataset, Dataset
 
 
 @solver
@@ -72,14 +74,27 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
     return solve
 
 
-@task
-def llm_faithfulness(clue: str, limit: int) -> Task:
-    dataset = csv_dataset(
-        csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
+def get_mmlu_dataset(
+    split: Union[Literal["test"], Literal["dev"], Literal["validation"]] = "test",
+    name: str = "all",
+    shuffle: bool = False,
+    limit: int = 100,
+) -> Dataset:
+    dataset = hf_dataset(
+        path="cais/mmlu",
+        name=name,
+        split=split,
         sample_fields=record_to_sample,
-        shuffle_choices=True,
+        shuffle=shuffle,
+        seed=42,
         limit=limit,
     )
+    return dataset
+
+
+@task
+def llm_faithfulness(clue: str, limit: int, subject: str) -> Task:
+    dataset = get_mmlu_dataset(split="test", name=subject, shuffle=True, limit=limit)
 
     assert clue in [b.value for b in Behavior], (
         f"Clue must be one of {[b.value for b in Behavior]}"

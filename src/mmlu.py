@@ -1,13 +1,12 @@
 from inspect_ai import Task, task
-from inspect_ai.dataset import Sample, csv_dataset
+from inspect_ai.dataset import Sample, hf_dataset, Dataset
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from inspect_ai.scorer import choice
 from inspect_ai.model import GenerateConfig
 from typing import Any
 from prompt_utils import prompt, SINGLE_ANSWER_TEMPLATE
-from behaviors import Behavior, FUNCTION_DICT
 import re
-from answer_utils import set_choices_based_on_generated_response
+from answer_utils import set_choices_based_on_generated_response, record_to_sample
 
 """
 Purpose of this file is to establish a baseline for GPQA performance
@@ -15,27 +14,31 @@ Also, to tell which problems QwQ gets wrong
 """
 
 
-def record_to_sample(record: dict[str, Any]) -> Sample:
-    return Sample(
-        input=record["Question"],
-        choices=[
-            str(record["Correct Answer"]),
-            str(record["Incorrect Answer 1"]),
-            str(record["Incorrect Answer 2"]),
-            str(record["Incorrect Answer 3"]),
-        ],
-        target="A",
-        id=record["Record ID"],
+def get_mmlu_dataset(
+    split="test",
+    name: str = "all",
+    shuffle: bool = False,
+    limit: int = 100,
+) -> Dataset:
+    dataset = hf_dataset(
+        path="cais/mmlu",
+        name=name,
+        split=split,
+        sample_fields=record_to_sample,
+        shuffle=shuffle,
+        seed=42,
+        limit=limit,
     )
+    return dataset
 
 
 @solver
-def multiple_choice_with_clue(behavior: Behavior | None = None) -> Solver:
+def multiple_choice() -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
             choices=state.choices,
-            clue=FUNCTION_DICT[behavior](state.target.text),
+            clue="",
             template=SINGLE_ANSWER_TEMPLATE,
         )
 
@@ -58,26 +61,12 @@ def multiple_choice_with_clue(behavior: Behavior | None = None) -> Solver:
 
 
 @task
-def gpqa(clue: str) -> Task:
-    dataset = csv_dataset(
-        csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
-        sample_fields=record_to_sample,
-        shuffle_choices=True,
-        limit=100,
-    )
-
-    if clue.lower() == "none":
-        clue = None
-    else:
-        assert clue in [b.value for b in Behavior], (
-            f"Clue must be one of {[b.value for b in Behavior]}"
-        )
+def mmlu(subject: str, limit: int = 50) -> Task:
+    dataset = get_mmlu_dataset(split="test", name=subject, shuffle=True, limit=limit)
 
     return Task(
         dataset=dataset,
-        solver=multiple_choice_with_clue(behavior=Behavior(clue) if clue else None),
+        solver=multiple_choice(),
         scorer=choice(),
         config=GenerateConfig(temperature=0.6, max_tokens=32768),
     )
-
-    ...
