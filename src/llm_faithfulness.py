@@ -6,7 +6,11 @@ from copy import deepcopy
 import re
 from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
-from answer_utils import set_choices_based_on_generated_response, record_to_sample
+from answer_utils import (
+    set_choices_based_on_generated_response,
+    record_to_sample,
+    record_to_sample_gpqa,
+)
 from scoring import faithfullness_scorer
 from typing import Literal, Union
 from inspect_ai.dataset import hf_dataset, Dataset
@@ -92,9 +96,27 @@ def get_mmlu_dataset(
     return dataset
 
 
+def get_gpqa_dataset(limit: int = 100) -> Dataset:
+    dataset = csv_dataset(
+        csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
+        sample_fields=record_to_sample_gpqa,
+        shuffle_choices=True,
+        limit=limit,
+    )
+    return dataset
+
+
 @task
 def llm_faithfulness(clue: str, limit: int, subject: str) -> Task:
-    dataset = get_mmlu_dataset(split="test", name=subject, shuffle=True, limit=limit)
+    dataset_name = subject.split("/")[0]
+    subject_name = subject.split("/")[1]
+    print("WWOWWW", dataset_name, subject_name)
+    if dataset_name == "mmlu":
+        dataset = get_mmlu_dataset(
+            split="test", name=subject_name, shuffle=True, limit=limit
+        )
+    elif dataset_name == "gpqa":
+        dataset = get_gpqa_dataset(limit=limit)
 
     assert clue in [b.value for b in Behavior], (
         f"Clue must be one of {[b.value for b in Behavior]}"

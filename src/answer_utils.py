@@ -55,3 +55,20 @@ def record_to_sample(record: dict[str, Any]) -> Sample:
         target=("ABCD"[record["answer"]]),
         metadata={"subject": record["subject"]},
     )
+
+
+def record_to_sample_gpqa(record: dict[str, Any]) -> Sample:
+    """
+    Convert a record to a sample
+    """
+    return Sample(
+        input=record["Question"],
+        choices=[
+            str(record["Correct Answer"]),
+            str(record["Incorrect Answer 1"]),
+            str(record["Incorrect Answer 2"]),
+            str(record["Incorrect Answer 3"]),
+        ],
+        target="A",
+        id=record["Record ID"],
+    )
