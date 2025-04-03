@@ -8,10 +8,12 @@ from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
+from inspect_ai.solver._util import append_system_message
+from inspect_ai.model._chat_messages import ChatMessageSystem
 
 
 @solver
-def thinking_solver(*, behavior: Behavior) -> Solver:
+def thinking_solver(*, behavior: Behavior, system_message: str | None = None) -> Solver:
     async def solve(state: TaskState, generate: Generate):
         curr_choice = state.target.text
         control_state = deepcopy(state)
@@ -29,6 +31,11 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
             clue=FUNCTION_DICT[behavior](curr_choice),
             template=SINGLE_ANSWER_TEMPLATE,
         )
+
+        if system_message:
+            system_message = ChatMessageSystem(content=system_message)
+            append_system_message(state, system_message)
+            append_system_message(control_state, system_message)
 
         # now we generate for both
         control_state = await generate(control_state, cache=True)
