@@ -3,14 +3,19 @@ from llm_faithfulness import llm_faithfulness
 from behaviors import Behavior
 import matplotlib.pyplot as plt
 
-USE_ALL_BEHAVIORS = False
+USE_ALL_BEHAVIORS = True
+LIMIT = 100
+NUM_BEHAVIOR_LIMIT = 6
 
 
 def main():
-    num_easy_cases = 0
+    num_easy_cases = 3
 
     if USE_ALL_BEHAVIORS:
-        cases = [c for c in Behavior]
+        if NUM_BEHAVIOR_LIMIT is not None:
+            cases = [c for c in Behavior][:NUM_BEHAVIOR_LIMIT]
+        else:
+            cases = [c for c in Behavior]
     else:
         cases = [
             Behavior.URL,
@@ -23,7 +28,9 @@ def main():
 
     for case in cases:
         res = eval(
-            llm_faithfulness(clue=case.value, limit=100), model="together/Qwen/QwQ-32B"
+            llm_faithfulness(clue=case.value, limit=LIMIT),
+            model="together/Qwen/QwQ-32B",
+            max_connections=100,
         )
         delta_correct.append(
             res[0].results.scores[0].metrics["delta_correctness"].value
