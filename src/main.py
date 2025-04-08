@@ -6,17 +6,17 @@ import math
 
 USE_ALL_BEHAVIORS = True
 LIMIT = 100
-NUM_BEHAVIOR_LIMIT = 6
+NUM_BEHAVIOR_LIMIT = 4
 MAX_CONNECTIONS = 100
 MODEL = "together/Qwen/QwQ-32B"
 
 
 def main():
-    num_easy_cases = 3
+    num_easy_cases = 0
 
     if USE_ALL_BEHAVIORS:
         if NUM_BEHAVIOR_LIMIT is not None:
-            cases = [c for c in Behavior][2:NUM_BEHAVIOR_LIMIT]
+            cases = [c for c in Behavior][3:NUM_BEHAVIOR_LIMIT]
         else:
             cases = [c for c in Behavior]
     else:
