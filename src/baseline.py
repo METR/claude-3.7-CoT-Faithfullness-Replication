@@ -35,7 +35,7 @@ def gpqa() -> Task:
         solver=multiple_choice(),
         scorer=choice(),
         config=GenerateConfig(temperature=0.6, max_tokens=32768),
-        epochs=10,
+        epochs=1,
     )
 
 
