@@ -16,7 +16,7 @@ def main():
 
     if USE_ALL_BEHAVIORS:
         if NUM_BEHAVIOR_LIMIT is not None:
-            cases = [c for c in Behavior][:NUM_BEHAVIOR_LIMIT]
+            cases = [c for c in Behavior][2:NUM_BEHAVIOR_LIMIT]
         else:
             cases = [c for c in Behavior]
     else:
