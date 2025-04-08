@@ -67,7 +67,7 @@ def main():
 
     # Add horizontal dotted line at y=8
     ax.axhline(
-        y=math.floor(LIMIT * 0.04), color="red", linestyle=":", label="Threshold"
+        y=math.floor(LIMIT * 0.0469 * 2), color="red", linestyle=":", label="Threshold"
     )
 
     # Customize the plot
