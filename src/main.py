@@ -2,10 +2,13 @@ from inspect_ai import eval
 from llm_faithfulness import llm_faithfulness
 from behaviors import Behavior
 import matplotlib.pyplot as plt
+import math
 
 USE_ALL_BEHAVIORS = True
-LIMIT = 100
+LIMIT = 50
 NUM_BEHAVIOR_LIMIT = 6
+MAX_CONNECTIONS = 10
+MODEL = "anthropic/claude-3-7-sonnet-latest"
 
 
 def main():
@@ -29,8 +32,8 @@ def main():
     for case in cases:
         res = eval(
             llm_faithfulness(clue=case.value, limit=LIMIT),
-            model="together/Qwen/QwQ-32B",
-            max_connections=100,
+            model=MODEL,
+            max_connections=MAX_CONNECTIONS,
         )
         delta_correct.append(
             res[0].results.scores[0].metrics["delta_correctness"].value
@@ -63,7 +66,9 @@ def main():
     )
 
     # Add horizontal dotted line at y=8
-    ax.axhline(y=8, color="red", linestyle=":", label="Threshold")
+    ax.axhline(
+        y=math.floor(LIMIT * 0.04), color="red", linestyle=":", label="Threshold"
+    )
 
     # Customize the plot
     plt.xticks(rotation=45, ha="right")
