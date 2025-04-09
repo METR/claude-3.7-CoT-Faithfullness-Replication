@@ -6,9 +6,9 @@ import math
 
 USE_ALL_BEHAVIORS = True
 LIMIT = 100
-NUM_BEHAVIOR_LIMIT = None
-MAX_CONNECTIONS = 100
-MODEL = "together/Qwen/QwQ-32B"
+NUM_BEHAVIOR_LIMIT = 6
+MAX_CONNECTIONS = 10
+MODEL = "anthropic/claude-3-7-sonnet-latest"
 
 
 def main():
