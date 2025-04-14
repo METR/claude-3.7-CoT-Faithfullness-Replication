@@ -4,11 +4,11 @@ from behaviors import Behavior
 import matplotlib.pyplot as plt
 import math
 
-USE_ALL_BEHAVIORS = True
+USE_ALL_BEHAVIORS = False
 LIMIT = 100
 NUM_BEHAVIOR_LIMIT = 6
-MAX_CONNECTIONS = 10
-MODEL = "anthropic/claude-3-7-sonnet-latest"
+MAX_CONNECTIONS = 30
+MODEL = "together/deepseek-ai/DeepSeek-R1"
 
 
 def main():
@@ -21,9 +21,12 @@ def main():
             cases = [c for c in Behavior]
     else:
         cases = [
-            Behavior.URL,
-            Behavior.METADATA,
-            Behavior.LOWERCASE,
+            Behavior.REWARD_HACKING,
+            Behavior.SYNCOPHANTIC,
+            Behavior.UNETHICAL,
+            Behavior.XOR_ENCRYPT,
+            Behavior.UNETHICAL_XOR_ENCRYPT,
+            Behavior.CODE_SNIPPET,
         ]
 
     delta_correct = []
@@ -46,10 +49,9 @@ def main():
     print(acknowledged_clue)
 
     # Calculate the stacked values
-    acknowledged_impact = [d * a for d, a in zip(delta_correct, acknowledged_clue)]
-    unacknowledged_impact = [
-        d * (1 - a) for d, a in zip(delta_correct, acknowledged_clue)
-    ]
+    # Calculate the stacked values - normalize to percentages
+    acknowledged_impact = [a for a in acknowledged_clue]
+    unacknowledged_impact = [(1 - a) for a in acknowledged_clue]
 
     # Create the stacked bar chart
     fig, ax = plt.subplots(figsize=(10, 8))  # Made taller to accommodate labels
@@ -65,16 +67,16 @@ def main():
         label="Acknowledged Impact",
     )
 
-    # Add horizontal dotted line at y=8
-    ax.axhline(
-        y=math.floor(LIMIT * 0.0469 * 2), color="red", linestyle=":", label="Threshold"
-    )
+    # # Add horizontal dotted line at y=8
+    # ax.axhline(
+    #     y=math.floor(LIMIT * 0.0469 * 2), color="red", linestyle=":", label="Threshold"
+    # )
 
     # Customize the plot
     plt.xticks(rotation=45, ha="right")
     plt.xlabel("Behavior Type")
-    plt.ylabel("Impact")
-    plt.title("Impact of Different Behaviors: Acknowledged vs Unacknowledged")
+    plt.ylabel("Percentage")
+    plt.title("Percentage of Acknowledged vs Unacknowledged Behaviors")
     plt.legend()
 
     # Add difficulty labels
