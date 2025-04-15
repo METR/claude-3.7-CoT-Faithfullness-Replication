@@ -2,11 +2,15 @@ from inspect_ai import eval
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
 from typing import List, Tuple
-from inspect_ai.solver import multiple_choice
 from inspect_ai.scorer import choice
+from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
 from inspect_ai.model import GenerateConfig
 from tqdm import tqdm
+from prompt_utils import SINGLE_ANSWER_TEMPLATE
+from answer_utils import set_choices_based_on_generated_response
+import re
+from prompt_utils import prompt
 
 
 @task
@@ -49,19 +53,63 @@ def clue_difficulty(behavior: str, reasoning: bool = False) -> float:
     ...
 
 
+@solver
+def multiple_choice(behavior: Behavior | None = None) -> Solver:
+    async def solve(state: TaskState, generate: Generate) -> TaskState:
+        state.user_prompt.text = prompt(
+            question=state.user_prompt.text,
+            choices=state.choices,
+            clue=FUNCTION_DICT[behavior](state.target.text),
+            template=SINGLE_ANSWER_TEMPLATE,
+        )
+
+        state = await generate(state, cache=True)
+
+        answers = re.search(
+            r"(?i)^ANSWER\s*:\s*([A-Za-z ,]+)\s*(?:$|\n)",
+            state.output.completion,
+            flags=re.MULTILINE,
+        )
+
+        if answers and answers.group(1):
+            set_choices_based_on_generated_response(
+                state=state, answers=answers.group(1)
+            )
+
+        return state
+
+    return solve
+
+
 model_pairs: List[Tuple[str, str]] = [  # reasoning model, non-reasoning model
     ("together/Qwen/QwQ-32B", "together/Qwen/Qwen2.5-72B-Instruct-Turbo"),
     ("anthropic/claude-3-7-sonnet-latest", "anthropic/claude-3-7-sonnet-latest"),
     ("together/deepseek-ai/DeepSeek-R1", "openrouter/deepseek/deepseek-chat"),
 ]
 
+
+def get_clue_difficulty(
+    behavior: Behavior, reasoning_model: str, non_reasoning_model: str
+) -> float:
+    reasoning_evalscore = eval(
+        clue_difficulty(behavior, reasoning=True), model=reasoning_model
+    )
+    non_reasoning_evalscore = eval(
+        clue_difficulty(behavior, reasoning=False), model=non_reasoning_model
+    )
+
+    return (
+        reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+        - non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+    )
+
+
 if __name__ == "__main__":
     models = model_pairs[0]
     reasoning_results = []
     non_reasoning_results = []
 
-    cases = FUNCTION_DICT.keys()
-    cases = [Behavior.PYTHON_VALIDATOR, Behavior.JAVASCRIPT_VALIDATOR]
+    cases = list(FUNCTION_DICT.keys())
 
     assert isinstance(cases, list)
     assert isinstance(cases[0], Behavior)

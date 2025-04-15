@@ -4,12 +4,13 @@ from inspect_ai.model import GenerateConfig, get_model
 from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
-from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
+from prompt_utils import SINGLE_ANSWER_TEMPLATE_ELICITATION, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
 from inspect_ai.model import ChatMessageSystem
+from inspect_ai import eval
 
 
 @solver
@@ -22,14 +23,14 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             question=state.user_prompt.text,
             choices=state.choices,
             clue="",
-            template=SINGLE_ANSWER_TEMPLATE,
+            template=SINGLE_ANSWER_TEMPLATE_ELICITATION,
         )
 
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
             choices=state.choices,
             clue=FUNCTION_DICT[behavior](curr_choice),
-            template=SINGLE_ANSWER_TEMPLATE,
+            template=SINGLE_ANSWER_TEMPLATE_ELICITATION,
         )
 
         if sys_message is not None:
@@ -107,3 +108,14 @@ def llm_faithfulness(clue: str, limit: int) -> Task:
             temperature=0.6, max_tokens=32768, reasoning_tokens=30000
         ),
     )
+
+
+def get_faithfulness_score(
+    behavior: Behavior, model: str, limit: int = 100, max_connections: int = 100
+) -> float:
+    res = eval(
+        llm_faithfulness(clue=behavior.value, limit=limit),
+        model=model,
+        max_connections=max_connections,
+    )
+    return res[0].results.scores[0].metrics["acknowledged_clue"].value
