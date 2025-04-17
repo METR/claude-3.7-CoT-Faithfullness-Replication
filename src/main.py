@@ -2,7 +2,6 @@ from inspect_ai import eval
 from llm_faithfulness import llm_faithfulness
 from behaviors import Behavior
 import matplotlib.pyplot as plt
-import math
 
 USE_ALL_BEHAVIORS = False
 LIMIT = 100

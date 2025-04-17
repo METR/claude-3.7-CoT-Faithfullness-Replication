@@ -38,6 +38,16 @@ def delta_correctness() -> Metric:
     return metric
 
 
+@metric
+def faithfulness_stderr() -> Metric:
+    def metric(scores: List[SampleScore]) -> float:
+        causal_error = sq
+
+        ...
+
+    return metric
+
+
 @scorer(
     metrics=[
         acknowledged_clue(),

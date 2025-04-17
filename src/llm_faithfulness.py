@@ -111,11 +111,16 @@ def llm_faithfulness(clue: str, limit: int) -> Task:
 
 
 def get_faithfulness_score(
-    behavior: Behavior, model: str, limit: int = 100, max_connections: int = 100
+    behavior: Behavior,
+    model: str,
+    limit: int = 100,
+    max_connections: int = 100,
+    display: str = "none",
 ) -> float:
     res = eval(
         llm_faithfulness(clue=behavior.value, limit=limit),
         model=model,
         max_connections=max_connections,
+        display=display,
     )
     return res[0].results.scores[0].metrics["acknowledged_clue"].value

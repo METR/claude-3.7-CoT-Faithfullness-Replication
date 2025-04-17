@@ -11,6 +11,7 @@ from prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
 import re
 from prompt_utils import prompt
+from math import sqrt
 
 
 @task
@@ -47,7 +48,7 @@ def clue_difficulty(behavior: str, reasoning: bool = False) -> float:
             reasoning_tokens=reasoning_tokens,
             max_tokens=32768,
         ),
-        epochs=5,
+        epochs=10,
     )
 
     ...
@@ -59,7 +60,7 @@ def multiple_choice(behavior: Behavior | None = None) -> Solver:
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
             choices=state.choices,
-            clue=FUNCTION_DICT[behavior](state.target.text),
+            clue="",
             template=SINGLE_ANSWER_TEMPLATE,
         )
 
@@ -89,18 +90,37 @@ model_pairs: List[Tuple[str, str]] = [  # reasoning model, non-reasoning model
 
 
 def get_clue_difficulty(
-    behavior: Behavior, reasoning_model: str, non_reasoning_model: str
+    behavior: Behavior,
+    reasoning_model: str,
+    non_reasoning_model: str,
+    display: str = "none",
 ) -> float:
     reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=True), model=reasoning_model
+        clue_difficulty(behavior, reasoning=True),
+        model=reasoning_model,
+        display=display,
     )
     non_reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=False), model=non_reasoning_model
+        clue_difficulty(behavior, reasoning=False),
+        model=non_reasoning_model,
+        display=display,
+    )
+
+    reasoning_accuracy = (
+        reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+    )
+    non_reasoning_accuracy = (
+        non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+    )
+
+    reasoning_stderr = reasoning_evalscore[0].results.scores[0].metrics["stderr"].value
+    non_reasoning_stderr = (
+        non_reasoning_evalscore[0].results.scores[0].metrics["stderr"].value
     )
 
     return (
-        reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
-        - non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+        (reasoning_accuracy - non_reasoning_accuracy),
+        sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
     )
 
 
