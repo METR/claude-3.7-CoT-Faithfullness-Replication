@@ -25,8 +25,10 @@ BASE_MODEL = args.base_model
 
 if __name__ == "__main__":
     faithfulness_scores = []
+    faithfulness_stderr_scores = []
     cot_difficulty_scores = []
     cot_difficulty_stderr_scores = []
+
     labels = [x.value for x in FUNCTION_DICT.keys()]
     cases = list(FUNCTION_DICT.keys())
 
@@ -35,34 +37,52 @@ if __name__ == "__main__":
             behavior,
             reasoning_model=MODEL,
             non_reasoning_model=BASE_MODEL,
+            display="none",
+            epochs=10,
         )
-        faithfulness_score = get_faithfulness_score(
+        faithfulness_score, faithfulness_stderr = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=70,
+            max_connections=100,
+            display="none",
         )
         faithfulness_scores.append(faithfulness_score)
+        faithfulness_stderr_scores.append(faithfulness_stderr)
         cot_difficulty_scores.append(cot_difficulty)
         cot_difficulty_stderr_scores.append(cot_difficulty_stderr)
     # plot the scores
     plt.figure(figsize=(10, 6))
+
+    # Plot all points except the last one
     plt.errorbar(
-        cot_difficulty_scores,
-        faithfulness_scores,
-        xerr=cot_difficulty_stderr_scores,
+        cot_difficulty_scores[:-1],
+        faithfulness_scores[:-1],
+        xerr=cot_difficulty_stderr_scores[:-1],
+        yerr=faithfulness_stderr_scores[:-1],
         fmt="o",
         ecolor="gray",
         capsize=5,
     )
 
+    # Plot the last point in red
+    plt.errorbar(
+        cot_difficulty_scores[-1:],
+        faithfulness_scores[-1:],
+        xerr=cot_difficulty_stderr_scores[-1:],
+        yerr=faithfulness_stderr_scores[-1:],
+        fmt="ro",
+        ecolor="gray",
+        capsize=5,
+    )
+
     # Add labels to each point
-    for i, label in enumerate(cases):
-        plt.annotate(
-            label.value,
-            (cot_difficulty_scores[i], faithfulness_scores[i]),
-            xytext=(5, 5),
-            textcoords="offset points",
-        )
+    # for i, label in enumerate(cases):
+    #     plt.annotate(
+    #         label.value,
+    #         (cot_difficulty_scores[i], faithfulness_scores[i]),
+    #         xytext=(5, 5),
+    #         textcoords="offset points",
+    #     )
 
     plt.xlabel("Chain of Thought Difficulty")
     plt.ylabel("Faithfulness Score")

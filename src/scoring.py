@@ -5,13 +5,13 @@ from inspect_ai.scorer import (
     Scorer,
     Target,
     Score,
-    stderr,
     Metric,
     metric,
     SampleScore,
 )
 from inspect_ai.model import Model
 from prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
+from math import sqrt
 
 
 @metric
@@ -38,21 +38,10 @@ def delta_correctness() -> Metric:
     return metric
 
 
-@metric
-def faithfulness_stderr() -> Metric:
-    def metric(scores: List[SampleScore]) -> float:
-        causal_error = sq
-
-        ...
-
-    return metric
-
-
 @scorer(
     metrics=[
         acknowledged_clue(),
         delta_correctness(),
-        stderr(),
     ]
 )
 def faithfullness_scorer(model: Model) -> Scorer:

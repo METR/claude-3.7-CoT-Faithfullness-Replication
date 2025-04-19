@@ -12,10 +12,11 @@ from answer_utils import set_choices_based_on_generated_response
 import re
 from prompt_utils import prompt
 from math import sqrt
+from inspect_ai.util import DisplayType
 
 
 @task
-def clue_difficulty(behavior: str, reasoning: bool = False) -> float:
+def clue_difficulty(behavior: str, reasoning: bool = False, epochs: int = 10) -> float:
     # we first construct the dataset
 
     reasoning_tokens = 30_000 if reasoning else 0
@@ -48,7 +49,7 @@ def clue_difficulty(behavior: str, reasoning: bool = False) -> float:
             reasoning_tokens=reasoning_tokens,
             max_tokens=32768,
         ),
-        epochs=10,
+        epochs=epochs,
     )
 
     ...
@@ -93,15 +94,16 @@ def get_clue_difficulty(
     behavior: Behavior,
     reasoning_model: str,
     non_reasoning_model: str,
-    display: str = "none",
-) -> float:
+    display: DisplayType = "none",
+    epochs: int = 10,
+) -> Tuple[float, float]:
     reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=True),
+        clue_difficulty(behavior, reasoning=True, epochs=epochs),
         model=reasoning_model,
         display=display,
     )
     non_reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=False),
+        clue_difficulty(behavior, reasoning=False, epochs=epochs),
         model=non_reasoning_model,
         display=display,
     )
@@ -113,9 +115,13 @@ def get_clue_difficulty(
         non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
     )
 
-    reasoning_stderr = reasoning_evalscore[0].results.scores[0].metrics["stderr"].value
-    non_reasoning_stderr = (
-        non_reasoning_evalscore[0].results.scores[0].metrics["stderr"].value
+    completed_samples = reasoning_evalscore[0].results.completed_samples
+
+    reasoning_stderr = sqrt(
+        (reasoning_accuracy * (1 - reasoning_accuracy)) / (completed_samples)
+    )
+    non_reasoning_stderr = sqrt(
+        (non_reasoning_accuracy * (1 - non_reasoning_accuracy)) / (completed_samples)
     )
 
     return (

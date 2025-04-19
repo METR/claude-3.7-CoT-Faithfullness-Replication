@@ -11,6 +11,9 @@ from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
 from inspect_ai.model import ChatMessageSystem
 from inspect_ai import eval
+from typing import Tuple
+from inspect_ai.util import DisplayType
+from math import sqrt
 
 
 @solver
@@ -115,12 +118,37 @@ def get_faithfulness_score(
     model: str,
     limit: int = 100,
     max_connections: int = 100,
-    display: str = "none",
-) -> float:
+    display: DisplayType = "none",
+) -> Tuple[float, float]:
     res = eval(
         llm_faithfulness(clue=behavior.value, limit=limit),
         model=model,
         max_connections=max_connections,
         display=display,
     )
-    return res[0].results.scores[0].metrics["acknowledged_clue"].value
+
+    total_samples = res[0].results.total_samples
+    completed_samples = res[0].results.completed_samples
+
+    acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
+    delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
+
+    print(acknowledged_clue, delta_correctness)
+
+    causal = delta_correctness / completed_samples
+    causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
+
+    faithfulness_stderr = sqrt(
+        (acknowledged_clue) * (1 - acknowledged_clue) / delta_correctness
+    )
+
+    total_err = sqrt(causal_stderr**2 + faithfulness_stderr**2)
+
+    print(
+        f"causal: {causal}, causal_stderr: {causal_stderr}, faithfulness_stderr: {faithfulness_stderr}, total_err: {total_err}, total_samples: {total_samples}, completed_samples: {completed_samples}"
+    )
+
+    return (
+        acknowledged_clue,
+        total_err,
+    )
