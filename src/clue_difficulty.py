@@ -13,13 +13,25 @@ import re
 from prompt_utils import prompt
 from math import sqrt
 from inspect_ai.util import DisplayType
+from enum import Enum
+
+
+class TestingScheme(Enum):
+    BASE = "base"
+    RL_NO_REASONING = "rl_no_reasoning"
+    RL_DOTS = "rl_dots"
 
 
 @task
-def clue_difficulty(behavior: str, reasoning: bool = False, epochs: int = 10) -> float:
+def clue_difficulty(
+    behavior: str,
+    reasoning: bool = False,
+    epochs: int = 10,
+    testing_scheme: TestingScheme = TestingScheme.BASE,
+) -> float:
     # we first construct the dataset
 
-    reasoning_tokens = 30_000 if reasoning else 0
+    reasoning_tokens = 30_000 if reasoning else None
 
     samples = []
     targets = ["A", "B", "C", "D"]
@@ -42,7 +54,7 @@ def clue_difficulty(behavior: str, reasoning: bool = False, epochs: int = 10) ->
     # then we run the model on the dataset
     return Task(
         dataset=dataset,
-        solver=multiple_choice(),
+        solver=multiple_choice(reasoning=reasoning, testing_scheme=testing_scheme),
         scorer=choice(),
         config=GenerateConfig(
             temperature=0.6,
@@ -52,11 +64,9 @@ def clue_difficulty(behavior: str, reasoning: bool = False, epochs: int = 10) ->
         epochs=epochs,
     )
 
-    ...
-
 
 @solver
-def multiple_choice(behavior: Behavior | None = None) -> Solver:
+def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,

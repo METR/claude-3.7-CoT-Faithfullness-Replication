@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Any
-from math import pow
 
 
 class Behavior(Enum):

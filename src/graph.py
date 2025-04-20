@@ -38,12 +38,13 @@ if __name__ == "__main__":
             reasoning_model=MODEL,
             non_reasoning_model=BASE_MODEL,
             display="none",
-            epochs=10,
+            epochs=30,
         )
         faithfulness_score, faithfulness_stderr = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=100,
+            max_connections=200,
+            limit=200,
             display="none",
         )
         faithfulness_scores.append(faithfulness_score)

@@ -133,8 +133,6 @@ def get_faithfulness_score(
     acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
     delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
 
-    print(acknowledged_clue, delta_correctness)
-
     causal = delta_correctness / completed_samples
     causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
 
@@ -143,10 +141,6 @@ def get_faithfulness_score(
     )
 
     total_err = sqrt(causal_stderr**2 + faithfulness_stderr**2)
-
-    print(
-        f"causal: {causal}, causal_stderr: {causal_stderr}, faithfulness_stderr: {faithfulness_stderr}, total_err: {total_err}, total_samples: {total_samples}, completed_samples: {completed_samples}"
-    )
 
     return (
         acknowledged_clue,

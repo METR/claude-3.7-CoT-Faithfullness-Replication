@@ -79,5 +79,3 @@ def gpqa(clue: str) -> Task:
         scorer=choice(),
         config=GenerateConfig(temperature=0.6, max_tokens=32768),
     )
-
-    ...
