@@ -13,6 +13,7 @@ import re
 from prompt_utils import prompt
 from math import sqrt
 from inspect_ai.util import DisplayType
+from inspect_ai.model import ChatMessageAssistant
 from enum import Enum
 
 
@@ -75,7 +76,27 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
             template=SINGLE_ANSWER_TEMPLATE,
         )
 
-        state = await generate(state, cache=True)
+        if reasoning:
+            state = await generate(state, cache=True)
+        elif not reasoning:
+            if testing_scheme == TestingScheme.BASE:
+                state = await generate(state, cache=True)
+            elif testing_scheme == TestingScheme.RL_NO_REASONING:
+                state.messages.append(
+                    ChatMessageAssistant(
+                        content="\n<think>I have finished reasoning.</think>",
+                        model=state.model.name,
+                    )
+                )
+                state = await generate(state, cache=True)
+            elif testing_scheme == TestingScheme.RL_DOTS:
+                state.messages.append(
+                    ChatMessageAssistant(
+                        content=f"\n<think>\n{'.' * 10_000}\n</think>",
+                        model=state.model.name,
+                    )
+                )
+                state = await generate(state, cache=True)
 
         answers = re.search(
             r"(?i)^ANSWER\s*:\s*([A-Za-z ,]+)\s*(?:$|\n)",
@@ -98,46 +119,6 @@ model_pairs: List[Tuple[str, str]] = [  # reasoning model, non-reasoning model
     ("anthropic/claude-3-7-sonnet-latest", "anthropic/claude-3-7-sonnet-latest"),
     ("together/deepseek-ai/DeepSeek-R1", "openrouter/deepseek/deepseek-chat"),
 ]
-
-
-def get_clue_difficulty(
-    behavior: Behavior,
-    reasoning_model: str,
-    non_reasoning_model: str,
-    display: DisplayType = "none",
-    epochs: int = 10,
-) -> Tuple[float, float]:
-    reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=True, epochs=epochs),
-        model=reasoning_model,
-        display=display,
-    )
-    non_reasoning_evalscore = eval(
-        clue_difficulty(behavior, reasoning=False, epochs=epochs),
-        model=non_reasoning_model,
-        display=display,
-    )
-
-    reasoning_accuracy = (
-        reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
-    )
-    non_reasoning_accuracy = (
-        non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
-    )
-
-    completed_samples = reasoning_evalscore[0].results.completed_samples
-
-    reasoning_stderr = sqrt(
-        (reasoning_accuracy * (1 - reasoning_accuracy)) / (completed_samples)
-    )
-    non_reasoning_stderr = sqrt(
-        (non_reasoning_accuracy * (1 - non_reasoning_accuracy)) / (completed_samples)
-    )
-
-    return (
-        (reasoning_accuracy - non_reasoning_accuracy),
-        sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
-    )
 
 
 if __name__ == "__main__":
@@ -170,3 +151,61 @@ if __name__ == "__main__":
     sorted_results = sorted(zip(cases, delta), key=lambda x: x[1], reverse=True)
     for behavior, delta in sorted_results:
         print(f"{behavior}: {delta}")
+
+
+def get_clue_difficulty(
+    behavior: Behavior,
+    reasoning_model: str,
+    non_reasoning_model: str,
+    display: DisplayType = "none",
+    epochs: int = 10,
+    testing_scheme: TestingScheme = TestingScheme.BASE,
+) -> Tuple[float, float]:
+    reasoning_evalscore = eval(
+        clue_difficulty(
+            behavior, reasoning=True, epochs=epochs, testing_scheme=testing_scheme
+        ),
+        model=reasoning_model,
+        display=display,
+        max_connections=10,
+    )
+
+    if testing_scheme == TestingScheme.BASE:
+        non_reasoning_evalscore = eval(
+            clue_difficulty(
+                behavior, reasoning=False, epochs=epochs, testing_scheme=testing_scheme
+            ),
+            model=non_reasoning_model,
+            display=display,
+            max_connections=10,
+        )
+    else:
+        non_reasoning_evalscore = eval(
+            clue_difficulty(
+                behavior, reasoning=False, epochs=epochs, testing_scheme=testing_scheme
+            ),
+            model=reasoning_model,
+            display=display,
+            max_connections=10,
+        )
+
+    reasoning_accuracy = (
+        reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+    )
+    non_reasoning_accuracy = (
+        non_reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
+    )
+
+    completed_samples = reasoning_evalscore[0].results.completed_samples
+
+    reasoning_stderr = sqrt(
+        (reasoning_accuracy * (1 - reasoning_accuracy)) / (completed_samples)
+    )
+    non_reasoning_stderr = sqrt(
+        (non_reasoning_accuracy * (1 - non_reasoning_accuracy)) / (completed_samples)
+    )
+
+    return (
+        (reasoning_accuracy - non_reasoning_accuracy),
+        sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
+    )

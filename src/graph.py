@@ -1,6 +1,6 @@
 from behaviors import FUNCTION_DICT
 import matplotlib.pyplot as plt
-from clue_difficulty import get_clue_difficulty
+from clue_difficulty import get_clue_difficulty, TestingScheme
 from llm_faithfulness import get_faithfulness_score
 from tqdm import tqdm
 import argparse
@@ -22,6 +22,7 @@ args = parser.parse_args()
 
 MODEL = args.model
 BASE_MODEL = args.base_model
+TESTING_SCHEME = TestingScheme.RL_DOTS
 
 if __name__ == "__main__":
     faithfulness_scores = []
@@ -35,15 +36,16 @@ if __name__ == "__main__":
     for behavior in tqdm(cases):
         cot_difficulty, cot_difficulty_stderr = get_clue_difficulty(
             behavior,
-            reasoning_model=MODEL,
+            reasoning_model="openai-api/hf/tgi",
             non_reasoning_model=BASE_MODEL,
-            display="none",
-            epochs=30,
+            display="full",
+            epochs=10,
+            testing_scheme=TESTING_SCHEME,
         )
         faithfulness_score, faithfulness_stderr = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=200,
+            max_connections=100,
             limit=200,
             display="none",
         )
@@ -87,6 +89,8 @@ if __name__ == "__main__":
 
     plt.xlabel("Chain of Thought Difficulty")
     plt.ylabel("Faithfulness Score")
-    plt.title(f"Faithfulness vs Chain of Thought Difficulty by Behavior for {MODEL}")
+    plt.title(
+        f"Faithfulness vs Chain of Thought Difficulty by Behavior for {MODEL} with {TESTING_SCHEME} testing scheme"
+    )
     plt.grid(True)
     plt.show()
