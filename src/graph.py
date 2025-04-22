@@ -10,19 +10,19 @@ parser.add_argument(
     "--model",
     type=str,
     help="Model to use for evaluation",
-    default="together/Qwen/QwQ-32B",
+    default="anthropic/claude-3-7-sonnet-latest",
 )
 parser.add_argument(
     "--base_model",
     type=str,
     help="Base model to compare against",
-    default="openai-api/nebius/Qwen/Qwen2.5-32B-Instruct",
+    default="anthropic/claude-3-7-sonnet-latest",
 )
 args = parser.parse_args()
 
 MODEL = args.model
 BASE_MODEL = args.base_model
-TESTING_SCHEME = TestingScheme.RL_DOTS
+TESTING_SCHEME = TestingScheme.BASE
 
 if __name__ == "__main__":
     faithfulness_scores = []
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     for behavior in tqdm(cases):
         cot_difficulty, cot_difficulty_stderr = get_clue_difficulty(
             behavior,
-            reasoning_model="openai-api/hf/tgi",
+            reasoning_model=MODEL,
             non_reasoning_model=BASE_MODEL,
             display="full",
             epochs=10,
