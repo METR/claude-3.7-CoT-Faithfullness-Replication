@@ -10,13 +10,13 @@ parser.add_argument(
     "--model",
     type=str,
     help="Model to use for evaluation",
-    default="anthropic/claude-3-7-sonnet-latest",
+    default="together/Qwen/QwQ-32B",
 )
 parser.add_argument(
     "--base_model",
     type=str,
     help="Base model to compare against",
-    default="anthropic/claude-3-7-sonnet-latest",
+    default="openai-api/nebius/Qwen/Qwen2.5-32B-Instruct",
 )
 args = parser.parse_args()
 
@@ -45,8 +45,8 @@ if __name__ == "__main__":
         faithfulness_score, faithfulness_stderr = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=100,
-            limit=200,
+            max_connections=10,
+            limit=100,
             display="none",
         )
         faithfulness_scores.append(faithfulness_score)
@@ -54,8 +54,8 @@ if __name__ == "__main__":
         cot_difficulty_scores.append(cot_difficulty)
         cot_difficulty_stderr_scores.append(cot_difficulty_stderr)
     # plot the scores
-    plt.figure(figsize=(10, 6))
 
+    plt.figure(figsize=(10, 6))
     # Plot all points except the last one
     plt.errorbar(
         cot_difficulty_scores[:-1],

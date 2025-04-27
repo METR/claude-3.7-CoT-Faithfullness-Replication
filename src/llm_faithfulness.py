@@ -14,6 +14,7 @@ from inspect_ai import eval
 from typing import Tuple
 from inspect_ai.util import DisplayType
 from math import sqrt
+from os import path
 
 
 @solver
@@ -119,12 +120,14 @@ def get_faithfulness_score(
     limit: int = 100,
     max_connections: int = 100,
     display: DisplayType = "none",
+    log_dir: str = None,
 ) -> Tuple[float, float]:
     res = eval(
         llm_faithfulness(clue=behavior.value, limit=limit),
         model=model,
         max_connections=max_connections,
         display=display,
+        log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
 
     total_samples = res[0].results.total_samples
@@ -132,6 +135,7 @@ def get_faithfulness_score(
 
     acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
     delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
+    ic_count = res[0].results.scores[0].metrics["ic_count"].value
 
     causal = delta_correctness / completed_samples
     causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
@@ -145,4 +149,7 @@ def get_faithfulness_score(
     return (
         acknowledged_clue,
         total_err,
+        int(delta_correctness),
+        completed_samples,
+        ic_count,
     )
