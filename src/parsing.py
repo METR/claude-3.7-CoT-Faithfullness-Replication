@@ -10,6 +10,7 @@ class EvalConfig:
     base_model: str
     display: str
     testing_scheme: TestingScheme
+    redteam: bool
 
 
 def parse_args() -> EvalConfig:
@@ -33,6 +34,12 @@ def parse_args() -> EvalConfig:
         default="base",
         required=False,
         choices=TestingScheme.__members__.keys(),
+    )
+    parser.add_argument(
+        "--redteam",
+        default=False,
+        required=False,
+        action="store_true",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

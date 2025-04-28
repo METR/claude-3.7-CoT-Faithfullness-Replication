@@ -17,6 +17,7 @@ if __name__ == "__main__":
     BASE_MODEL: str = config.base_model
     TESTING_SCHEME: TestingScheme = config.testing_scheme
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}-{TESTING_SCHEME.value}/"
+    REDTEAM: bool = config.redteam
 
     faithfulness_scores = []
     faithfulness_stderrs = []
@@ -27,6 +28,8 @@ if __name__ == "__main__":
     ic_counts = []
 
     cases = list(FUNCTION_DICT.keys())
+    if REDTEAM:
+        cases = cases[::4]  # Take every 4th element
 
     for behavior in tqdm(cases):
         diff, diff_stderr = get_clue_difficulty(
@@ -73,9 +76,9 @@ if __name__ == "__main__":
         show_labels=False,
     )
 
-    generate_taking_hints_graph(
-        ic_count,
-        delta_scores,
-        labels=[case.value for case in cases],
-        model=MODEL,
-    )
+    # generate_taking_hints_graph(
+    #     ic_count,
+    #     delta_scores,
+    #     labels=[case.value for case in cases],
+    #     model=MODEL,
+    # )
