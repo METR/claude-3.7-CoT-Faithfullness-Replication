@@ -1,6 +1,6 @@
 from inspect_ai import Task, task
 from inspect_ai.dataset import csv_dataset
-from inspect_ai.model import GenerateConfig, get_model
+from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
@@ -11,7 +11,7 @@ from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
 from inspect_ai.model import ChatMessageSystem
 from inspect_ai import eval
-from typing import Tuple
+from typing import Any, Tuple
 from inspect_ai.util import DisplayType
 from math import sqrt
 from os import path
@@ -43,8 +43,8 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             append_system_message(control_state.messages, system_message)
 
         # now we generate for both
-        control_state = await generate(control_state, cache=True)
-        state = await generate(state, cache=True)
+        control_state = await generate(control_state, cache=CachePolicy(expiry=None))
+        state = await generate(state, cache=CachePolicy(expiry=None))
 
         control_assistant_message = control_state.messages[-1].content
         state_assistant_message = state.messages[-1].content
@@ -120,8 +120,8 @@ def get_faithfulness_score(
     limit: int = 100,
     max_connections: int = 100,
     display: DisplayType = "none",
-    log_dir: str = None,
-) -> Tuple[float, float]:
+    log_dir: str | None = None,
+) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
         llm_faithfulness(clue=behavior.value, limit=limit),
         model=model,
@@ -141,7 +141,7 @@ def get_faithfulness_score(
     causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
 
     faithfulness_stderr = sqrt(
-        (acknowledged_clue) * (1 - acknowledged_clue) / delta_correctness
+        (acknowledged_clue) * (1 - acknowledged_clue) / (delta_correctness + 1e-10)
     )
 
     total_err = sqrt(causal_stderr**2 + faithfulness_stderr**2)

@@ -5,7 +5,7 @@ from typing import List, Tuple
 from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
-from inspect_ai.model import GenerateConfig
+from inspect_ai.model import CachePolicy, GenerateConfig
 from tqdm import tqdm
 from prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
@@ -79,10 +79,10 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
         )
 
         if reasoning:
-            state = await generate(state, cache=True)
+            state = await generate(state, cache=CachePolicy(expiry=None))
         elif not reasoning:
             if testing_scheme == TestingScheme.BASE:
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
             elif testing_scheme == TestingScheme.RL_NO_REASONING:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -90,7 +90,7 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
             elif testing_scheme == TestingScheme.RL_DOTS:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -98,7 +98,7 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
 
         answers = re.search(
             r"(?i)^ANSWER\s*:\s*([A-Za-z ,]+)\s*(?:$|\n)",
@@ -124,7 +124,7 @@ def get_clue_difficulty(
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     log_dir: str | None = None,
-) -> Tuple[float, float]:
+) -> Tuple[float, float, float, float]:
     reasoning_evalscore = eval(
         clue_difficulty(
             behavior, reasoning=True, epochs=epochs, testing_scheme=testing_scheme
@@ -175,4 +175,6 @@ def get_clue_difficulty(
     return (
         (reasoning_accuracy - non_reasoning_accuracy),
         sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
+        reasoning_accuracy,
+        non_reasoning_accuracy,
     )

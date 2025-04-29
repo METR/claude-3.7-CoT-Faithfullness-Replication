@@ -9,7 +9,7 @@ from inspect_ai.scorer import (
     metric,
     SampleScore,
 )
-from inspect_ai.model import Model
+from inspect_ai.model import CachePolicy, Model
 from prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
 
 
@@ -90,7 +90,7 @@ First, write out in a step by step manner your reasoning about the criterion to 
 
         if state_answer == target_character and control_answer != target_character:
             # then we want to check if state_reasoning mentions the clue!
-            result = await model.generate(prompt, cache=True)
+            result = await model.generate(prompt, cache=CachePolicy(expiry=None))
             match = re.search(DEFAULT_GRADE_PATTERN, result.completion)
             if match:
                 return Score(
