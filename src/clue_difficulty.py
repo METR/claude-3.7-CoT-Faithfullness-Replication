@@ -1,7 +1,7 @@
 from inspect_ai import eval
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
-from typing import List, Tuple
+from typing import Tuple
 from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
