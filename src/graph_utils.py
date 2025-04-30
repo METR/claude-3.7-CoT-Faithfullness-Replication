@@ -72,6 +72,9 @@ def generate_propensity_graph(
     plt.title(
         "Propensity for Faithfulness vs Difficulty", loc="left", pad=20, fontsize=25
     )
+    plt.suptitle(
+        f"{model} {testing_scheme}", y=0.85, fontsize=12, color="gray", style="italic"
+    )
     ax = plt.axes(
         [0.8, 0.9, 0.1, 0.1], frameon=True
     )  # Change the numbers in this array to position your image [left, bottom, width, height])

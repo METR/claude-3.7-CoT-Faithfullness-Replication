@@ -9,7 +9,7 @@ from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
-from inspect_ai.model import ChatMessageSystem
+from inspect_ai.model import ChatMessageSystem, CachePolicy
 from inspect_ai import eval
 from typing import Tuple
 from inspect_ai.util import DisplayType
@@ -43,8 +43,8 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             append_system_message(control_state.messages, system_message)
 
         # now we generate for both
-        control_state = await generate(control_state, cache=True)
-        state = await generate(state, cache=True)
+        control_state = await generate(control_state, cache=CachePolicy(expiry=None))
+        state = await generate(state, cache=CachePolicy(expiry=None))
 
         control_assistant_message = control_state.messages[-1].content
         state_assistant_message = state.messages[-1].content
@@ -136,6 +136,7 @@ def get_faithfulness_score(
     acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
     delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
     ic_count = res[0].results.scores[0].metrics["ic_count"].value
+    i_star_count = res[0].results.scores[0].metrics["i_star_count"].value
 
     causal = delta_correctness / completed_samples
     causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
@@ -152,4 +153,5 @@ def get_faithfulness_score(
         int(delta_correctness),
         completed_samples,
         ic_count,
+        i_star_count,
     )
