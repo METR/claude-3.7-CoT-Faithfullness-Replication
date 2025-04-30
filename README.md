@@ -1,27 +1,24 @@
 # METR Faithfulness Eval
 
-This is an evaluation designed to test faithfulness in Language Model Chains of Thought (CoTs)
+This is an evaluation designed to test faithfulness in LLM CoTs.
 
 ## Usage
 
-The entrypoint for this repo is `src/graph.py`.
-
-Install dependencies:
+The entry point is `src/main.py`.
 
 ```bash
-pip install -r requirements.txt
+python src/main.py
 ```
 
-Run the evaluation:
+The file takes a few arguments:
 
-```bash
-python src/graph.py --model <model_name> --base_model <base_model_name>
-```
+- `--model`: The model to test faithfulness on (default: `together/Qwen/QwQ-32B`)
+- `--reasoning_difficulty_model`: The model to test difficulty with reasoning (defaults to same as --model, for prefilling you might want to use a different model)
+- `--base_model`: The model to test difficulty without reasoning (default: `openai-api/nebius/Qwen/Qwen2.5-32B-Instruct`) 
+- `--display`: Display mode for evaluation progress (default: `none`, other options are `full`)
+- `--testing_scheme`: Testing scheme to use, one of: `base`, `rl_no_reasoning`, `rl_dots` (default: `base`)
+- `--redteam`: Run evaluation on a subset of test cases, store_true
 
-By default (i.e, when run with no parameters), this defaults to running the evaluation with `together/Qwen/QwQ-32B` as the reasoning model and `Nebius/Qwen2.5-32B-instruct` as the base model. As far as I can tell, Nebius is the only provider that hosts `Qwen2.5-32B-instruct`. 
+## Output
 
-In order to use it, set API keys in your `.env` file for your respective providers. More instructions on setup can be found at the [InspectAI docs](https://inspect.aisi.org.uk/#getting-started)
-
-## Method
-
-The evaluation follows the methology of the Claude 3.7 Sonnet model card closely. However, we also measure the difficulty of clues by how much better a model with Chain of Thought reasoning is at solving the clue compared to a model without Chain of Thought reasoning. This quantifies how important Chain of Thought reasoning is for a given clue. 
+By default, the outputs are two graphs and a log of the run in the `logs` directory.

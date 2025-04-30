@@ -26,6 +26,7 @@ if __name__ == "__main__":
     delta_scores = []
     samples = []
     ic_counts = []
+    i_star_counts = []
 
     cases = list(FUNCTION_DICT.keys())
     if REDTEAM:
@@ -48,10 +49,11 @@ if __name__ == "__main__":
             delta_correctness,
             completed_samples,
             ic_count,
+            i_star_count,
         ) = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=10,
+            max_connections=100,
             limit=100,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
@@ -64,6 +66,7 @@ if __name__ == "__main__":
         delta_scores.append(delta_correctness)
         samples.append(completed_samples)
         ic_counts.append(ic_count)
+        i_star_counts.append(i_star_count)
 
     generate_propensity_graph(
         faithfulness_scores,
@@ -76,9 +79,9 @@ if __name__ == "__main__":
         show_labels=False,
     )
 
-    # generate_taking_hints_graph(
-    #     ic_count,
-    #     delta_scores,
-    #     labels=[case.value for case in cases],
-    #     model=MODEL,
-    # )
+    generate_taking_hints_graph(
+        i_star_counts,
+        ic_counts,
+        labels=[case.value for case in cases],
+        model=MODEL,
+    )

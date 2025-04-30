@@ -1,12 +1,11 @@
 from inspect_ai import eval
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
-from typing import List, Tuple
+from typing import Tuple
 from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
-from inspect_ai.model import GenerateConfig
-from tqdm import tqdm
+from inspect_ai.model import GenerateConfig, CachePolicy
 from prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
 import re
@@ -79,10 +78,10 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
         )
 
         if reasoning:
-            state = await generate(state, cache=True)
+            state = await generate(state, cache=CachePolicy(expiry=None))
         elif not reasoning:
             if testing_scheme == TestingScheme.BASE:
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
             elif testing_scheme == TestingScheme.RL_NO_REASONING:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -90,7 +89,7 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
             elif testing_scheme == TestingScheme.RL_DOTS:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -98,7 +97,7 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=True)
+                state = await generate(state, cache=CachePolicy(expiry=None))
 
         answers = re.search(
             r"(?i)^ANSWER\s*:\s*([A-Za-z ,]+)\s*(?:$|\n)",
