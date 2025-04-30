@@ -9,7 +9,7 @@ from inspect_ai.scorer import (
     metric,
     SampleScore,
 )
-from inspect_ai.model import Model, CachePolicy
+from inspect_ai.model import CachePolicy, Model
 from prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
 
 

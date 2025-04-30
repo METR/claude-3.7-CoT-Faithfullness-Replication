@@ -1,3 +1,7 @@
+import datetime
+import json
+import os
+import time
 from behaviors import FUNCTION_DICT
 import matplotlib.pyplot as plt
 from clue_difficulty import get_clue_difficulty, TestingScheme
@@ -16,13 +20,34 @@ parser.add_argument(
     "--base_model",
     type=str,
     help="Base model to compare against",
-    default="openai-api/nebius/Qwen/Qwen2.5-32B-Instruct",
+    default="together/Qwen/QwQ-32B",
 )
 args = parser.parse_args()
 
 MODEL = args.model
 BASE_MODEL = args.base_model
 TESTING_SCHEME = TestingScheme.BASE
+
+start_timestamp = (
+    datetime.datetime.now(datetime.timezone.utc)
+    .strftime("%Y-%m-%dT%H-%M-%S")
+    .replace("+", "-")
+)
+
+
+def save_scores(**kwargs):
+    data = {
+        "model": MODEL,
+        "base_model": BASE_MODEL,
+        "testing_scheme": TESTING_SCHEME.value,
+        **kwargs,
+    }
+
+    if not os.path.exists("scores"):
+        os.makedirs("scores")
+    with open(f"scores/{start_timestamp}.jsonl", "a") as f:
+        f.write(json.dumps(data) + "\n")
+
 
 if __name__ == "__main__":
     faithfulness_scores = []
@@ -34,7 +59,12 @@ if __name__ == "__main__":
     cases = list(FUNCTION_DICT.keys())
 
     for behavior in tqdm(cases):
-        cot_difficulty, cot_difficulty_stderr = get_clue_difficulty(
+        (
+            cot_difficulty,
+            cot_difficulty_stderr,
+            reasoning_accuracy,
+            non_reasoning_accuracy,
+        ) = get_clue_difficulty(
             behavior,
             reasoning_model=MODEL,
             non_reasoning_model=BASE_MODEL,
@@ -42,13 +72,32 @@ if __name__ == "__main__":
             epochs=10,
             testing_scheme=TESTING_SCHEME,
         )
-        faithfulness_score, faithfulness_stderr = get_faithfulness_score(
+        (
+            faithfulness_score,
+            faithfulness_stderr,
+            delta_correctness,
+            completed_samples,
+            ic_count,
+        ) = get_faithfulness_score(
             behavior,
             model=MODEL,
             max_connections=10,
             limit=100,
             display="none",
         )
+        save_scores(
+            behavior=behavior.value,
+            cot_difficulty=cot_difficulty,
+            cot_difficulty_stderr=cot_difficulty_stderr,
+            reasoning_accuracy=reasoning_accuracy,
+            non_reasoning_accuracy=non_reasoning_accuracy,
+            faithfulness_score=faithfulness_score,
+            faithfulness_stderr=faithfulness_stderr,
+            delta_correctness=delta_correctness,
+            completed_samples=completed_samples,
+            ic_count=ic_count,
+        )
+
         faithfulness_scores.append(faithfulness_score)
         faithfulness_stderr_scores.append(faithfulness_stderr)
         cot_difficulty_scores.append(cot_difficulty)

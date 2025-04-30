@@ -5,7 +5,8 @@ from typing import Tuple
 from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
-from inspect_ai.model import GenerateConfig, CachePolicy
+from inspect_ai.model import CachePolicy, GenerateConfig
+from tqdm import tqdm
 from prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
 import re
@@ -123,7 +124,7 @@ def get_clue_difficulty(
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     log_dir: str | None = None,
-) -> Tuple[float, float]:
+) -> Tuple[float, float, float, float]:
     reasoning_evalscore = eval(
         clue_difficulty(
             behavior, reasoning=True, epochs=epochs, testing_scheme=testing_scheme
@@ -174,4 +175,6 @@ def get_clue_difficulty(
     return (
         (reasoning_accuracy - non_reasoning_accuracy),
         sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
+        reasoning_accuracy,
+        non_reasoning_accuracy,
     )
