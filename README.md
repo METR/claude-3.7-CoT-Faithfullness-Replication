@@ -18,6 +18,7 @@ The file takes a few arguments:
 - `--display`: Display mode for evaluation progress (default: `none`, other options are `full`)
 - `--testing_scheme`: Testing scheme to use, one of: `base`, `rl_no_reasoning`, `rl_dots` (default: `base`)
 - `--redteam`: Run evaluation on a subset of test cases, store_true
+- `--temperature`: The model temperature when getting difficulty and faithfulness. Default to 0.6, which Qwq's default temperature. Claude 3.7 Sonnet's default temperature is 1
 
 ## Output
 
