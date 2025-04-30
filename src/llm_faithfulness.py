@@ -85,7 +85,7 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
 
 
 @task
-def llm_faithfulness(clue: str, limit: int) -> Task:
+def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
     dataset = csv_dataset(
         csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
         sample_fields=record_to_sample,
@@ -104,12 +104,12 @@ def llm_faithfulness(clue: str, limit: int) -> Task:
             model=get_model(
                 "together/Qwen/QwQ-32B",
                 config=GenerateConfig(
-                    temperature=0.6,
+                    temperature=temperature,
                 ),
             )
         ),
         config=GenerateConfig(
-            temperature=0.6, max_tokens=32768, reasoning_tokens=30000
+            temperature=temperature, max_tokens=32768, reasoning_tokens=30000
         ),
     )
 
@@ -121,16 +121,16 @@ def get_faithfulness_score(
     max_connections: int = 100,
     display: DisplayType = "none",
     log_dir: str | None = None,
+    temperature: float = 0.6,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        llm_faithfulness(clue=behavior.value, limit=limit),
+        llm_faithfulness(clue=behavior.value, limit=limit, temperature=temperature),
         model=model,
         max_connections=max_connections,
         display=display,
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
 
-    total_samples = res[0].results.total_samples
     completed_samples = res[0].results.completed_samples
 
     acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value

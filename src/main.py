@@ -18,6 +18,7 @@ if __name__ == "__main__":
     TESTING_SCHEME: TestingScheme = config.testing_scheme
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}-{TESTING_SCHEME.value}/"
     REDTEAM: bool = config.redteam
+    TEMPERATURE: float = config.temperature
 
     faithfulness_scores = []
     faithfulness_stderrs = []
@@ -41,6 +42,7 @@ if __name__ == "__main__":
             epochs=10,
             testing_scheme=TESTING_SCHEME,
             log_dir=TOP_LEVEL_LOG_DIR,
+            temperature=TEMPERATURE,
         )
 
         (
@@ -57,6 +59,7 @@ if __name__ == "__main__":
             limit=100,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
+            temperature=TEMPERATURE,
         )
 
         faithfulness_scores.append(faithful_score)

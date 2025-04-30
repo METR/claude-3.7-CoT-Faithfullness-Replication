@@ -11,6 +11,7 @@ class EvalConfig:
     display: str
     testing_scheme: TestingScheme
     redteam: bool
+    temperature: float
 
 
 def parse_args() -> EvalConfig:
@@ -40,6 +41,13 @@ def parse_args() -> EvalConfig:
         default=False,
         required=False,
         action="store_true",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.6,
+        required=False,
+        help="Temperature parameter for model generation (default: 0.6)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

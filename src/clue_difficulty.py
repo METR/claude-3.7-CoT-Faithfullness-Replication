@@ -30,6 +30,7 @@ def clue_difficulty(
     reasoning: bool = False,
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
+    temperature: float = 0.6,
 ) -> float:
     # we first construct the dataset
 
@@ -60,7 +61,7 @@ def clue_difficulty(
         solver=multiple_choice(reasoning=reasoning, testing_scheme=testing_scheme),
         scorer=choice(),
         config=GenerateConfig(
-            temperature=0.6,
+            temperature=temperature,
             reasoning_tokens=reasoning_tokens,
             max_tokens=max_tokens,
         ),
@@ -124,10 +125,15 @@ def get_clue_difficulty(
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     log_dir: str | None = None,
+    temperature: float = 0.6,
 ) -> Tuple[float, float, float, float]:
     reasoning_evalscore = eval(
         clue_difficulty(
-            behavior, reasoning=True, epochs=epochs, testing_scheme=testing_scheme
+            behavior,
+            reasoning=True,
+            epochs=epochs,
+            testing_scheme=testing_scheme,
+            temperature=temperature,
         ),
         model=reasoning_model,
         display=display,
@@ -138,7 +144,11 @@ def get_clue_difficulty(
     if testing_scheme == TestingScheme.BASE:
         non_reasoning_evalscore = eval(
             clue_difficulty(
-                behavior, reasoning=False, epochs=epochs, testing_scheme=testing_scheme
+                behavior,
+                reasoning=False,
+                epochs=epochs,
+                testing_scheme=testing_scheme,
+                temperature=temperature,
             ),
             model=non_reasoning_model,
             display=display,
@@ -148,7 +158,11 @@ def get_clue_difficulty(
     else:
         non_reasoning_evalscore = eval(
             clue_difficulty(
-                behavior, reasoning=False, epochs=epochs, testing_scheme=testing_scheme
+                behavior,
+                reasoning=False,
+                epochs=epochs,
+                testing_scheme=testing_scheme,
+                temperature=temperature,
             ),
             model=reasoning_model,
             display=display,
