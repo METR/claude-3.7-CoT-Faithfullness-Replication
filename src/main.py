@@ -3,7 +3,11 @@ from tqdm import tqdm
 from clue_difficulty import get_clue_difficulty, TestingScheme
 import argparse
 from llm_faithfulness import get_faithfulness_score
-from graph_utils import generate_propensity_graph, generate_taking_hints_graph
+from graph_utils import (
+    generate_propensity_graph,
+    generate_taking_hints_graph,
+    generate_taking_hints_v_difficulty_graph,
+)
 from os import path
 from datetime import datetime
 from parsing import parse_args
@@ -85,6 +89,14 @@ if __name__ == "__main__":
     generate_taking_hints_graph(
         i_star_counts,
         ic_counts,
+        labels=[case.value for case in cases],
+        model=MODEL,
+    )
+
+    generate_taking_hints_v_difficulty_graph(
+        i_star_counts,
+        delta_scores,
+        difficulty_scores,
         labels=[case.value for case in cases],
         model=MODEL,
     )

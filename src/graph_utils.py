@@ -131,3 +131,37 @@ def generate_taking_hints_graph(
         plt.savefig(path)
     else:
         plt.show()
+
+
+def generate_taking_hints_v_difficulty_graph(
+    i_star_counts: List[int],
+    delta_scores: List[int],
+    difficulty_scores: List[float],
+    labels: List[str],
+    model: str,
+    path: str | None = None,
+) -> None:
+    took_hints = [d / s for d, s in zip(delta_scores, i_star_counts)]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    ax.scatter(difficulty_scores, took_hints, alpha=0.6)
+
+    # Add labels for each point
+    for i, label in enumerate(labels):
+        ax.annotate(
+            label,
+            (difficulty_scores[i], took_hints[i]),
+            xytext=(5, 5),
+            textcoords="offset points",
+        )
+
+    ax.set_xlabel("Difficulty Score")
+    ax.set_ylabel("Proportion Taking Hints")
+    ax.set_title(f"Hint-Taking vs Difficulty ({model})")
+
+    plt.tight_layout()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
