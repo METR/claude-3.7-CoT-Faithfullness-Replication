@@ -126,6 +126,7 @@ def get_clue_difficulty(
     testing_scheme: TestingScheme = TestingScheme.BASE,
     log_dir: str | None = None,
     temperature: float = 0.6,
+    max_connections: int = 10,
 ) -> Tuple[float, float, float, float]:
     reasoning_evalscore = eval(
         clue_difficulty(
@@ -137,7 +138,7 @@ def get_clue_difficulty(
         ),
         model=reasoning_model,
         display=display,
-        max_connections=10,
+        max_connections=max_connections,
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
 
@@ -152,7 +153,7 @@ def get_clue_difficulty(
             ),
             model=non_reasoning_model,
             display=display,
-            max_connections=10,
+            max_connections=max_connections,
             log_dir=path.join(log_dir, behavior.value) if log_dir else None,
         )
     else:
@@ -166,7 +167,7 @@ def get_clue_difficulty(
             ),
             model=reasoning_model,
             display=display,
-            max_connections=10,
+            max_connections=max_connections,
             log_dir=path.join(log_dir, behavior.value) if log_dir else None,
         )
 

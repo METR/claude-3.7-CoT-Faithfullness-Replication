@@ -23,6 +23,7 @@ if __name__ == "__main__":
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}-{TESTING_SCHEME.value}/"
     REDTEAM: bool = config.redteam
     TEMPERATURE: float = config.temperature
+    MAX_CONNECTIONS: int = config.max_connections
 
     faithfulness_scores = []
     faithfulness_stderrs = []
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         cases = cases[::4]  # Take every 4th element
 
     for behavior in tqdm(cases):
-        diff, diff_stderr = get_clue_difficulty(
+        diff, diff_stderr, _, _ = get_clue_difficulty(
             behavior,
             reasoning_model=REASONING_DIFFICULTY_MODEL,
             non_reasoning_model=BASE_MODEL,
@@ -47,6 +48,7 @@ if __name__ == "__main__":
             testing_scheme=TESTING_SCHEME,
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=TEMPERATURE,
+            max_connections=MAX_CONNECTIONS,
         )
 
         (
@@ -59,7 +61,7 @@ if __name__ == "__main__":
         ) = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=100,
+            max_connections=MAX_CONNECTIONS,
             limit=100,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,

@@ -12,6 +12,7 @@ class EvalConfig:
     testing_scheme: TestingScheme
     redteam: bool
     temperature: float
+    max_connections: int
 
 
 def parse_args() -> EvalConfig:
@@ -48,6 +49,13 @@ def parse_args() -> EvalConfig:
         default=0.6,
         required=False,
         help="Temperature parameter for model generation (default: 0.6)",
+    )
+    parser.add_argument(
+        "--max_connections",
+        type=int,
+        default=20,
+        required=False,
+        help="Maximum number of concurrent connections with model provider (default: 20)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

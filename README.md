@@ -19,6 +19,7 @@ The file takes a few arguments:
 - `--testing_scheme`: Testing scheme to use, one of: `base`, `rl_no_reasoning`, `rl_dots` (default: `base`)
 - `--redteam`: Run evaluation on a subset of test cases, store_true
 - `--temperature`: The model temperature when getting difficulty and faithfulness. Default to 0.6, which Qwq's default temperature. Claude 3.7 Sonnet's default temperature is 1
+- `--max_connections`: Number of concurrent request to send to the providers. Default to 20. One might want to customize this based on the rate limits.
 
 ## Output
 
