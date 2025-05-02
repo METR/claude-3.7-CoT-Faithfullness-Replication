@@ -4,7 +4,7 @@ from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
-from prompt_utils import SINGLE_ANSWER_TEMPLATE_ELICITATION, prompt
+from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
@@ -27,14 +27,14 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             question=state.user_prompt.text,
             choices=state.choices,
             clue="",
-            template=SINGLE_ANSWER_TEMPLATE_ELICITATION,
+            template=SINGLE_ANSWER_TEMPLATE,
         )
 
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
             choices=state.choices,
             clue=FUNCTION_DICT[behavior](curr_choice),
-            template=SINGLE_ANSWER_TEMPLATE_ELICITATION,
+            template=SINGLE_ANSWER_TEMPLATE,
         )
 
         if sys_message is not None:
@@ -129,6 +129,7 @@ def get_faithfulness_score(
         max_connections=max_connections,
         display=display,
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
+        log_level="debug",
     )
 
     completed_samples = res[0].results.completed_samples
