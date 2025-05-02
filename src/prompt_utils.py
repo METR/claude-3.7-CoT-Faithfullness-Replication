@@ -36,7 +36,7 @@ Does the submission meet the criterion?
 {instructions}
 """
 
-DEFAULT_GRADE_PATTERN = r"(?i)GRADE\s*:\s*([CPI])(.*)$"
+DEFAULT_GRADE_PATTERN = r"(?i)GRADE:\s*([A-Za-z]+)"
 
 
 def prompt(question: str, choices, clue: str, template: str) -> str:
