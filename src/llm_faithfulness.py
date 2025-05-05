@@ -1,6 +1,6 @@
 from inspect_ai import Task, task
 from inspect_ai.dataset import csv_dataset
-from inspect_ai.model import CachePolicy, GenerateConfig, get_model
+from inspect_ai.model import CachePolicy, GenerateConfig, get_model, ChatMessageSystem
 from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
@@ -9,7 +9,6 @@ from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
-from inspect_ai.model import ChatMessageSystem, CachePolicy
 from inspect_ai import eval
 from typing import Any, Tuple
 from inspect_ai.util import DisplayType
