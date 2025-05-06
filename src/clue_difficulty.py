@@ -188,8 +188,8 @@ def get_clue_difficulty(
     )
 
     return (
-        (reasoning_accuracy - non_reasoning_accuracy),
-        sqrt(reasoning_stderr**2 + non_reasoning_stderr**2),
         reasoning_accuracy,
         non_reasoning_accuracy,
+        reasoning_stderr,
+        non_reasoning_stderr,
     )

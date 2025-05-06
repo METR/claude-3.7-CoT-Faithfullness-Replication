@@ -81,7 +81,7 @@ if __name__ == "__main__":
         ) = get_faithfulness_score(
             behavior,
             model=MODEL,
-            max_connections=10,
+            max_connections=100,
             limit=100,
             display="none",
         )

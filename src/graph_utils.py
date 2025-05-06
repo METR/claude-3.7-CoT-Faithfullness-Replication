@@ -165,3 +165,33 @@ def generate_taking_hints_v_difficulty_graph(
         plt.savefig(path)
     else:
         plt.show()
+
+
+def generate_with_and_without_cot_difficulty_graph(
+    reasoning_accuracy_scores: List[float],
+    non_reasoning_accuracy_scores: List[float],
+    labels: List[str],
+    model: str,
+    path: str | None = None,
+) -> None:
+    plt.figure(figsize=(10, 6))
+
+    plt.scatter(reasoning_accuracy_scores, non_reasoning_accuracy_scores, alpha=0.6)
+
+    # Add labels and title
+    plt.xlabel("Reasoning Accuracy Score")
+    plt.ylabel("Non-Reasoning Accuracy Score")
+    plt.title(f"Reasoning vs Non-Reasoning Accuracy Scores for {model}")
+
+    # Add labels for each point
+    for i, label in enumerate(labels):
+        plt.annotate(
+            label, (reasoning_accuracy_scores[i], non_reasoning_accuracy_scores[i])
+        )
+
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
