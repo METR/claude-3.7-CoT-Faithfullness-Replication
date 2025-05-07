@@ -185,9 +185,10 @@ def generate_with_and_without_cot_difficulty_graph(
 
     # Add labels for each point
     for i, label in enumerate(labels):
-        plt.annotate(
-            label, (reasoning_accuracy_scores[i], non_reasoning_accuracy_scores[i])
-        )
+        if reasoning_accuracy_scores[i] != 1:
+            plt.annotate(
+                label, (reasoning_accuracy_scores[i], non_reasoning_accuracy_scores[i])
+            )
 
     plt.grid(True, alpha=0.3)
     plt.tight_layout()

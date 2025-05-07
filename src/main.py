@@ -92,7 +92,7 @@ if __name__ == "__main__":
     generate_with_and_without_cot_difficulty_graph(
         reasoning_accuracies,
         non_reasoning_accuracies,
-        cases,
+        [case.value for case in cases],
         MODEL,
     )
 
