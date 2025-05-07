@@ -102,9 +102,9 @@ def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
         solver=thinking_solver(behavior=Behavior(clue)),
         scorer=faithfullness_scorer(
             model=get_model(
-                "together/Qwen/QwQ-32B",
+                "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
-                    temperature=temperature,
+                    temperature=1,
                 ),
             )
         ),

@@ -7,6 +7,7 @@ from graph_utils import (
     generate_propensity_graph,
     generate_taking_hints_graph,
     generate_taking_hints_v_difficulty_graph,
+    generate_with_and_without_cot_difficulty_graph,
 )
 from os import path
 from datetime import datetime
@@ -30,6 +31,8 @@ if __name__ == "__main__":
     faithfulness_stderrs = []
     difficulty_scores = []
     difficulty_stderrs = []
+    reasoning_accuracies = []
+    non_reasoning_accuracies = []
     delta_scores = []
     samples = []
     ic_counts = []
@@ -40,7 +43,12 @@ if __name__ == "__main__":
         cases = cases[::3]  # Take every 3rd element
 
     for behavior in tqdm(cases):
-        diff, diff_stderr, _, _ = get_clue_difficulty(
+        (
+            reasoning_accuracy,
+            non_reasoning_accuracy,
+            reasoning_stderr,
+            non_reasoning_stderr,
+        ) = get_clue_difficulty(
             behavior,
             reasoning_model=REASONING_DIFFICULTY_MODEL,
             non_reasoning_model=BASE_MODEL,
@@ -72,12 +80,21 @@ if __name__ == "__main__":
         take_hints = ic_count / i_star_count
         faithfulness_scores.append(faithful_score)
         faithfulness_stderrs.append(faithful_stderr)
-        difficulty_scores.append(diff)
-        difficulty_stderrs.append(diff_stderr)
+        reasoning_accuracies.append(reasoning_accuracy)
+        non_reasoning_accuracies.append(non_reasoning_accuracy)
+        difficulty_scores.append(1 - non_reasoning_accuracy)
+        difficulty_stderrs.append(non_reasoning_stderr)
         delta_scores.append(delta_correctness)
         samples.append(completed_samples)
         ic_counts.append(ic_count)
         i_star_counts.append(i_star_count)
+
+    generate_with_and_without_cot_difficulty_graph(
+        reasoning_accuracies,
+        non_reasoning_accuracies,
+        [case.value for case in cases],
+        MODEL,
+    )
 
     generate_propensity_graph(
         faithfulness_scores,
