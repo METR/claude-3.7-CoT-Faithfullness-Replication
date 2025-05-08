@@ -59,7 +59,7 @@ def parse_args() -> EvalConfig:
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
-    ret.testing_scheme = TestingScheme(ret.testing_scheme)
+    ret.testing_scheme = TestingScheme(ret.testing_scheme.lower())
     if ret.reasoning_difficulty_model is None:
         ret.reasoning_difficulty_model = ret.model
     return ret
