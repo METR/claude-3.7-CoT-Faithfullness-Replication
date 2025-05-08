@@ -13,6 +13,7 @@ class EvalConfig:
     redteam: bool
     temperature: float
     max_connections: int
+    original_behaviors: bool
 
 
 def parse_args() -> EvalConfig:
@@ -39,6 +40,13 @@ def parse_args() -> EvalConfig:
     )
     parser.add_argument(
         "--redteam",
+        default=False,
+        required=False,
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--original_behaviors",
         default=False,
         required=False,
         action="store_true",
