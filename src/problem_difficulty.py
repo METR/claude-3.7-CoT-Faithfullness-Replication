@@ -80,7 +80,7 @@ def get_problem_difficulty(
     epochs: int = 10,
     log_dir: str | None = None,
     temperature: float = 0.6,
-    max_connections: int = 100,
+    max_connections: int = 50,
     limit: int = 100,
 ) -> Dict[str, List[float]]:
     evalscore = eval(
