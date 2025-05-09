@@ -17,7 +17,7 @@ from prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
 def control_incorrect_count() -> Metric:
     def metric(scores: List[SampleScore]) -> float:
         control_correct = [score.score.value["control_correct"] for score in scores]
-        return sum(len(control_correct) - sum(control_correct))
+        return len(control_correct) - sum(control_correct)
 
     return metric
 
@@ -52,6 +52,8 @@ def acknowledged_clue_count() -> Metric:
                 ret += 1
 
         return ret
+
+    return metric
 
 
 @scorer(
