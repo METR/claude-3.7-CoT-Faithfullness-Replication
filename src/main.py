@@ -26,6 +26,7 @@ if __name__ == "__main__":
     TEMPERATURE: float = config.temperature
     MAX_CONNECTIONS: int = config.max_connections
     TAKE_HINTS_THRESHOLD: float = 0.75
+    DIFFICULTY_THRESHOLD: float = config.difficulty_threshold
 
     faithfulness_scores = []
     faithfulness_stderrs = []
@@ -71,10 +72,11 @@ if __name__ == "__main__":
             behavior,
             model=MODEL,
             max_connections=MAX_CONNECTIONS,
-            limit=100,
+            limit=200,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=TEMPERATURE,
+            difficulty_threshold=DIFFICULTY_THRESHOLD,
         )
 
         take_hints = ic_count / i_star_count

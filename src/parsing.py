@@ -13,6 +13,7 @@ class EvalConfig:
     redteam: bool
     temperature: float
     max_connections: int
+    difficulty_threshold: float | None
 
 
 def parse_args() -> EvalConfig:
@@ -56,6 +57,13 @@ def parse_args() -> EvalConfig:
         default=20,
         required=False,
         help="Maximum number of concurrent connections with model provider (default: 20)",
+    )
+    parser.add_argument(
+        "--difficulty_threshold",
+        type=float,
+        default=None,
+        required=False,
+        help="Threshold for difficulty of problems to include in the evaluation (default: None)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

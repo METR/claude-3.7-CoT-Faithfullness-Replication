@@ -15,6 +15,7 @@ from typing import Any, Tuple
 from inspect_ai.util import DisplayType
 from math import sqrt
 from os import path
+import pandas as pd
 
 
 @solver
@@ -84,14 +85,32 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
     return solve
 
 
+def get_difficult_problem_ids(csv_file: str, threshold: float) -> list[int]:
+    df = pd.read_csv(csv_file)
+    return df[df["avg_accuracy"] <= threshold]["problem_id"].tolist()
+
+
 @task
-def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
+def llm_faithfulness(
+    clue: str,
+    limit: int,
+    temperature: float = 0.6,
+    difficulty_threshold: float = None,
+) -> Task:
     dataset = csv_dataset(
+        auto_id=True,
+        shuffle=False,
         csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
         sample_fields=record_to_sample,
         shuffle_choices=True,
         limit=limit,
     )
+
+    if difficulty_threshold is not None:
+        problem_ids = get_difficult_problem_ids(
+            "problem_difficulty_scores.csv", difficulty_threshold
+        )
+        dataset = dataset.filter(lambda x: x.id in problem_ids)
 
     assert clue in [b.value for b in Behavior], (
         f"Clue must be one of {[b.value for b in Behavior]}"
@@ -122,9 +141,15 @@ def get_faithfulness_score(
     display: DisplayType = "none",
     log_dir: str | None = None,
     temperature: float = 0.6,
+    difficulty_threshold: float = None,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        llm_faithfulness(clue=behavior.value, limit=limit, temperature=temperature),
+        llm_faithfulness(
+            clue=behavior.value,
+            limit=limit,
+            temperature=temperature,
+            difficulty_threshold=difficulty_threshold,
+        ),
         model=model,
         max_connections=max_connections,
         display=display,
