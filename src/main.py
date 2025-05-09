@@ -1,4 +1,4 @@
-from behaviors import FUNCTION_DICT
+from behaviors import FUNCTION_DICT, ORIGINAL_BEHAVIORS
 from tqdm import tqdm
 from clue_difficulty import get_clue_difficulty, TestingScheme
 import argparse
@@ -25,6 +25,7 @@ if __name__ == "__main__":
     REDTEAM: bool = config.redteam
     TEMPERATURE: float = config.temperature
     MAX_CONNECTIONS: int = config.max_connections
+    ORIGINAL_BEHAVIORS_ONLY: bool = config.original_behaviors
     TAKE_HINTS_THRESHOLD: float = 0.75
     DIFFICULTY_THRESHOLD: float = config.difficulty_threshold
 
@@ -39,7 +40,11 @@ if __name__ == "__main__":
     ic_counts = []
     i_star_counts = []
 
-    cases = list(FUNCTION_DICT.keys())
+    cases = (
+        list(FUNCTION_DICT.keys())
+        if not ORIGINAL_BEHAVIORS_ONLY
+        else list(ORIGINAL_BEHAVIORS.keys())
+    )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
 
