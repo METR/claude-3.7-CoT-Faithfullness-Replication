@@ -1,12 +1,12 @@
 from inspect_ai import Task, task
-from inspect_ai.dataset import csv_dataset, hf_dataset
-from inspect_ai.model import CachePolicy, GenerateConfig, get_model
+from inspect_ai.dataset import hf_dataset, FieldSpec
+from inspect_ai.model import CachePolicy, GenerateConfig, get_model, Model
 from inspect_ai.solver import solver, Solver, Generate, TaskState
+from inspect_ai.scorer import Scorer, scorer
 from copy import deepcopy
 import re
-from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
-from behaviors import Behavior, FUNCTION_DICT
-from answer_utils import set_choices_based_on_generated_response, record_to_sample
+from prompt_utils import FREE_RESPONSE_TEMPLATE, prompt
+from fr_behaviors import Behavior, FUNCTION_DICT
 from scoring import faithfullness_scorer
 from inspect_ai.solver._util import append_system_message
 from inspect_ai.model import ChatMessageSystem, CachePolicy
@@ -18,23 +18,20 @@ from os import path
 
 
 @solver
-def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> Solver:
+def fr_thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        curr_choice = state.target.text
+        curr_answer = int(state.target.text)  # Convert to int here
         control_state = deepcopy(state)
 
+        # Set up prompts for control and experimental runs
         control_state.user_prompt.text = prompt(
             question=state.user_prompt.text,
-            choices=state.choices,
             clue="",
-            template=SINGLE_ANSWER_TEMPLATE,
         )
 
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
-            choices=state.choices,
-            clue=FUNCTION_DICT[behavior](curr_choice),
-            template=SINGLE_ANSWER_TEMPLATE,
+            clue=FUNCTION_DICT[behavior](curr_answer),
         )
 
         if sys_message is not None:
@@ -42,7 +39,7 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             append_system_message(state.messages, system_message)
             append_system_message(control_state.messages, system_message)
 
-        # now we generate for both
+        # Generate responses for both control and experimental
         control_state = await generate(control_state, cache=CachePolicy(expiry=None))
         state = await generate(state, cache=CachePolicy(expiry=None))
 
@@ -58,12 +55,12 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             state.answer = state_answer
 
             state_match = re.search(
-                r"(?i)ANSWER:\s*([A-Za-z]+)",
+                r"(?i)ANSWER:\s*(\d+)",
                 state_answer,
             )
 
             control_match = re.search(
-                r"(?i)ANSWER:\s*([A-Za-z]+)",
+                r"(?i)ANSWER:\s*(\d+)",
                 control_answer,
             )
 
@@ -71,35 +68,41 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
                 state_answer = state_match.group(1).strip()
                 control_answer = control_match.group(1).strip()
 
-                set_choices_based_on_generated_response(state, state_answer)
-
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
                 state.store.set("control_reasoning", control_reasoning)
                 state.store.set("control_answer", control_answer)
                 state.store.set("group", str(behavior))
-        # now we want to extract a prompt
+
         return state
 
     return solve
 
 
 @task
-def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
-    dataset = csv_dataset(
-        csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
-        sample_fields=record_to_sample,
-        shuffle_choices=True,
+def fr_llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
+    dataset = hf_dataset(
+        "open-r1/OpenR1-Math-220k",
+        split="train",
+        sample_fields=FieldSpec(input="problem", target="answer"),
         limit=limit,
+        streaming=False,
+        cached=True,
     )
+    dataset = dataset.filter(lambda sample: sample.target.isdigit())
+    dataset = dataset.filter(lambda sample: "http" not in sample.input)
+    for sample in dataset:
+        sample.target = str(int(sample.target) % 100)
 
-    assert clue in [b.value for b in Behavior], (
-        f"Clue must be one of {[b.value for b in Behavior]}"
-    )
+    dataset = dataset[:200]
+
+    if clue.value not in [b.value for b in Behavior]:
+        print(f"Invalid clue: {clue}")
+        return None
 
     return Task(
         dataset=dataset,
-        solver=thinking_solver(behavior=Behavior(clue)),
+        solver=fr_thinking_solver(behavior=Behavior(clue.value)),
         scorer=faithfullness_scorer(
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
@@ -114,7 +117,7 @@ def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
     )
 
 
-def get_faithfulness_score(
+def get_fr_faithfulness_score(
     behavior: Behavior,
     model: str,
     limit: int = 100,
@@ -122,9 +125,12 @@ def get_faithfulness_score(
     display: DisplayType = "none",
     log_dir: str | None = None,
     temperature: float = 0.6,
-) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
+) -> Tuple[int | float | Any, float, int, int | float | Any, int | float | Any]:
+    if behavior.value not in [b.value for b in Behavior]:
+        return None, None, None, None, None, None
+
     res = eval(
-        llm_faithfulness(clue=behavior.value, limit=limit, temperature=temperature),
+        fr_llm_faithfulness(clue=behavior, limit=limit, temperature=temperature),
         model=model,
         max_connections=max_connections,
         display=display,

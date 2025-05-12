@@ -1,6 +1,7 @@
 import argparse
 from dataclasses import dataclass
 from clue_difficulty import TestingScheme
+from inspect_ai.util import DisplayType
 
 
 @dataclass
@@ -13,6 +14,7 @@ class EvalConfig:
     redteam: bool
     temperature: float
     max_connections: int
+    eval_type: str
 
 
 def parse_args() -> EvalConfig:
@@ -56,6 +58,13 @@ def parse_args() -> EvalConfig:
         default=20,
         required=False,
         help="Maximum number of concurrent connections with model provider (default: 20)",
+    )
+    parser.add_argument(
+        "--eval_type",
+        type=str,
+        default="multiple_choice",
+        choices=["multiple_choice", "free_response"],
+        help="Type of evaluation to run (default: multiple_choice)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
