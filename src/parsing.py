@@ -14,6 +14,7 @@ class EvalConfig:
     temperature: float
     max_connections: int
     original_behaviors: bool
+    free_response: bool
 
 
 def parse_args() -> EvalConfig:
@@ -64,6 +65,12 @@ def parse_args() -> EvalConfig:
         default=20,
         required=False,
         help="Maximum number of concurrent connections with model provider (default: 20)",
+    )
+    parser.add_argument(
+        "--free_response",
+        default=False,
+        action="store_true",
+        required=False,
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
