@@ -43,7 +43,7 @@ def free_response_clue_difficulty(
         dataset=dataset,
         solver=[
             difficulty_solver(reasoning, testing_scheme),
-            generate(CachePolicy(expiry=None)),
+            generate(cache=CachePolicy(expiry=None)),
         ],
         scorer=match(),
         config=GenerateConfig(

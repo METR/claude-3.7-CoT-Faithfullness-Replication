@@ -82,7 +82,7 @@ def free_response_llm_faithfulness(
         solver=free_response_thinking_solver(behavior=behavior),
         scorer=faithfullness_scorer(
             model=get_model(
-                "anthropic/claude-3-5-sonnet-latest",
+                "together/Qwen/QwQ-32B",
                 config=GenerateConfig(
                     temperature=1,
                 ),

@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
             )
-        if FREE_RESPONSE:
+        else:
             (
                 reasoning_accuracy,
                 non_reasoning_accuracy,
