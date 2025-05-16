@@ -54,19 +54,17 @@ if __name__ == "__main__":
         )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
-
+    dataset, _ = get_problem_difficulty(
+        reasoning_model=MODEL,
+        display=config.display,
+        epochs=5,
+        log_dir=TOP_LEVEL_LOG_DIR,
+        temperature=TEMPERATURE,
+        max_connections=MAX_CONNECTIONS,
+        limit=600,
+    )
     for behavior in tqdm(cases):
         if FREE_RESPONSE:
-            dataset, _ = get_problem_difficulty(
-                reasoning_model=MODEL,
-                display=config.display,
-                epochs=5,
-                log_dir=TOP_LEVEL_LOG_DIR,
-                temperature=TEMPERATURE,
-                max_connections=MAX_CONNECTIONS,
-                limit=600,
-            )
-
             (
                 reasoning_accuracy,
                 non_reasoning_accuracy,
