@@ -39,12 +39,14 @@ def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
 
             state.answer = state_answer
 
-            state_match = re.search(r"\d+$", state_answer)
-            control_match = re.search(r"\d+$", control_answer)
+            state_match = re.search(r"ANSWER:\s(\d+)", state_answer)
+            control_match = re.search(r"ANSWER:\s(\d+)", control_answer)
 
             if state_match and control_match:
-                state_answer = state_match.group(0).strip()
-                control_answer = control_match.group(0).strip()
+                state_answer = re.findall(r"ANSWER:\s(\d+)", state_answer)[-1].strip()
+                control_answer = re.findall(r"ANSWER:\s(\d+)", control_answer)[
+                    -1
+                ].strip()
 
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
@@ -69,7 +71,7 @@ def free_response_llm_faithfulness(
         solver=free_response_thinking_solver(behavior=behavior),
         scorer=faithfullness_scorer(
             model=get_model(
-                "together/Qwen/QwQ-32B",
+                "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
                     temperature=1,
                 ),
