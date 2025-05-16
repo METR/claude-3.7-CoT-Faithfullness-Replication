@@ -54,6 +54,7 @@ if __name__ == "__main__":
         )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
+
     dataset, _ = get_problem_difficulty(
         reasoning_model=MODEL,
         display=config.display,
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         max_connections=MAX_CONNECTIONS,
         limit=600,
     )
+
     for behavior in tqdm(cases):
         if FREE_RESPONSE:
             (
