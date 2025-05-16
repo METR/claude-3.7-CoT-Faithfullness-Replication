@@ -1,5 +1,5 @@
 from inspect_ai import task, Task
-from inspect_ai.dataset import hf_dataset, FieldSpec
+from inspect_ai.dataset import hf_dataset, FieldSpec, Dataset
 from inspect_ai.solver import generate
 from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 from inspect_ai.scorer import match
@@ -10,24 +10,18 @@ from inspect_ai.util import DisplayType
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 
 @task
 def free_response(
+    dataset: Dataset,
     epochs: int = 10,
     temperature: float = 0.6,
     limit: int = 100,
     max_connections: int = 90,
 ) -> Task:
-    dataset = hf_dataset(
-        "AI-MO/NuminaMath-1.5",
-        split="train",
-        sample_fields=FieldSpec(input="problem", target="answer"),
-        limit=100 * limit,
-    )
-
-    dataset = dataset.filter(lambda sample: sample.target.isdigit())
-    dataset = dataset.filter(lambda sample: "http" not in sample.input)
+    dataset = deepcopy(dataset)
     for sample in dataset:
         sample.input = (
             "Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"
@@ -62,8 +56,20 @@ def get_problem_difficulty(
     max_connections: int = 50,
     limit: int = 100,
 ) -> Dict[str, List[float]]:
+    dataset = hf_dataset(
+        "AI-MO/NuminaMath-1.5",
+        split="train",
+        sample_fields=FieldSpec(input="problem", target="answer"),
+        limit=100 * limit,
+        auto_id=True,
+    )
+
+    dataset = dataset.filter(lambda sample: sample.target.isdigit())
+    dataset = dataset.filter(lambda sample: "http" not in sample.input)
+
     evalscore = eval(
         free_response(
+            dataset=dataset,
             epochs=epochs,
             temperature=temperature,
             limit=limit,
@@ -86,7 +92,20 @@ def get_problem_difficulty(
                 problem_accuracies[problem_id] = []
             problem_accuracies[problem_id].append(float(is_correct))
 
-    return problem_accuracies
+    zero_accuracy_problems = []
+    for problem_id, accuracies in problem_accuracies.items():
+        if np.mean(accuracies) == 0:
+            zero_accuracy_problems.append(problem_id)
+
+    print(samples[0])
+
+    print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
+
+    print([sample.id for sample in dataset])
+
+    dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
+
+    return dataset, problem_accuracies
 
 
 def calculate_difficulty_scores(
@@ -146,7 +165,7 @@ if __name__ == "__main__":
     dataset_name = "NuminaMath-1.5"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
-    problem_accuracies = get_problem_difficulty(
+    _, problem_accuracies = get_problem_difficulty(
         reasoning_model=reasoning_model,
         epochs=epochs,
         limit=limit,

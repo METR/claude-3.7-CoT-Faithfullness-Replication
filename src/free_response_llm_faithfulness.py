@@ -3,8 +3,8 @@ from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
 from typing import Tuple, Any
 from inspect_ai.util import DisplayType
 from inspect_ai import eval, task, Task
-from inspect_ai.dataset import hf_dataset, FieldSpec
-from inspect_ai.solver import solver, Solver, Generate, TaskState, user_message
+from inspect_ai.dataset import Dataset
+from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 import re
@@ -61,24 +61,11 @@ def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
 
 @task
 def free_response_llm_faithfulness(
+    dataset: Dataset,
     behavior: FreeResponseBehavior,
     limit: int = 100,
     temperature: float = 0.6,
 ) -> Task:
-    dataset = hf_dataset(
-        "AI-MO/NuminaMath-1.5",
-        split="train",
-        sample_fields=FieldSpec(input="problem", target="answer"),
-        limit=10000,
-    )
-
-    dataset = dataset.filter(lambda sample: sample.target.isdigit())
-    dataset = dataset.filter(lambda sample: "http" not in sample.input)
-    for sample in dataset:
-        sample.target = str(int(sample.target) % 100)
-
-    dataset = dataset[:limit]
-
     return Task(
         dataset=dataset,
         solver=free_response_thinking_solver(behavior=behavior),
@@ -97,6 +84,7 @@ def free_response_llm_faithfulness(
 
 
 def get_free_response_faithfulness_score(
+    dataset: Dataset,
     behavior: FreeResponseBehavior,
     model: str,
     limit: int = 100,
@@ -106,7 +94,7 @@ def get_free_response_faithfulness_score(
     log_dir: str | None = None,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        free_response_llm_faithfulness(behavior, limit, temperature),
+        free_response_llm_faithfulness(dataset, behavior, limit, temperature),
         model=model,
         max_connections=max_connections,
         display=display,
