@@ -42,7 +42,7 @@ def free_response_clue_difficulty(
     return Task(
         dataset=dataset,
         solver=[
-            difficulty_solver(reasoning, testing_scheme),
+            difficulty_solver(testing_scheme),
             generate(cache=CachePolicy(expiry=None)),
         ],
         scorer=match(),
@@ -56,7 +56,7 @@ def free_response_clue_difficulty(
 
 
 @solver
-def difficulty_solver(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
+def difficulty_solver(testing_scheme: TestingScheme) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         if testing_scheme == TestingScheme.RL_NO_REASONING:
             state.messages.append(

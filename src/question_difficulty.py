@@ -112,7 +112,9 @@ def calculate_difficulty_scores(
     )
 
 
-def plot_difficulty_distribution(model_name: str, difficulty_df: pd.DataFrame) -> None:
+def plot_difficulty_distribution(
+    model_name: str, difficulty_df: pd.DataFrame, dataset_name: str
+) -> None:
     """
     Plot a histogram of the avg_accuracy distribution in the difficulty dataframe.
 
@@ -130,7 +132,7 @@ def plot_difficulty_distribution(model_name: str, difficulty_df: pd.DataFrame) -
     )
     plt.xlabel("Average Accuracy")
     plt.ylabel("Number of Problems")
-    plt.title(f"Distribution of {model_name} Average Accuracy for GPQA")
+    plt.title(f"Distribution of {model_name} Average Accuracy for {dataset_name}")
     plt.grid(True, linestyle="--", alpha=0.7)
     plt.show()
 
@@ -141,6 +143,7 @@ if __name__ == "__main__":
     temperature = 0.6
     epochs = 10
     limit = 200
+    dataset_name = "NuminaMath-1.5"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     problem_accuracies = get_problem_difficulty(
@@ -155,9 +158,9 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = "problem_difficulty_scores.csv"
+    output_file = f"problem_difficulty_scores_{dataset_name}.csv"
     difficulty_df.to_csv(output_file, index=False)
     print(f"\nFull results saved to {output_file}")
 
     # Plot the distribution of problem difficulties
-    plot_difficulty_distribution(reasoning_model, difficulty_df)
+    plot_difficulty_distribution(reasoning_model, difficulty_df, dataset_name)
