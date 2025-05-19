@@ -6,7 +6,6 @@ from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
 from inspect_ai.model import CachePolicy, GenerateConfig
-from tqdm import tqdm
 from prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
 import re

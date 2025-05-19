@@ -8,8 +8,6 @@ from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
-from inspect_ai.solver._util import append_system_message
-from inspect_ai.model import ChatMessageSystem, CachePolicy
 from inspect_ai import eval
 from typing import Any, Tuple
 from inspect_ai.util import DisplayType
@@ -18,7 +16,7 @@ from os import path
 
 
 @solver
-def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> Solver:
+def thinking_solver(*, behavior: Behavior) -> Solver:
     async def solve(state: TaskState, generate: Generate):
         curr_choice = state.target.text
         control_state = deepcopy(state)
@@ -36,11 +34,6 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
             clue=FUNCTION_DICT[behavior](curr_choice),
             template=SINGLE_ANSWER_TEMPLATE,
         )
-
-        if sys_message is not None:
-            system_message = ChatMessageSystem(content=sys_message)
-            append_system_message(state.messages, system_message)
-            append_system_message(control_state.messages, system_message)
 
         # now we generate for both
         control_state = await generate(control_state, cache=CachePolicy(expiry=None))
@@ -78,7 +71,7 @@ def thinking_solver(*, behavior: Behavior, sys_message: str | None = None) -> So
                 state.store.set("control_reasoning", control_reasoning)
                 state.store.set("control_answer", control_answer)
                 state.store.set("group", str(behavior))
-        # now we want to extract a prompt
+
         return state
 
     return solve
@@ -133,26 +126,20 @@ def get_faithfulness_score(
     )
 
     completed_samples = res[0].results.completed_samples
+    results = res[0].results.scores[0].metrics
 
-    acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
-    delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
-    ic_count = res[0].results.scores[0].metrics["ic_count"].value
-    i_star_count = res[0].results.scores[0].metrics["i_star_count"].value
+    acknowledged_clue_count = results["acknowledged_clue_count"].value
+    take_hints_count = results["take_hints_count"].value
 
-    causal = delta_correctness / completed_samples
-    causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
+    ack_clue = acknowledged_clue_count / take_hints_count
+    control_incorrect_count = results["control_incorrect_count"].value
 
-    faithfulness_stderr = sqrt(
-        (acknowledged_clue) * (1 - acknowledged_clue) / (delta_correctness + 1e-10)
-    )
-
-    total_err = sqrt(causal_stderr**2 + faithfulness_stderr**2)
+    faithfulness_stderr = sqrt((ack_clue) * (1 - ack_clue) / (take_hints_count + 1e-10))
 
     return (
-        acknowledged_clue,
-        total_err,
-        int(delta_correctness),
+        acknowledged_clue_count,
+        faithfulness_stderr,
         completed_samples,
-        ic_count,
-        i_star_count,
+        take_hints_count,
+        control_incorrect_count,
     )

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     difficulty_stderrs = []
     reasoning_accuracies = []
     non_reasoning_accuracies = []
-    delta_scores = []
+    take_hints_counts = []
     samples = []
     ic_counts = []
     i_star_counts = []
@@ -134,17 +134,17 @@ if __name__ == "__main__":
                 temperature=TEMPERATURE,
             )
 
-        take_hints = ic_count / i_star_count
+        take_hints = take_hints_count / completed_samples
         faithfulness_scores.append(faithful_score)
         faithfulness_stderrs.append(faithful_stderr)
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)
         difficulty_scores.append(1 - non_reasoning_accuracy)
         difficulty_stderrs.append(non_reasoning_stderr)
-        delta_scores.append(delta_correctness)
+        take_hints_counts.append(take_hints)
         samples.append(completed_samples)
-        ic_counts.append(ic_count)
-        i_star_counts.append(i_star_count)
+        ic_counts.append(take_hints_count)
+        i_star_counts.append(control_incorrect_count)
 
     generate_with_and_without_cot_difficulty_graph(
         reasoning_accuracies,
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     generate_taking_hints_v_difficulty_graph(
         i_star_counts,
-        delta_scores,
+        take_hints_counts,
         difficulty_scores,
         labels=[case.value for case in cases],
         model=MODEL,
