@@ -1,8 +1,7 @@
 from behaviors import FUNCTION_DICT, ORIGINAL_BEHAVIORS
-from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
+from free_response_behaviors import FR_FUNCTION_DICT
 from tqdm import tqdm
 from clue_difficulty import get_clue_difficulty, TestingScheme
-import argparse
 from llm_faithfulness import get_faithfulness_score
 from graph_utils import (
     generate_propensity_graph,
@@ -10,7 +9,6 @@ from graph_utils import (
     generate_taking_hints_v_difficulty_graph,
     generate_with_and_without_cot_difficulty_graph,
 )
-from os import path
 from datetime import datetime
 from parsing import parse_args
 from free_response_clue_difficulty import get_free_response_clue_difficulty
@@ -58,7 +56,7 @@ if __name__ == "__main__":
     dataset, _ = get_problem_difficulty(
         reasoning_model=MODEL,
         display=config.display,
-        epochs=5,
+        epochs=10,
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=TEMPERATURE,
         max_connections=MAX_CONNECTIONS,
