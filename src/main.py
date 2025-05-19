@@ -1,7 +1,7 @@
 from behaviors import FUNCTION_DICT, ORIGINAL_BEHAVIORS
+from free_response_behaviors import FR_FUNCTION_DICT
 from tqdm import tqdm
 from clue_difficulty import get_clue_difficulty, TestingScheme
-import argparse
 from llm_faithfulness import get_faithfulness_score
 from graph_utils import (
     generate_propensity_graph,
@@ -9,9 +9,11 @@ from graph_utils import (
     generate_taking_hints_v_difficulty_graph,
     generate_with_and_without_cot_difficulty_graph,
 )
-from os import path
 from datetime import datetime
 from parsing import parse_args
+from free_response_clue_difficulty import get_free_response_clue_difficulty
+from free_response_llm_faithfulness import get_free_response_faithfulness_score
+from filtering import get_problem_difficulty
 
 
 if __name__ == "__main__":
@@ -27,6 +29,7 @@ if __name__ == "__main__":
     MAX_CONNECTIONS: int = config.max_connections
     ORIGINAL_BEHAVIORS_ONLY: bool = config.original_behaviors
     TAKE_HINTS_THRESHOLD: float = 0.75
+    FREE_RESPONSE: bool = config.free_response
 
     faithfulness_scores = []
     faithfulness_stderrs = []
@@ -39,47 +42,97 @@ if __name__ == "__main__":
     ic_counts = []
     i_star_counts = []
 
-    cases = (
-        list(FUNCTION_DICT.keys())
-        if not ORIGINAL_BEHAVIORS_ONLY
-        else list(ORIGINAL_BEHAVIORS.keys())
-    )
+    if FREE_RESPONSE:
+        cases = list(FR_FUNCTION_DICT.keys())
+    else:
+        cases = (
+            list(FUNCTION_DICT.keys())
+            if not ORIGINAL_BEHAVIORS_ONLY
+            else list(ORIGINAL_BEHAVIORS.keys())
+        )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
 
-    for behavior in tqdm(cases):
-        (
-            reasoning_accuracy,
-            non_reasoning_accuracy,
-            reasoning_stderr,
-            non_reasoning_stderr,
-        ) = get_clue_difficulty(
-            behavior,
-            reasoning_model=REASONING_DIFFICULTY_MODEL,
-            non_reasoning_model=BASE_MODEL,
-            display=config.display,
-            epochs=10,
-            testing_scheme=TESTING_SCHEME,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=TEMPERATURE,
-            max_connections=MAX_CONNECTIONS,
-        )
+    dataset, _ = get_problem_difficulty(
+        reasoning_model=MODEL,
+        display=config.display,
+        epochs=10,
+        log_dir=TOP_LEVEL_LOG_DIR,
+        temperature=TEMPERATURE,
+        max_connections=MAX_CONNECTIONS,
+        limit=600,
+    )
 
-        (
-            faithful_score,
-            faithful_stderr,
-            completed_samples,
-            take_hints_count,
-            control_incorrect_count,
-        ) = get_faithfulness_score(
-            behavior,
-            model=MODEL,
-            max_connections=MAX_CONNECTIONS,
-            limit=100,
-            display=config.display,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=TEMPERATURE,
-        )
+    for behavior in tqdm(cases):
+        if FREE_RESPONSE:
+            (
+                reasoning_accuracy,
+                non_reasoning_accuracy,
+                reasoning_stderr,
+                non_reasoning_stderr,
+            ) = get_free_response_clue_difficulty(
+                behavior,
+                reasoning_model=REASONING_DIFFICULTY_MODEL,
+                non_reasoning_model=BASE_MODEL,
+                display=config.display,
+                epochs=1,
+                testing_scheme=TESTING_SCHEME,
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=TEMPERATURE,
+                max_connections=MAX_CONNECTIONS,
+            )
+
+            (
+                faithful_score,
+                faithful_stderr,
+                delta_correctness,
+                completed_samples,
+                ic_count,
+                i_star_count,
+            ) = get_free_response_faithfulness_score(
+                dataset,
+                behavior,
+                model=MODEL,
+                max_connections=MAX_CONNECTIONS,
+                limit=100,
+                display=config.display,
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=TEMPERATURE,
+            )
+        else:
+            (
+                reasoning_accuracy,
+                non_reasoning_accuracy,
+                reasoning_stderr,
+                non_reasoning_stderr,
+            ) = get_clue_difficulty(
+                behavior,
+                reasoning_model=REASONING_DIFFICULTY_MODEL,
+                non_reasoning_model=BASE_MODEL,
+                display=config.display,
+                epochs=10,
+                testing_scheme=TESTING_SCHEME,
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=TEMPERATURE,
+                max_connections=MAX_CONNECTIONS,
+            )
+
+            (
+                faithful_score,
+                faithful_stderr,
+                delta_correctness,
+                completed_samples,
+                ic_count,
+                i_star_count,
+            ) = get_faithfulness_score(
+                behavior,
+                model=MODEL,
+                max_connections=MAX_CONNECTIONS,
+                limit=100,
+                display=config.display,
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=TEMPERATURE,
+            )
 
         take_hints = take_hints_count / completed_samples
         faithfulness_scores.append(faithful_score)

@@ -30,7 +30,7 @@ def clue_difficulty(
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     temperature: float = 0.6,
-) -> float:
+) -> Task:
     # we first construct the dataset
 
     reasoning_tokens = 30_000 if reasoning else None
@@ -141,34 +141,19 @@ def get_clue_difficulty(
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
 
-    if testing_scheme == TestingScheme.BASE:
-        non_reasoning_evalscore = eval(
-            clue_difficulty(
-                behavior,
-                reasoning=False,
-                epochs=epochs,
-                testing_scheme=testing_scheme,
-                temperature=temperature,
-            ),
-            model=non_reasoning_model,
-            display=display,
-            max_connections=max_connections,
-            log_dir=path.join(log_dir, behavior.value) if log_dir else None,
-        )
-    else:
-        non_reasoning_evalscore = eval(
-            clue_difficulty(
-                behavior,
-                reasoning=False,
-                epochs=epochs,
-                testing_scheme=testing_scheme,
-                temperature=temperature,
-            ),
-            model=reasoning_model,
-            display=display,
-            max_connections=max_connections,
-            log_dir=path.join(log_dir, behavior.value) if log_dir else None,
-        )
+    non_reasoning_evalscore = eval(
+        clue_difficulty(
+            behavior,
+            reasoning=False,
+            epochs=epochs,
+            testing_scheme=testing_scheme,
+            temperature=temperature,
+        ),
+        model=non_reasoning_model,
+        display=display,
+        max_connections=max_connections,
+        log_dir=path.join(log_dir, behavior.value) if log_dir else None,
+    )
 
     reasoning_accuracy = (
         reasoning_evalscore[0].results.scores[0].metrics["accuracy"].value
