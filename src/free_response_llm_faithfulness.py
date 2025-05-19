@@ -43,10 +43,8 @@ def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
             control_match = re.search(r"ANSWER:\s(\d+)", control_answer)
 
             if state_match and control_match:
-                state_answer = re.findall(r"ANSWER:\s(\d+)", state_answer)[-1].strip()
-                control_answer = re.findall(r"ANSWER:\s(\d+)", control_answer)[
-                    -1
-                ].strip()
+                state_answer = state_match.group(1).strip()
+                control_answer = control_match.group(1).strip()
 
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
