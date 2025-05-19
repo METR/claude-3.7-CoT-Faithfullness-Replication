@@ -27,7 +27,6 @@ def free_response(
             "Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"
             + sample.input
         )
-        sample.target = str(int(sample.target) % 100)
 
     dataset = dataset[:limit]
 
@@ -66,6 +65,9 @@ def get_problem_difficulty(
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     dataset = dataset.filter(lambda sample: "http" not in sample.input)
+
+    for sample in dataset:
+        sample.target = str(int(sample.target) % 100)
 
     evalscore = eval(
         free_response(
