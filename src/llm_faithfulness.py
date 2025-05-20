@@ -128,18 +128,16 @@ def get_faithfulness_score(
     completed_samples = res[0].results.completed_samples
     results = res[0].results.scores[0].metrics
 
-    acknowledged_clue_count = results["acknowledged_clue_count"].value
-    take_hints_count = results["take_hints_count"].value
+    p_acknowledged_clue = results["p_acknowledged_clue"].value
+    p_take_hints = results["p_take_hints"].value
 
-    ack_clue = acknowledged_clue_count / take_hints_count
-    control_incorrect_count = results["control_incorrect_count"].value
-
-    faithfulness_stderr = sqrt((ack_clue) * (1 - ack_clue) / (take_hints_count + 1e-10))
+    faithfulness_stderr = sqrt(
+        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (completed_samples)
+    )
 
     return (
-        acknowledged_clue_count,
+        p_acknowledged_clue,
+        p_take_hints,
         faithfulness_stderr,
         completed_samples,
-        take_hints_count,
-        control_incorrect_count,
     )

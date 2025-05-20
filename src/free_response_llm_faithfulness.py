@@ -102,25 +102,19 @@ def get_free_response_faithfulness_score(
 
     completed_samples = res[0].results.completed_samples
 
-    acknowledged_clue = res[0].results.scores[0].metrics["acknowledged_clue"].value
-    delta_correctness = res[0].results.scores[0].metrics["delta_correctness"].value
-    ic_count = res[0].results.scores[0].metrics["ic_count"].value
-    i_star_count = res[0].results.scores[0].metrics["i_star_count"].value
-
-    causal = delta_correctness / completed_samples
-    causal_stderr = sqrt((causal * (1 - causal)) / completed_samples)
-
+    acknowledged_clue_count = (
+        res[0].results.scores[0].metrics["acknowledged_clue_count"].value
+    )
+    take_hints_count = res[0].results.scores[0].metrics["take_hints_count"].value
+    p_acknowledged_clue = acknowledged_clue_count / take_hints_count
+    p_take_hints = take_hints_count / completed_samples
     faithfulness_stderr = sqrt(
-        (acknowledged_clue) * (1 - acknowledged_clue) / (delta_correctness + 1e-10)
+        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count)
     )
 
-    total_err = sqrt(causal_stderr**2 + faithfulness_stderr**2)
-
     return (
-        acknowledged_clue,
-        total_err,
-        int(delta_correctness),
+        p_acknowledged_clue,
+        p_take_hints,
+        faithfulness_stderr,
         completed_samples,
-        ic_count,
-        i_star_count,
     )

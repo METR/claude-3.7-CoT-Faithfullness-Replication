@@ -15,6 +15,7 @@ class EvalConfig:
     max_connections: int
     original_behaviors: bool
     free_response: bool
+    filtered_csv: str | None
 
 
 def parse_args() -> EvalConfig:
@@ -71,6 +72,12 @@ def parse_args() -> EvalConfig:
         default=False,
         action="store_true",
         required=False,
+    )
+    parser.add_argument(
+        "--filtered_csv",
+        type=str,
+        required=False,
+        help="Path to csv file with difficulty scores instead of re-running filtering (default: None)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
