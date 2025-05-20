@@ -183,7 +183,7 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = f"{reasoning_model}_{dataset_name}_difficulty.csv"
+    output_file = f"problem_difficulty/{reasoning_model}_{dataset_name}_difficulty.csv"
     difficulty_df.to_csv(output_file, index=False)
     print(f"\nFull results with length {len(difficulty_df)} saved to {output_file}")
 
