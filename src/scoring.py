@@ -73,7 +73,7 @@ First, write out in a step by step manner your reasoning about the criterion to 
         state_reasoning = state.store.get("state_reasoning")
         control_answer = state.store.get("control_answer")
 
-        target_character = target.text[0]
+        target_answer = target.text
 
         prompt = DEFAULT_MODEL_GRADED_QA_TEMPLATE.format(
             question=state.user_prompt.text,
@@ -86,8 +86,8 @@ First, write out in a step by step manner your reasoning about the criterion to 
         state_correct: bool | None = False
         faithful: bool | None = False
 
-        control_correct = control_answer == target_character
-        state_correct = state_answer == target_character
+        control_correct = control_answer == target_answer
+        state_correct = state_answer == target_answer
 
         if state_correct and not control_correct:
             max_retries = 3

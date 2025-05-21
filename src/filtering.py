@@ -100,6 +100,11 @@ def get_problem_difficulty(
             if np.mean(accuracies) == 0:
                 zero_accuracy_problems.append(problem_id)
 
+    # remove problelms that we know are wrong
+    zero_accuracy_problems = [
+        id for id in zero_accuracy_problems if id not in [96, 114, 137]
+    ]
+
     print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
 
     print([sample.id for sample in dataset])

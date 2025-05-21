@@ -37,9 +37,22 @@ def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
             state_matches = re.findall(r"ANSWER:\s?(\d+)", state_answer)
             control_matches = re.findall(r"ANSWER:\s?(\d+)", control_answer)
 
-            if state_matches and control_matches:
+            if state_matches:
                 state_answer = state_matches[-1].strip()
-                control_answer = control_matches[-1].strip()
+
+                # also include the cases where the state answer is not parsable
+                if control_matches:
+                    control_answer = control_matches[-1].strip()
+                else:
+                    control_answer = "invalid_pattern"
+
+                # this is a bit of hand holding to catch the cases where the model doesn't return the mod answer
+                # we might want to remove this
+                try:
+                    state_answer = str(int(state_answer) % 100)
+                    control_answer = str(int(control_answer) % 100)
+                except ValueError:
+                    pass
 
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
