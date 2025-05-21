@@ -55,7 +55,7 @@ def get_problem_difficulty(
         "AI-MO/NuminaMath-1.5",
         split="train",
         sample_fields=FieldSpec(input="problem", target="answer"),
-        limit=limit,
+        limit=limit * 100,
         shuffle=False,
         auto_id=True,
     )
@@ -66,6 +66,7 @@ def get_problem_difficulty(
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
         sample.input = DEFAULT_QA_TEMPLATE + sample.input
+    dataset = dataset[:limit]
 
     if filtered_csv:
         accuracy_df = pd.read_csv(filtered_csv)

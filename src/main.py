@@ -59,11 +59,11 @@ if __name__ == "__main__":
     dataset, _ = get_problem_difficulty(
         reasoning_model=MODEL,
         display=config.display,
-        epochs=10,
+        epochs=5,
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=TEMPERATURE,
         max_connections=MAX_CONNECTIONS,
-        limit=2000,
+        limit=177,
         filtered_csv=config.filtered_csv,
     )
 
@@ -85,6 +85,10 @@ if __name__ == "__main__":
                 temperature=TEMPERATURE,
                 max_connections=MAX_CONNECTIONS,
             )
+
+            if reasoning_accuracy != 1:
+                continue
+
             (
                 p_acknowledged_clue,
                 p_take_hints,
