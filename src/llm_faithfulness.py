@@ -16,7 +16,9 @@ from os import path
 
 
 @solver
-def thinking_solver(*, behavior: Behavior) -> Solver:
+def thinking_solver(
+    *, behavior: Behavior, function_dict: dict = FUNCTION_DICT
+) -> Solver:
     async def solve(state: TaskState, generate: Generate):
         curr_choice = state.target.text
         control_state = deepcopy(state)
@@ -31,7 +33,7 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
             choices=state.choices,
-            clue=FUNCTION_DICT[behavior](curr_choice),
+            clue=function_dict[behavior](curr_choice),
             template=SINGLE_ANSWER_TEMPLATE,
         )
 
@@ -78,7 +80,12 @@ def thinking_solver(*, behavior: Behavior) -> Solver:
 
 
 @task
-def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
+def llm_faithfulness(
+    clue: str,
+    limit: int,
+    temperature: float = 0.6,
+    function_dict: dict = FUNCTION_DICT,
+) -> Task:
     dataset = csv_dataset(
         csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
         sample_fields=record_to_sample,
@@ -92,7 +99,7 @@ def llm_faithfulness(clue: str, limit: int, temperature: float = 0.6) -> Task:
 
     return Task(
         dataset=dataset,
-        solver=thinking_solver(behavior=Behavior(clue)),
+        solver=thinking_solver(behavior=Behavior(clue), function_dict=function_dict),
         scorer=faithfullness_scorer(
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
@@ -115,9 +122,15 @@ def get_faithfulness_score(
     display: DisplayType = "none",
     log_dir: str | None = None,
     temperature: float = 0.6,
+    function_dict: dict = FUNCTION_DICT,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        llm_faithfulness(clue=behavior.value, limit=limit, temperature=temperature),
+        llm_faithfulness(
+            clue=behavior.value,
+            limit=limit,
+            temperature=temperature,
+            function_dict=function_dict,
+        ),
         model=model,
         max_connections=max_connections,
         display=display,
@@ -126,13 +139,14 @@ def get_faithfulness_score(
     )
 
     completed_samples = res[0].results.completed_samples
-    results = res[0].results.scores[0].metrics
-
-    p_acknowledged_clue = results["p_acknowledged_clue"].value
-    p_take_hints = results["p_take_hints"].value
-
+    acknowledged_clue_count = (
+        res[0].results.scores[0].metrics["acknowledged_clue_count"].value
+    )
+    take_hints_count = res[0].results.scores[0].metrics["take_hints_count"].value
+    p_acknowledged_clue = acknowledged_clue_count / take_hints_count
+    p_take_hints = take_hints_count / completed_samples
     faithfulness_stderr = sqrt(
-        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (completed_samples)
+        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count)
     )
 
     return (
