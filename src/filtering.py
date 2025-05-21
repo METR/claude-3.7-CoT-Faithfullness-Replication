@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
+from prompt_utils import DEFAULT_QA_TEMPLATE
 
 
 @task
@@ -22,13 +23,6 @@ def free_response(
     max_connections: int = 90,
 ) -> Task:
     dataset = deepcopy(dataset)
-    for sample in dataset:
-        sample.input = (
-            "Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"
-            + sample.input
-        )
-        sample.target = str(int(sample.target) % 100)
-
     dataset = dataset[:limit]
 
     return Task(
@@ -69,6 +63,9 @@ def get_problem_difficulty(
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     dataset = dataset.filter(lambda sample: "http" not in sample.input)
     problem_accuracies: Dict[str, List[float]] = {}
+    for sample in dataset:
+        sample.target = str(int(sample.target) % 100)
+        sample.input = DEFAULT_QA_TEMPLATE + sample.input
 
     if filtered_csv:
         accuracy_df = pd.read_csv(filtered_csv)
@@ -183,7 +180,7 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = f"problem_difficulty/{reasoning_model}_{dataset_name}_difficulty.csv"
+    output_file = f"problem_difficulty/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
     difficulty_df.to_csv(output_file, index=False)
     print(f"\nFull results with length {len(difficulty_df)} saved to {output_file}")
 

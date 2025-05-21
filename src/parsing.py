@@ -16,6 +16,7 @@ class EvalConfig:
     original_behaviors: bool
     free_response: bool
     filtered_csv: str | None
+    altered_original_behaviors: bool
 
 
 def parse_args() -> EvalConfig:
@@ -46,9 +47,14 @@ def parse_args() -> EvalConfig:
         required=False,
         action="store_true",
     )
-
     parser.add_argument(
         "--original_behaviors",
+        default=False,
+        required=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--altered_original_behaviors",
         default=False,
         required=False,
         action="store_true",

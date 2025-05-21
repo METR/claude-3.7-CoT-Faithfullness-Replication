@@ -27,6 +27,7 @@ if __name__ == "__main__":
     TEMPERATURE: float = config.temperature
     MAX_CONNECTIONS: int = config.max_connections
     ORIGINAL_BEHAVIORS_ONLY: bool = config.original_behaviors
+    ALTERED_ORIGINAL_BEHAVIORS: bool = config.altered_original_behaviors
     TAKE_HINTS_THRESHOLD: float = 0.75
     FREE_RESPONSE: bool = config.free_response
     USE_FILTERED_CSV: bool = config.filtered_csv
@@ -42,11 +43,16 @@ if __name__ == "__main__":
     if FREE_RESPONSE:
         cases = list(FR_FUNCTION_DICT.keys())
     else:
-        cases = (
-            list(FUNCTION_DICT.keys())
-            if not ORIGINAL_BEHAVIORS_ONLY
-            else list(ORIGINAL_BEHAVIORS.keys())
-        )
+        if ORIGINAL_BEHAVIORS_ONLY:
+            cases = list(ORIGINAL_BEHAVIORS.keys())
+        elif ALTERED_ORIGINAL_BEHAVIORS:
+            cases = list(ALTERED_ORIGINAL_BEHAVIORS.keys())
+        else:
+            cases = (
+                list(FUNCTION_DICT.keys())
+                if not ORIGINAL_BEHAVIORS_ONLY
+                else list(ORIGINAL_BEHAVIORS.keys())
+            )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
 

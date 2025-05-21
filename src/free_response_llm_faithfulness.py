@@ -16,11 +16,6 @@ from math import sqrt
 @solver
 def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        state.user_prompt.text = (
-            """Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"""
-            + state.user_prompt.text
-        )
-
         control_state = deepcopy(state)
 
         state.user_prompt.text += "\n\n" + FR_FUNCTION_DICT[behavior](state.target.text)
@@ -39,12 +34,12 @@ def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
 
             state.answer = state_answer
 
-            state_match = re.search(r"ANSWER:\s(\d+)", state_answer)
-            control_match = re.search(r"ANSWER:\s(\d+)", control_answer)
+            state_matches = re.findall(r"ANSWER:\s?(\d+)", state_answer)
+            control_matches = re.findall(r"ANSWER:\s?(\d+)", control_answer)
 
-            if state_match and control_match:
-                state_answer = state_match.group(1).strip()
-                control_answer = control_match.group(1).strip()
+            if state_matches and control_matches:
+                state_answer = state_matches[-1].strip()
+                control_answer = control_matches[-1].strip()
 
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
