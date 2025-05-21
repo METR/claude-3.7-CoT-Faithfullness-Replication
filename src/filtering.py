@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
+from prompt_utils import DEFAULT_QA_TEMPLATE
 
 
 @task
@@ -22,13 +23,6 @@ def free_response(
     max_connections: int = 90,
 ) -> Task:
     dataset = deepcopy(dataset)
-    for sample in dataset:
-        sample.input = (
-            "Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"
-            + sample.input
-        )
-        sample.target = str(int(sample.target) % 100)
-
     dataset = dataset[:limit]
 
     return Task(
@@ -55,49 +49,62 @@ def get_problem_difficulty(
     temperature: float = 0.6,
     max_connections: int = 50,
     limit: int = 100,
+    filtered_csv: str | None = None,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "AI-MO/NuminaMath-1.5",
         split="train",
         sample_fields=FieldSpec(input="problem", target="answer"),
-        limit=100 * limit,
+        limit=limit * 100,
+        shuffle=False,
         auto_id=True,
     )
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     dataset = dataset.filter(lambda sample: "http" not in sample.input)
-
-    evalscore = eval(
-        free_response(
-            dataset=dataset,
-            epochs=epochs,
-            temperature=temperature,
-            limit=limit,
-        ),
-        model=reasoning_model,
-        display=display,
-        max_connections=max_connections,
-        log_dir=path.join(log_dir, "reasoning") if log_dir else None,
-    )
-
     problem_accuracies: Dict[str, List[float]] = {}
+    for sample in dataset:
+        sample.target = str(int(sample.target) % 100)
+        sample.input = DEFAULT_QA_TEMPLATE + sample.input
+    dataset = dataset[:limit]
 
-    samples = evalscore[0].samples
-    for sample in samples:
-        problem_id = sample.id
-        if sample.scores:
-            first_scorer = next(iter(sample.scores))
-            is_correct = sample.scores[first_scorer].value == "C"  # CORRECT
-            if problem_id not in problem_accuracies:
-                problem_accuracies[problem_id] = []
-            problem_accuracies[problem_id].append(float(is_correct))
+    if filtered_csv:
+        accuracy_df = pd.read_csv(filtered_csv)
+        accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
+        zero_accuracy_problems = accuracy_df["problem_id"].tolist()
+    else:
+        evalscore = eval(
+            free_response(
+                dataset=dataset,
+                epochs=epochs,
+                temperature=temperature,
+                limit=limit,
+            ),
+            model=reasoning_model,
+            display=display,
+            max_connections=max_connections,
+            log_dir=path.join(log_dir, "reasoning") if log_dir else None,
+        )
 
-    zero_accuracy_problems = []
-    for problem_id, accuracies in problem_accuracies.items():
-        if np.mean(accuracies) == 0:
-            zero_accuracy_problems.append(problem_id)
+        samples = evalscore[0].samples
+        for sample in samples:
+            problem_id = sample.id
+            if sample.scores:
+                first_scorer = next(iter(sample.scores))
+                is_correct = sample.scores[first_scorer].value == "C"  # CORRECT
+                if problem_id not in problem_accuracies:
+                    problem_accuracies[problem_id] = []
+                problem_accuracies[problem_id].append(float(is_correct))
 
-    print(samples[0])
+        zero_accuracy_problems = []
+        for problem_id, accuracies in problem_accuracies.items():
+            if np.mean(accuracies) == 0:
+                zero_accuracy_problems.append(problem_id)
+
+    # remove problelms that we know are wrong
+    zero_accuracy_problems = [
+        id for id in zero_accuracy_problems if id not in [96, 114, 137]
+    ]
 
     print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
 
@@ -118,9 +125,9 @@ def calculate_difficulty_scores(
         difficulty_scores.append(
             {
                 "problem_id": problem_id,
+                "avg_accuracy": avg_accuracy,
                 "difficulty_score": 1
                 - avg_accuracy,  # Higher score means more difficult
-                "avg_accuracy": avg_accuracy,
                 "std_accuracy": std_accuracy,
                 "num_epochs": len(accuracies),
             }
@@ -159,9 +166,10 @@ def plot_difficulty_distribution(
 if __name__ == "__main__":
     # Example usage
     reasoning_model = "together/Qwen/QwQ-32B"
-    temperature = 0.6
+    temperature = 1
     epochs = 10
-    limit = 200
+    limit = 2000
+    max_connections = 30
     dataset_name = "NuminaMath-1.5"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
@@ -169,6 +177,7 @@ if __name__ == "__main__":
         reasoning_model=reasoning_model,
         epochs=epochs,
         limit=limit,
+        max_connections=max_connections,
         display="full",
         temperature=temperature,
     )
@@ -177,9 +186,9 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = f"problem_difficulty_scores_{dataset_name}.csv"
+    output_file = f"problem_difficulty/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
     difficulty_df.to_csv(output_file, index=False)
-    print(f"\nFull results saved to {output_file}")
+    print(f"\nFull results with length {len(difficulty_df)} saved to {output_file}")
 
     # Plot the distribution of problem difficulties
     plot_difficulty_distribution(reasoning_model, difficulty_df, dataset_name)

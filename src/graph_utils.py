@@ -84,13 +84,9 @@ def generate_propensity_graph(
     plt.grid(True)
     plt.show()
 
-    # {model}
-    # {testing_scheme}
-
 
 def generate_taking_hints_graph(
-    samples: List[int],
-    delta_correctness: List[int],
+    p_take_hints: List[float],
     labels: List[str],
     model: str,
     path: str | None = None,
@@ -98,11 +94,7 @@ def generate_taking_hints_graph(
     indices = np.arange(len(labels))
     width = 0.6
 
-    # The bottom bar: delta_correctness (e.g., "took the hint")
-    # The top bar: samples - delta_correctness (e.g., "did not take the hint")
-    took_hint = np.array(delta_correctness) / np.array(
-        samples
-    )  # Normalize to percentages
+    took_hint = np.array(p_take_hints)
     did_not_take_hint = 1 - took_hint  # Will sum to 1 for each bar
 
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -134,24 +126,21 @@ def generate_taking_hints_graph(
 
 
 def generate_taking_hints_v_difficulty_graph(
-    i_star_counts: List[int],
-    delta_scores: List[int],
+    p_take_hints: List[float],
     difficulty_scores: List[float],
     labels: List[str],
     model: str,
     path: str | None = None,
 ) -> None:
-    took_hints = [d / s for d, s in zip(delta_scores, i_star_counts)]
-
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    ax.scatter(difficulty_scores, took_hints, alpha=0.6)
+    ax.scatter(difficulty_scores, p_take_hints, alpha=0.6)
 
     # Add labels for each point
     for i, label in enumerate(labels):
         ax.annotate(
             label,
-            (difficulty_scores[i], took_hints[i]),
+            (difficulty_scores[i], p_take_hints[i]),
             xytext=(5, 5),
             textcoords="offset points",
         )

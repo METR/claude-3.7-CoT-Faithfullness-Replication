@@ -15,7 +15,6 @@ from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
 
-
 if __name__ == "__main__":
     config = parse_args()
 
@@ -28,39 +27,44 @@ if __name__ == "__main__":
     TEMPERATURE: float = config.temperature
     MAX_CONNECTIONS: int = config.max_connections
     ORIGINAL_BEHAVIORS_ONLY: bool = config.original_behaviors
+    ALTERED_ORIGINAL_BEHAVIORS: bool = config.altered_original_behaviors
     TAKE_HINTS_THRESHOLD: float = 0.75
     FREE_RESPONSE: bool = config.free_response
-
+    USE_FILTERED_CSV: bool = config.filtered_csv
     faithfulness_scores = []
     faithfulness_stderrs = []
     difficulty_scores = []
     difficulty_stderrs = []
     reasoning_accuracies = []
     non_reasoning_accuracies = []
-    take_hints_counts = []
+    take_hints_scores = []
     samples = []
-    ic_counts = []
-    i_star_counts = []
 
     if FREE_RESPONSE:
         cases = list(FR_FUNCTION_DICT.keys())
     else:
-        cases = (
-            list(FUNCTION_DICT.keys())
-            if not ORIGINAL_BEHAVIORS_ONLY
-            else list(ORIGINAL_BEHAVIORS.keys())
-        )
+        if ORIGINAL_BEHAVIORS_ONLY:
+            cases = list(ORIGINAL_BEHAVIORS.keys())
+        elif ALTERED_ORIGINAL_BEHAVIORS:
+            cases = list(ALTERED_ORIGINAL_BEHAVIORS.keys())
+        else:
+            cases = (
+                list(FUNCTION_DICT.keys())
+                if not ORIGINAL_BEHAVIORS_ONLY
+                else list(ORIGINAL_BEHAVIORS.keys())
+            )
     if REDTEAM:
         cases = cases[::3]  # Take every 3rd element
 
     dataset, _ = get_problem_difficulty(
         reasoning_model=MODEL,
         display=config.display,
-        epochs=10,
+        epochs=5,
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=TEMPERATURE,
         max_connections=MAX_CONNECTIONS,
-        limit=600,
+        limit=177,
+        filtered_csv=config.filtered_csv,
     )
 
     for behavior in tqdm(cases):
@@ -82,13 +86,14 @@ if __name__ == "__main__":
                 max_connections=MAX_CONNECTIONS,
             )
 
+            if reasoning_accuracy != 1:
+                continue
+
             (
-                faithful_score,
-                faithful_stderr,
-                delta_correctness,
+                p_acknowledged_clue,
+                p_take_hints,
+                faithfulness_stderr,
                 completed_samples,
-                ic_count,
-                i_star_count,
             ) = get_free_response_faithfulness_score(
                 dataset,
                 behavior,
@@ -118,12 +123,10 @@ if __name__ == "__main__":
             )
 
             (
-                faithful_score,
-                faithful_stderr,
-                delta_correctness,
+                p_acknowledged_clue,
+                p_take_hints,
+                faithfulness_stderr,
                 completed_samples,
-                ic_count,
-                i_star_count,
             ) = get_faithfulness_score(
                 behavior,
                 model=MODEL,
@@ -134,17 +137,14 @@ if __name__ == "__main__":
                 temperature=TEMPERATURE,
             )
 
-        take_hints = take_hints_count / completed_samples
-        faithfulness_scores.append(faithful_score)
-        faithfulness_stderrs.append(faithful_stderr)
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)
         difficulty_scores.append(1 - non_reasoning_accuracy)
         difficulty_stderrs.append(non_reasoning_stderr)
-        take_hints_counts.append(take_hints)
+        faithfulness_scores.append(p_acknowledged_clue)
+        faithfulness_stderrs.append(faithfulness_stderr)
+        take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
-        ic_counts.append(take_hints_count)
-        i_star_counts.append(control_incorrect_count)
 
     generate_with_and_without_cot_difficulty_graph(
         reasoning_accuracies,
@@ -165,15 +165,13 @@ if __name__ == "__main__":
     )
 
     generate_taking_hints_graph(
-        i_star_counts,
-        ic_counts,
+        take_hints_scores,
         labels=[case.value for case in cases],
         model=MODEL,
     )
 
     generate_taking_hints_v_difficulty_graph(
-        i_star_counts,
-        take_hints_counts,
+        take_hints_scores,
         difficulty_scores,
         labels=[case.value for case in cases],
         model=MODEL,
