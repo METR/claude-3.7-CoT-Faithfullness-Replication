@@ -103,7 +103,7 @@ def get_problem_difficulty(
 
     # remove problelms that we know are wrong
     zero_accuracy_problems = [
-        id for id in zero_accuracy_problems if id not in [96, 114, 137]
+        id for id in zero_accuracy_problems if id not in [96, 114, 137, 786]
     ]
 
     print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")

@@ -66,6 +66,7 @@ if __name__ == "__main__":
         limit=177,
         filtered_csv=config.filtered_csv,
     )
+    excluded_behaviors = []
 
     for behavior in tqdm(cases):
         if FREE_RESPONSE:
@@ -86,7 +87,8 @@ if __name__ == "__main__":
                 max_connections=MAX_CONNECTIONS,
             )
 
-            if reasoning_accuracy != 1:
+            if reasoning_accuracy < 1:
+                excluded_behaviors.append(behavior)
                 continue
 
             (
@@ -149,7 +151,7 @@ if __name__ == "__main__":
     generate_with_and_without_cot_difficulty_graph(
         reasoning_accuracies,
         non_reasoning_accuracies,
-        [case.value for case in cases],
+        [case.value for case in cases if case not in excluded_behaviors],
         MODEL,
     )
 
@@ -158,7 +160,7 @@ if __name__ == "__main__":
         faithfulness_stderrs,
         difficulty_scores,
         difficulty_stderrs,
-        labels=[case.value for case in cases],
+        labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
         testing_scheme=TESTING_SCHEME,
         show_labels=False,
@@ -166,13 +168,13 @@ if __name__ == "__main__":
 
     generate_taking_hints_graph(
         take_hints_scores,
-        labels=[case.value for case in cases],
+        labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
     )
 
     generate_taking_hints_v_difficulty_graph(
         take_hints_scores,
         difficulty_scores,
-        labels=[case.value for case in cases],
+        labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
     )
