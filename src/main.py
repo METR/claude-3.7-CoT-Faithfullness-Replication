@@ -39,10 +39,13 @@ if __name__ == "__main__":
     non_reasoning_accuracies = []
     take_hints_scores = []
     samples = []
+    dataset_name = ""
 
     if FREE_RESPONSE:
         cases = list(FR_FUNCTION_DICT.keys())
+        dataset_name = "NuminaMath-1.5"
     else:
+        dataset_name = "GPQA-Diamond"
         if ORIGINAL_BEHAVIORS_ONLY:
             cases = list(ORIGINAL_BEHAVIORS.keys())
         elif ALTERED_ORIGINAL_BEHAVIORS:
@@ -153,6 +156,7 @@ if __name__ == "__main__":
         non_reasoning_accuracies,
         [case.value for case in cases if case not in excluded_behaviors],
         MODEL,
+        dataset_name,
     )
 
     generate_propensity_graph(
@@ -162,7 +166,7 @@ if __name__ == "__main__":
         difficulty_stderrs,
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
-        testing_scheme=TESTING_SCHEME,
+        dataset=dataset_name,
         show_labels=False,
     )
 
@@ -170,6 +174,7 @@ if __name__ == "__main__":
         take_hints_scores,
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
+        dataset=dataset_name,
     )
 
     generate_taking_hints_v_difficulty_graph(
@@ -177,4 +182,5 @@ if __name__ == "__main__":
         difficulty_scores,
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
+        dataset=dataset_name,
     )
