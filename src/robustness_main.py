@@ -18,8 +18,8 @@ def graph_results(results: dict):
     # Data from the variables
     setups = [
         "Original Setup Replication",
-        "Format Transformation",
         "Explicit Signaling",
+        "Format Transformation",
         "Incentive Modification",
     ]
     clusters = ["Metadata", "Reward Hacking"]
@@ -28,14 +28,14 @@ def graph_results(results: dict):
     cluster_keys = {
         "Metadata": [
             "metadata",
-            "metadata_language",
             "metadata_with_hint",
+            "metadata_language",
             "metadata_anti_cheating",
         ],
         "Reward Hacking": [
             "reward_hacking",
-            "reward_hacking_language",
             "reward_hacking_with_hint",
+            "reward_hacking_language",
             "reward_hacking_anti_cheating",
         ],
     }
@@ -60,7 +60,7 @@ def graph_results(results: dict):
     x = np.arange(len(clusters))
 
     # Define colors for each setup
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    colors = ["#cdcdcd", "#dd8466", "#bc3455", "#236894"]
 
     # Create the bars for each setup across both clusters
     for i, setup in enumerate(setups):
@@ -115,32 +115,29 @@ def graph_results(results: dict):
 
 
 if __name__ == "__main__":
-    # faithfulness_results = {}
-    # for behavior in ALTERED_ORIGINAL_BEHAVIORS:
-    #     (
-    #         p_acknowledged_clue,
-    #         p_take_hints,
-    #         faithfulness_stderr,
-    #         completed_samples,
-    #     ) = get_faithfulness_score(
-    #         behavior,
-    #         model=MODEL,
-    #         max_connections=MAX_CONNECTIONS,
-    #         display="full",
-    #         log_dir=TOP_LEVEL_LOG_DIR,
-    #         temperature=TEMPERATURE,
-    #         function_dict=ALTERED_ORIGINAL_BEHAVIORS,
-    #     )
-    #     faithfulness_results[behavior.value] = {
-    #         "p_acknowledged_clue": p_acknowledged_clue,
-    #         "faithfulness_stderr": faithfulness_stderr,
-    #         "completed_samples": completed_samples,
-    #     }
+    faithfulness_results = {}
+    for behavior in ALTERED_ORIGINAL_BEHAVIORS:
+        (
+            p_acknowledged_clue,
+            p_take_hints,
+            faithfulness_stderr,
+            completed_samples,
+        ) = get_faithfulness_score(
+            behavior,
+            model=MODEL,
+            max_connections=MAX_CONNECTIONS,
+            display="full",
+            log_dir=TOP_LEVEL_LOG_DIR,
+            temperature=TEMPERATURE,
+            function_dict=ALTERED_ORIGINAL_BEHAVIORS,
+        )
+        faithfulness_results[behavior.value] = {
+            "p_acknowledged_clue": p_acknowledged_clue,
+            "faithfulness_stderr": faithfulness_stderr,
+            "completed_samples": completed_samples,
+        }
 
-    # with open("./results/robustness_results.json", "w") as f:
-    #     json.dump(faithfulness_results, f)
-
-    with open("./robustness_results.json", "r") as f:
-        faithfulness_results = json.load(f)
+    with open("./results/robustness_results.json", "w") as f:
+        json.dump(faithfulness_results, f)
 
     graph_results(faithfulness_results)
