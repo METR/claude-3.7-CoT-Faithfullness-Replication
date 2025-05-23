@@ -80,7 +80,7 @@ def generate_propensity_graph(
         "Propensity for Faithfulness vs Difficulty", loc="left", pad=20, fontsize=25
     )
     plt.suptitle(
-        f"{model} on {dataset}, 95% CI",
+        f"{model} on {dataset}, 90% CI",
         y=0.90,
         fontsize=12,
         color="gray",
