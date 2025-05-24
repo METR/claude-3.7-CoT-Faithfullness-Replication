@@ -12,8 +12,7 @@ def generate_propensity_graph(
     difficulty_stderrs: List[float],
     labels: List[str],
     model: str,
-    testing_scheme: TestingScheme,
-    path: str | None = None,
+    dataset: str,
     show_labels: bool = False,
 ) -> None:
     """
@@ -24,11 +23,14 @@ def generate_propensity_graph(
         faithfulness_stderrs: List of standard errors for faithfulness scores
         difficulty_scores: List of difficulty scores for each behavior
         difficulty_stderrs: List of standard errors for difficulty scores
+        labels: List of labels for each data point
+        model: Model name to display in the title
+        dataset: Dataset name to display in the title
         path: Optional path to save the graph to. If None, displays the graph instead.
+        show_labels: Whether to show labels for each data point
 
     Returns:
         None
-
     """
     plt.figure(figsize=(10, 6))
 
@@ -40,16 +42,21 @@ def generate_propensity_graph(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    # Add shaded "safe zone" below the line from (0.25,0) to (1,0.75)
-    x = [0.25, 1]
-    y = [0, 0.75]
+    # Add shaded "safe zone" below the line from (0,0) to (1,1)
+    x = [0, 1]
+    y = [0, 1]
     plt.fill_between(x, [0, 0], y, alpha=0.2, color="#485F52", label="Safe Zone")
+
+    # Convert standard errors to 90% confidence intervals (z=1.645 for 90% CI)
+    z_score = 1.645
+    faithfulness_ci = [se * z_score for se in faithfulness_stderrs]
+    difficulty_ci = [se * z_score for se in difficulty_stderrs]
 
     plt.errorbar(
         difficulty_scores,
         faithfulness_scores,
-        xerr=difficulty_stderrs,
-        yerr=faithfulness_stderrs,
+        xerr=difficulty_ci,
+        yerr=faithfulness_ci,
         fmt="o",
         color="#f9a4a4",
         ecolor="lightgray",
@@ -73,7 +80,11 @@ def generate_propensity_graph(
         "Propensity for Faithfulness vs Difficulty", loc="left", pad=20, fontsize=25
     )
     plt.suptitle(
-        f"{model} {testing_scheme}", y=0.85, fontsize=12, color="gray", style="italic"
+        f"{model} on {dataset}, 90% CI",
+        y=0.90,
+        fontsize=12,
+        color="gray",
+        style="italic",
     )
     ax = plt.axes(
         [0.8, 0.9, 0.1, 0.1], frameon=True
@@ -89,6 +100,7 @@ def generate_taking_hints_graph(
     p_take_hints: List[float],
     labels: List[str],
     model: str,
+    dataset: str,
     path: str | None = None,
 ) -> None:
     indices = np.arange(len(labels))
@@ -110,7 +122,7 @@ def generate_taking_hints_graph(
     )
 
     ax.set_ylabel("Proportion of Samples")
-    ax.set_title(f"Hint-Taking by Case ({model})")
+    ax.set_title(f"Hint-Taking for {model.split('/')[-1]} on {dataset}")
     ax.set_xticks(indices)
     ax.set_xticklabels(labels, rotation=45, ha="right")
     ax.legend()
@@ -130,6 +142,7 @@ def generate_taking_hints_v_difficulty_graph(
     difficulty_scores: List[float],
     labels: List[str],
     model: str,
+    dataset: str,
     path: str | None = None,
 ) -> None:
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -147,7 +160,7 @@ def generate_taking_hints_v_difficulty_graph(
 
     ax.set_xlabel("Difficulty Score")
     ax.set_ylabel("Proportion Taking Hints")
-    ax.set_title(f"Hint-Taking vs Difficulty ({model})")
+    ax.set_title(f"Hint-Taking vs Difficulty for {model.split('/')[-1]} on {dataset}")
 
     plt.tight_layout()
     if path:
@@ -161,6 +174,7 @@ def generate_with_and_without_cot_difficulty_graph(
     non_reasoning_accuracy_scores: List[float],
     labels: List[str],
     model: str,
+    dataset: str,
     path: str | None = None,
 ) -> None:
     plt.figure(figsize=(10, 6))
@@ -170,7 +184,9 @@ def generate_with_and_without_cot_difficulty_graph(
     # Add labels and title
     plt.xlabel("Reasoning Accuracy Score")
     plt.ylabel("Non-Reasoning Accuracy Score")
-    plt.title(f"Reasoning vs Non-Reasoning Accuracy Scores for {model}")
+    plt.title(
+        f"Reasoning vs Non-Reasoning Accuracy Scores for {model.split('/')[-1]} on {dataset}"
+    )
 
     # Add labels for each point
     for i, label in enumerate(labels):
