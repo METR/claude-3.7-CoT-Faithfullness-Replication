@@ -5,6 +5,7 @@ from behaviors import ALTERED_ORIGINAL_BEHAVIORS
 from clue_difficulty import TestingScheme
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
 MODEL = "anthropic/claude-3-7-sonnet-latest"
 MAX_CONNECTIONS = 3
@@ -115,29 +116,38 @@ def graph_results(results: dict):
 
 
 if __name__ == "__main__":
-    faithfulness_results = {}
-    for behavior in ALTERED_ORIGINAL_BEHAVIORS:
-        (
-            p_acknowledged_clue,
-            p_take_hints,
-            faithfulness_stderr,
-            completed_samples,
-        ) = get_faithfulness_score(
-            behavior,
-            model=MODEL,
-            max_connections=MAX_CONNECTIONS,
-            display="full",
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=TEMPERATURE,
-            function_dict=ALTERED_ORIGINAL_BEHAVIORS,
-        )
-        faithfulness_results[behavior.value] = {
-            "p_acknowledged_clue": p_acknowledged_clue,
-            "faithfulness_stderr": faithfulness_stderr,
-            "completed_samples": completed_samples,
-        }
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--use_file", action="store_true")
+    args = parser.parse_args()
 
-    with open("./results/robustness_results.json", "w") as f:
-        json.dump(faithfulness_results, f)
+    if args.use_file:
+        with open("./results/robustness_results.json", "r") as f:
+            faithfulness_results = json.load(f)
+
+    else:
+        faithfulness_results = {}
+        for behavior in ALTERED_ORIGINAL_BEHAVIORS:
+            (
+                p_acknowledged_clue,
+                p_take_hints,
+                faithfulness_stderr,
+                completed_samples,
+            ) = get_faithfulness_score(
+                behavior,
+                model=MODEL,
+                max_connections=MAX_CONNECTIONS,
+                display="full",
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=TEMPERATURE,
+                function_dict=ALTERED_ORIGINAL_BEHAVIORS,
+            )
+            faithfulness_results[behavior.value] = {
+                "p_acknowledged_clue": p_acknowledged_clue,
+                "faithfulness_stderr": faithfulness_stderr,
+                "completed_samples": completed_samples,
+            }
+
+        with open("./results/robustness_results.json", "w") as f:
+            json.dump(faithfulness_results, f)
 
     graph_results(faithfulness_results)
