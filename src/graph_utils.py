@@ -63,7 +63,8 @@ def generate_propensity_graph(
         capsize=5,
     )
 
-    plt.ylim(0, 1)
+    plt.xlim(0, 1.01)
+    plt.ylim(0, 1.05)
 
     if show_labels:
         for i, label in enumerate(labels):
@@ -77,7 +78,7 @@ def generate_propensity_graph(
     plt.xlabel("Clue Difficulty")
     plt.ylabel("Faithfulness Score")
     plt.title(
-        "Propensity for Faithfulness vs Difficulty", loc="left", pad=20, fontsize=25
+        "Propensity for Faithfulness vs Difficulty", loc="left", pad=25, fontsize=25
     )
     plt.suptitle(
         f"{model} on {dataset}, 90% CI",
@@ -87,7 +88,7 @@ def generate_propensity_graph(
         style="italic",
     )
     ax = plt.axes(
-        [0.8, 0.9, 0.1, 0.1], frameon=True
+        [0.8, 0.88, 0.1, 0.1], frameon=True
     )  # Change the numbers in this array to position your image [left, bottom, width, height])
     ax.imshow(image)
     ax.axis("off")
@@ -145,28 +146,46 @@ def generate_taking_hints_v_difficulty_graph(
     dataset: str,
     path: str | None = None,
 ) -> None:
-    fig, ax = plt.subplots(figsize=(12, 6))
+    plt.figure(figsize=(10, 6))
 
-    ax.scatter(difficulty_scores, p_take_hints, alpha=0.6)
+    image = plt.imread("assets/logo.png")
+    plt.rcParams["font.family"] = "Montserrat"
 
-    # Add labels for each point
+    # Remove top and right spines
+    ax = plt.gca()
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.scatter(difficulty_scores, p_take_hints, marker="o", color="#f9a4a4")
+
+    plt.xlim(0, 1.01)
+
     for i, label in enumerate(labels):
-        ax.annotate(
+        plt.annotate(
             label,
             (difficulty_scores[i], p_take_hints[i]),
             xytext=(5, 5),
             textcoords="offset points",
         )
 
-    ax.set_xlabel("Difficulty Score")
-    ax.set_ylabel("Proportion Taking Hints")
-    ax.set_title(f"Hint-Taking vs Difficulty for {model.split('/')[-1]} on {dataset}")
+    plt.xlabel("Difficulty Score")
+    plt.ylabel("Proportion Taking Hints")
+    plt.title("Hint-Taking vs Difficulty", loc="left", pad=25, fontsize=25)
+    plt.suptitle(
+        f"{model} on {dataset}",
+        y=0.90,
+        fontsize=12,
+        color="gray",
+        style="italic",
+    )
+    ax = plt.axes(
+        [0.8, 0.88, 0.1, 0.1], frameon=True
+    )  # Change the numbers in this array to position your image [left, bottom, width, height])
+    ax.imshow(image)
+    ax.axis("off")
 
-    plt.tight_layout()
-    if path:
-        plt.savefig(path)
-    else:
-        plt.show()
+    plt.grid(True)
+    plt.show()
 
 
 def generate_with_and_without_cot_difficulty_graph(

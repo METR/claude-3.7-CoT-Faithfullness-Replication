@@ -151,13 +151,13 @@ if __name__ == "__main__":
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
 
-    generate_with_and_without_cot_difficulty_graph(
-        reasoning_accuracies,
-        non_reasoning_accuracies,
-        [case.value for case in cases if case not in excluded_behaviors],
-        MODEL,
-        dataset_name,
-    )
+    # generate_with_and_without_cot_difficulty_graph(
+    #     reasoning_accuracies,
+    #     non_reasoning_accuracies,
+    #     [case.value for case in cases if case not in excluded_behaviors],
+    #     MODEL,
+    #     dataset_name,
+    # )
 
     generate_propensity_graph(
         faithfulness_scores,
@@ -170,12 +170,12 @@ if __name__ == "__main__":
         show_labels=False,
     )
 
-    generate_taking_hints_graph(
-        take_hints_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
-    )
+    # generate_taking_hints_graph(
+    #     take_hints_scores,
+    #     labels=[case.value for case in cases if case not in excluded_behaviors],
+    #     model=MODEL,
+    #     dataset=dataset_name,
+    # )
 
     generate_taking_hints_v_difficulty_graph(
         take_hints_scores,
