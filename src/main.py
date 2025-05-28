@@ -66,7 +66,7 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=TEMPERATURE,
         max_connections=MAX_CONNECTIONS,
-        limit=177,
+        limit=300,
         filtered_csv=config.filtered_csv,
     )
     excluded_behaviors = []
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                 behavior,
                 model=MODEL,
                 max_connections=MAX_CONNECTIONS,
-                limit=100,
+                limit=5 if REDTEAM else 100,
                 display=config.display,
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,

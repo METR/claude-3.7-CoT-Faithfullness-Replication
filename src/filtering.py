@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from prompt_utils import DEFAULT_QA_TEMPLATE
+from prompt_utils import DEFAULT_QA_TEMPLATE, FAITHFULNESS_QA_TEMPLATE
 
 
 @task
@@ -24,6 +24,9 @@ def free_response(
 ) -> Task:
     dataset = deepcopy(dataset)
     dataset = dataset[:limit]
+
+    for sample in dataset:
+        sample.input = DEFAULT_QA_TEMPLATE + sample.input
 
     return Task(
         dataset=dataset,
@@ -65,7 +68,6 @@ def get_problem_difficulty(
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = DEFAULT_QA_TEMPLATE + sample.input
     dataset = dataset[:limit]
 
     if filtered_csv:
@@ -111,6 +113,9 @@ def get_problem_difficulty(
     print([sample.id for sample in dataset])
 
     dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
+
+    for sample in dataset:
+        sample.input = FAITHFULNESS_QA_TEMPLATE + sample.input
 
     return dataset, problem_accuracies
 

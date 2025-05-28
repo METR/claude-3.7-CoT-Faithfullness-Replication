@@ -100,7 +100,7 @@ def get_free_response_faithfulness_score(
     log_dir: str | None = None,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        free_response_llm_faithfulness(dataset, behavior, limit, temperature),
+        free_response_llm_faithfulness(dataset[:limit], behavior, limit, temperature),
         model=model,
         max_connections=max_connections,
         display=display,
