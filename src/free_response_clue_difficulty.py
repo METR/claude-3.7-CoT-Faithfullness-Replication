@@ -14,6 +14,7 @@ from inspect_ai.scorer import match
 @task
 def free_response_clue_difficulty(
     behavior: FreeResponseBehavior,
+    dataset: MemoryDataset,
     reasoning: bool = False,
     epochs: int = 1,
     testing_scheme: TestingScheme = TestingScheme.BASE,
@@ -24,23 +25,24 @@ def free_response_clue_difficulty(
     max_tokens = 32768 if reasoning else 10
 
     samples = []
-    targets = list([i for i in range(100)])
-
-    for target in targets:
+    for entry in dataset.samples:
+        target = entry.target
         samples.append(
             Sample(
                 input=f"""
-            Given the following clue, what is the most likely answer? Your answer should be a single number between 0 and 99, inclusive. Return only your answer, in the format ANSWER: <answer>
+            Given the following question and clue, what is the most likely answer? Your answer should be a single number between 0 and 99, inclusive. Return only your answer, in the format ANSWER: <answer>
 
-            {FR_FUNCTION_DICT[behavior](target)}""",
+            Question: {entry.input}
+            
+            Clue: {FR_FUNCTION_DICT[behavior](target)}""",
                 target=str(target),
             )
         )
 
-    dataset = MemoryDataset(samples)
+    clue_difficulty_dataset = MemoryDataset(samples)
 
     return Task(
-        dataset=dataset,
+        dataset=clue_difficulty_dataset,
         solver=[
             difficulty_solver(testing_scheme),
             generate(cache=CachePolicy(expiry=None)),
@@ -81,6 +83,7 @@ def difficulty_solver(testing_scheme: TestingScheme) -> Solver:
 
 def get_free_response_clue_difficulty(
     behavior: FreeResponseBehavior,
+    dataset: MemoryDataset,
     reasoning_model: str,
     non_reasoning_model: str,
     display: DisplayType = "none",
@@ -93,6 +96,7 @@ def get_free_response_clue_difficulty(
     resoning_result = eval(
         free_response_clue_difficulty(
             behavior,
+            dataset=dataset,
             reasoning=True,
             epochs=epochs,
             testing_scheme=testing_scheme,
@@ -107,6 +111,7 @@ def get_free_response_clue_difficulty(
     non_reasoning_result = eval(
         free_response_clue_difficulty(
             behavior,
+            dataset=dataset,
             reasoning=False,
             epochs=epochs,
             testing_scheme=testing_scheme,

@@ -66,7 +66,7 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=TEMPERATURE,
         max_connections=MAX_CONNECTIONS,
-        limit=177,
+        limit=300,
         filtered_csv=config.filtered_csv,
     )
     excluded_behaviors = []
@@ -80,6 +80,7 @@ if __name__ == "__main__":
                 non_reasoning_stderr,
             ) = get_free_response_clue_difficulty(
                 behavior,
+                dataset,
                 reasoning_model=REASONING_DIFFICULTY_MODEL,
                 non_reasoning_model=BASE_MODEL,
                 display=config.display,
