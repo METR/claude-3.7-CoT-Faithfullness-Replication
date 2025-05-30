@@ -170,10 +170,10 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "together/Qwen/QwQ-32B"
-    temperature = 1
-    epochs = 10
-    limit = 2000
+    reasoning_model = "anthropic/claude-3-7-sonnet-latest"
+    temperature = 0.6
+    epochs = 5
+    limit = 300
     max_connections = 30
     dataset_name = "NuminaMath-1.5"
 

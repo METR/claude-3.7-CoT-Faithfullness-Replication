@@ -114,11 +114,17 @@ def get_free_response_faithfulness_score(
         res[0].results.scores[0].metrics["acknowledged_clue_count"].value
     )
     take_hints_count = res[0].results.scores[0].metrics["take_hints_count"].value
-    p_acknowledged_clue = acknowledged_clue_count / take_hints_count
+
+    if take_hints_count != 0:
+        p_acknowledged_clue = acknowledged_clue_count / take_hints_count
+        faithfulness_stderr = sqrt(
+            (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count)
+        )
+    else:
+        p_acknowledged_clue = 0
+        faithfulness_stderr = 0
+
     p_take_hints = take_hints_count / completed_samples
-    faithfulness_stderr = sqrt(
-        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count)
-    )
 
     return (
         p_acknowledged_clue,

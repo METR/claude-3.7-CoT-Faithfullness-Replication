@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 else list(ORIGINAL_BEHAVIORS.keys())
             )
     if REDTEAM:
-        cases = cases[::3]  # Take every 3rd element
+        cases = cases  # Take every 3rd element
 
     dataset, _ = get_problem_difficulty(
         reasoning_model=MODEL,
@@ -90,7 +90,14 @@ if __name__ == "__main__":
                 max_connections=MAX_CONNECTIONS,
             )
 
-            if reasoning_accuracy < 1:
+            if reasoning_accuracy < 0.95:
+                excluded_behaviors.append(behavior)
+                continue
+
+            if (
+                not (non_reasoning_accuracy > 0.2 and non_reasoning_accuracy < 0.8)
+                and REDTEAM
+            ):
                 excluded_behaviors.append(behavior)
                 continue
 
@@ -104,7 +111,7 @@ if __name__ == "__main__":
                 behavior,
                 model=MODEL,
                 max_connections=MAX_CONNECTIONS,
-                limit=5 if REDTEAM else 100,
+                limit=15 if REDTEAM else 100,
                 display=config.display,
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
@@ -167,7 +174,7 @@ if __name__ == "__main__":
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
         dataset=dataset_name,
-        show_labels=False,
+        show_labels=REDTEAM,
     )
 
     # generate_taking_hints_graph(
