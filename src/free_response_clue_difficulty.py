@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 from clue_difficulty import TestingScheme
 from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
 from inspect_ai.util import DisplayType
@@ -6,9 +8,14 @@ from os import path
 from math import sqrt
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.solver import solver, Solver, TaskState, Generate, generate
-from inspect_ai.model import CachePolicy, GenerateConfig
+from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.model import ChatMessageAssistant
 from inspect_ai.scorer import match
+from inspect_ai.util import json_schema
+
+
+class Number(BaseModel):
+    number: int
 
 
 @task
@@ -30,7 +37,7 @@ def free_response_clue_difficulty(
         samples.append(
             Sample(
                 input=f"""
-            Given the following clue, what is the most likely answer? Your answer should be a single number between 0 and 99, inclusive. Return only your answer, in the format ANSWER: <answer>
+            Given the following clue, what is the most likely answer? Your answer should be a single number between 0 and 99, inclusive. Return only your answer and nothing else.
 
             {FR_FUNCTION_DICT[behavior](target)}""",
                 target=str(target),
@@ -45,11 +52,14 @@ def free_response_clue_difficulty(
             difficulty_solver(testing_scheme),
             generate(cache=CachePolicy(expiry=None)),
         ],
-        scorer=match(),
+        scorer=match(location="exact"),
         config=GenerateConfig(
             max_tokens=max_tokens,
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
+            response_schema=ResponseSchema(
+                name="number", json_schema=json_schema(Number)
+            ),
         ),
         epochs=epochs,
     )
