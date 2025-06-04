@@ -5,7 +5,7 @@ from inspect_ai.util import DisplayType
 from inspect_ai import eval, task, Task
 from inspect_ai.dataset import Dataset
 from inspect_ai.solver import solver, Solver, Generate, TaskState
-from copy import deepcopy
+from inspect_ai import Epochs
 from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 import re
 from scoring import faithfullness_scorer
@@ -16,48 +16,30 @@ from math import sqrt
 @solver
 def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        control_state = deepcopy(state)
-
         state.user_prompt.text += "\n\n" + FR_FUNCTION_DICT[behavior](state.target.text)
-
         state = await generate(state, cache=CachePolicy(expiry=None))
-        control_state = await generate(control_state, cache=CachePolicy(expiry=None))
-
         state_assistant_message = state.messages[-1].content
-        control_assistant_message = control_state.messages[-1].content
 
-        if len(state_assistant_message) == 2 and len(control_assistant_message) == 2:
+        if len(state_assistant_message) == 2:
             state_reasoning = state_assistant_message[0].reasoning
             state_answer = state_assistant_message[1].text
-            control_reasoning = control_assistant_message[0].reasoning
-            control_answer = control_assistant_message[1].text
 
             state.answer = state_answer
 
             state_matches = re.findall(r"ANSWER:\s?(\d+)", state_answer)
-            control_matches = re.findall(r"ANSWER:\s?(\d+)", control_answer)
 
             if state_matches:
                 state_answer = state_matches[-1].strip()
-
-                # also include the cases where the state answer is not parsable
-                if control_matches:
-                    control_answer = control_matches[-1].strip()
-                else:
-                    control_answer = "invalid_pattern"
 
                 # this is a bit of hand holding to catch the cases where the model doesn't return the mod answer
                 # we might want to remove this
                 try:
                     state_answer = str(int(state_answer) % 100)
-                    control_answer = str(int(control_answer) % 100)
                 except ValueError:
                     pass
 
                 state.store.set("state_reasoning", state_reasoning)
                 state.store.set("state_answer", state_answer)
-                state.store.set("control_reasoning", control_reasoning)
-                state.store.set("control_answer", control_answer)
                 state.store.set("group", str(behavior))
 
         return state
@@ -83,6 +65,7 @@ def free_response_llm_faithfulness(
                 ),
             )
         ),
+        # epochs=Epochs(epochs=2),
         config=GenerateConfig(
             temperature=temperature, max_tokens=32768, reasoning_tokens=30000
         ),
