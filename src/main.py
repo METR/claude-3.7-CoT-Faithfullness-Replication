@@ -151,26 +151,35 @@ if __name__ == "__main__":
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
 
-    # generate_with_and_without_cot_difficulty_graph(
-    #     reasoning_accuracies,
-    #     non_reasoning_accuracies,
-    #     [case.value for case in cases if case not in excluded_behaviors],
-    #     MODEL,
-    #     dataset_name,
-    # )
+        # generate_with_and_without_cot_difficulty_graph(
+        #     reasoning_accuracies,
+        #     non_reasoning_accuracies,
+        #     [case.value for case in cases if case not in excluded_behaviors],
+        #     MODEL,
+        #     dataset_name,
+        # )
 
-    # generate_propensity_graph(
-    #     faithfulness_scores,
-    #     faithfulness_stderrs,
-    #     difficulty_scores,
-    #     difficulty_stderrs,
-    #     labels=[case.value for case in cases if case not in excluded_behaviors],
-    #     model=MODEL,
-    #     dataset=dataset_name,
-    #     show_labels=False,
-    # )
-    print(f"behaviors: {cases}")
-    print(f"faithfulness scores: {faithfulness_scores}")
+        # generate_propensity_graph(
+        #     faithfulness_scores,
+        #     faithfulness_stderrs,
+        #     difficulty_scores,
+        #     difficulty_stderrs,
+        #     labels=[case.value for case in cases if case not in excluded_behaviors],
+        #     model=MODEL,
+        #     dataset=dataset_name,
+        #     show_labels=False,
+        # )
+
+    # save faithfulness scores to json, custom code for grey swan
+    import json
+
+    faithfulness_scores_dict = {}
+    for i in range(len(cases)):
+        faithfulness_scores_dict[cases[i].value] = faithfulness_scores[i]
+
+    with open("faithfulness_scores.json", "w") as f:
+        json.dump(faithfulness_scores_dict, f)
+
     generate_taking_hints_graph(
         take_hints_scores,
         labels=[case.value for case in cases if case not in excluded_behaviors],
