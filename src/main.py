@@ -73,26 +73,26 @@ if __name__ == "__main__":
 
     for behavior in tqdm(cases):
         if FREE_RESPONSE:
-            (
-                reasoning_accuracy,
-                non_reasoning_accuracy,
-                reasoning_stderr,
-                non_reasoning_stderr,
-            ) = get_free_response_clue_difficulty(
-                behavior,
-                reasoning_model=REASONING_DIFFICULTY_MODEL,
-                non_reasoning_model=BASE_MODEL,
-                display=config.display,
-                epochs=1,
-                testing_scheme=TESTING_SCHEME,
-                log_dir=TOP_LEVEL_LOG_DIR,
-                temperature=TEMPERATURE,
-                max_connections=MAX_CONNECTIONS,
-            )
+            #     (
+            #         reasoning_accuracy,
+            #         non_reasoning_accuracy,
+            #         reasoning_stderr,
+            #         non_reasoning_stderr,
+            #     ) = get_free_response_clue_difficulty(
+            #         behavior,
+            #         reasoning_model=REASONING_DIFFICULTY_MODEL,
+            #         non_reasoning_model=BASE_MODEL,
+            #         display=config.display,
+            #         epochs=1,
+            #         testing_scheme=TESTING_SCHEME,
+            #         log_dir=TOP_LEVEL_LOG_DIR,
+            #         temperature=TEMPERATURE,
+            #         max_connections=MAX_CONNECTIONS,
+            #     )
 
-            if reasoning_accuracy < 1:
-                excluded_behaviors.append(behavior)
-                continue
+            #     if reasoning_accuracy < 1:
+            #         excluded_behaviors.append(behavior)
+            #         continue
 
             (
                 p_acknowledged_clue,
@@ -109,43 +109,43 @@ if __name__ == "__main__":
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
             )
-        else:
-            (
-                reasoning_accuracy,
-                non_reasoning_accuracy,
-                reasoning_stderr,
-                non_reasoning_stderr,
-            ) = get_clue_difficulty(
-                behavior,
-                reasoning_model=REASONING_DIFFICULTY_MODEL,
-                non_reasoning_model=BASE_MODEL,
-                display=config.display,
-                epochs=10,
-                testing_scheme=TESTING_SCHEME,
-                log_dir=TOP_LEVEL_LOG_DIR,
-                temperature=TEMPERATURE,
-                max_connections=MAX_CONNECTIONS,
-            )
+        # else:
+        #     (
+        #         reasoning_accuracy,
+        #         non_reasoning_accuracy,
+        #         reasoning_stderr,
+        #         non_reasoning_stderr,
+        #     ) = get_clue_difficulty(
+        #         behavior,
+        #         reasoning_model=REASONING_DIFFICULTY_MODEL,
+        #         non_reasoning_model=BASE_MODEL,
+        #         display=config.display,
+        #         epochs=10,
+        #         testing_scheme=TESTING_SCHEME,
+        #         log_dir=TOP_LEVEL_LOG_DIR,
+        #         temperature=TEMPERATURE,
+        #         max_connections=MAX_CONNECTIONS,
+        #     )
 
-            (
-                p_acknowledged_clue,
-                p_take_hints,
-                faithfulness_stderr,
-                completed_samples,
-            ) = get_faithfulness_score(
-                behavior,
-                model=MODEL,
-                max_connections=MAX_CONNECTIONS,
-                limit=100,
-                display=config.display,
-                log_dir=TOP_LEVEL_LOG_DIR,
-                temperature=TEMPERATURE,
-            )
+        #     (
+        #         p_acknowledged_clue,
+        #         p_take_hints,
+        #         faithfulness_stderr,
+        #         completed_samples,
+        #     ) = get_faithfulness_score(
+        #         behavior,
+        #         model=MODEL,
+        #         max_connections=MAX_CONNECTIONS,
+        #         limit=100,
+        #         display=config.display,
+        #         log_dir=TOP_LEVEL_LOG_DIR,
+        #         temperature=TEMPERATURE,
+        #     )
 
-        reasoning_accuracies.append(reasoning_accuracy)
-        non_reasoning_accuracies.append(non_reasoning_accuracy)
-        difficulty_scores.append(1 - non_reasoning_accuracy)
-        difficulty_stderrs.append(non_reasoning_stderr)
+        # reasoning_accuracies.append(reasoning_accuracy)
+        # non_reasoning_accuracies.append(non_reasoning_accuracy)
+        # difficulty_scores.append(1 - non_reasoning_accuracy)
+        # difficulty_stderrs.append(non_reasoning_stderr)
         faithfulness_scores.append(p_acknowledged_clue)
         faithfulness_stderrs.append(faithfulness_stderr)
         take_hints_scores.append(p_take_hints)
@@ -159,28 +159,29 @@ if __name__ == "__main__":
     #     dataset_name,
     # )
 
-    generate_propensity_graph(
-        faithfulness_scores,
-        faithfulness_stderrs,
-        difficulty_scores,
-        difficulty_stderrs,
+    # generate_propensity_graph(
+    #     faithfulness_scores,
+    #     faithfulness_stderrs,
+    #     difficulty_scores,
+    #     difficulty_stderrs,
+    #     labels=[case.value for case in cases if case not in excluded_behaviors],
+    #     model=MODEL,
+    #     dataset=dataset_name,
+    #     show_labels=False,
+    # )
+    print(f"behaviors: {cases}")
+    print(f"faithfulness scores: {faithfulness_scores}")
+    generate_taking_hints_graph(
+        take_hints_scores,
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
         dataset=dataset_name,
-        show_labels=False,
     )
 
-    # generate_taking_hints_graph(
+    # generate_taking_hints_v_difficulty_graph(
     #     take_hints_scores,
+    #     difficulty_scores,
     #     labels=[case.value for case in cases if case not in excluded_behaviors],
     #     model=MODEL,
     #     dataset=dataset_name,
     # )
-
-    generate_taking_hints_v_difficulty_graph(
-        take_hints_scores,
-        difficulty_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
-    )
