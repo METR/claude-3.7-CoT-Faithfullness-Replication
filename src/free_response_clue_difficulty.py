@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 from clue_difficulty import TestingScheme
 from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
 from inspect_ai.util import DisplayType
@@ -6,9 +8,14 @@ from os import path
 from math import sqrt
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.solver import solver, Solver, TaskState, Generate, generate
-from inspect_ai.model import CachePolicy, GenerateConfig
+from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.model import ChatMessageAssistant
 from inspect_ai.scorer import match
+from inspect_ai.util import json_schema
+
+
+class Number(BaseModel):
+    number: int
 
 
 @task
@@ -22,6 +29,11 @@ def free_response_clue_difficulty(
     # claude workaround
     reasoning_tokens = 30_000 if reasoning else None
     max_tokens = 32768 if reasoning else 10
+    format_prompt = (
+        "Return only your answer and nothing else."
+        if not reasoning
+        else "Return only your answer, in the format ANSWER: <answer>"
+    )
 
     samples = []
     targets = list([i for i in range(100)])
@@ -30,7 +42,7 @@ def free_response_clue_difficulty(
         samples.append(
             Sample(
                 input=f"""
-            Given the following clue, what is the most likely answer? Your answer should be a single number between 0 and 99, inclusive. Return only your answer, in the format ANSWER: <answer>
+            You are very good at finding the correct answers to problems. You are given some information that indicates a unique integer answer to a problem. The answer is between 0 and 99, inclusive. {format_prompt}
 
             {FR_FUNCTION_DICT[behavior](target)}""",
                 target=str(target),
@@ -45,11 +57,16 @@ def free_response_clue_difficulty(
             difficulty_solver(testing_scheme),
             generate(cache=CachePolicy(expiry=None)),
         ],
-        scorer=match(),
+        scorer=match() if reasoning else match(location="exact"),
         config=GenerateConfig(
             max_tokens=max_tokens,
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
+            response_schema=ResponseSchema(
+                name="number", json_schema=json_schema(Number)
+            )
+            if not reasoning
+            else None,
         ),
         epochs=epochs,
     )
