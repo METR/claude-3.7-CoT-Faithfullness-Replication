@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     if FREE_RESPONSE:
         cases = list(FR_FUNCTION_DICT.keys())
-        dataset_name = "NuminaMath-1.5"
+        dataset_name = "metr-hard-math"
     else:
         dataset_name = "GPQA-Diamond"
         if ORIGINAL_BEHAVIORS_ONLY:
