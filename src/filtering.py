@@ -52,16 +52,14 @@ def get_problem_difficulty(
     filtered_csv: str | None = None,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
-        "AI-MO/NuminaMath-1.5",
+        "metr-evals/hard-math-v0",
         split="train",
-        sample_fields=FieldSpec(input="problem", target="answer"),
-        limit=limit * 100,
+        sample_fields=FieldSpec(input="Updated Question", target="Updated Answer"),
         shuffle=False,
         auto_id=True,
     )
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
-    dataset = dataset.filter(lambda sample: "http" not in sample.input)
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
@@ -100,11 +98,6 @@ def get_problem_difficulty(
         for problem_id, accuracies in problem_accuracies.items():
             if np.mean(accuracies) == 0:
                 zero_accuracy_problems.append(problem_id)
-
-    # remove problelms that we know are wrong
-    zero_accuracy_problems = [
-        id for id in zero_accuracy_problems if id not in [96, 114, 137, 786]
-    ]
 
     print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
 
@@ -165,12 +158,12 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "together/Qwen/QwQ-32B"
+    reasoning_model = "anthropic/claude-3-7-sonnet-latest"
     temperature = 1
-    epochs = 10
-    limit = 2000
+    epochs = 5
+    limit = 200
     max_connections = 30
-    dataset_name = "NuminaMath-1.5"
+    dataset_name = "hard-math-v0"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
