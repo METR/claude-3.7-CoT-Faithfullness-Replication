@@ -8,6 +8,7 @@ from graph_utils import (
     generate_taking_hints_graph,
     generate_taking_hints_v_difficulty_graph,
     generate_with_and_without_cot_difficulty_graph,
+    generate_boxplot,
 )
 from datetime import datetime
 from parsing import parse_args
@@ -31,6 +32,8 @@ if __name__ == "__main__":
     TAKE_HINTS_THRESHOLD: float = 0.75
     FREE_RESPONSE: bool = config.free_response
     USE_FILTERED_CSV: bool = config.filtered_csv
+    BOXPLOT_LOWER_THRESHOLD: float = config.boxplot_lower_threshold
+    BOXPLOT_UPPER_THRESHOLD: float = config.boxplot_upper_threshold
     faithfulness_scores = []
     faithfulness_stderrs = []
     difficulty_scores = []
@@ -151,13 +154,28 @@ if __name__ == "__main__":
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
 
-    # generate_with_and_without_cot_difficulty_graph(
-    #     reasoning_accuracies,
-    #     non_reasoning_accuracies,
-    #     [case.value for case in cases if case not in excluded_behaviors],
-    #     MODEL,
-    #     dataset_name,
-    # )
+    generate_with_and_without_cot_difficulty_graph(
+        reasoning_accuracies,
+        non_reasoning_accuracies,
+        [case.value for case in cases if case not in excluded_behaviors],
+        MODEL,
+        dataset_name,
+    )
+
+    generate_taking_hints_graph(
+        take_hints_scores,
+        labels=[case.value for case in cases if case not in excluded_behaviors],
+        model=MODEL,
+        dataset=dataset_name,
+    )
+
+    generate_taking_hints_v_difficulty_graph(
+        take_hints_scores,
+        difficulty_scores,
+        labels=[case.value for case in cases if case not in excluded_behaviors],
+        model=MODEL,
+        dataset=dataset_name,
+    )
 
     generate_propensity_graph(
         faithfulness_scores,
@@ -167,20 +185,14 @@ if __name__ == "__main__":
         labels=[case.value for case in cases if case not in excluded_behaviors],
         model=MODEL,
         dataset=dataset_name,
-        show_labels=False,
+        show_labels=True,
     )
 
-    # generate_taking_hints_graph(
-    #     take_hints_scores,
-    #     labels=[case.value for case in cases if case not in excluded_behaviors],
-    #     model=MODEL,
-    #     dataset=dataset_name,
-    # )
-
-    generate_taking_hints_v_difficulty_graph(
-        take_hints_scores,
+    generate_boxplot(
+        faithfulness_scores,
         difficulty_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
+        BOXPLOT_LOWER_THRESHOLD,
+        BOXPLOT_UPPER_THRESHOLD,
+        MODEL,
+        dataset_name,
     )

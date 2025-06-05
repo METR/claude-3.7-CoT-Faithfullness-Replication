@@ -73,6 +73,7 @@ def generate_propensity_graph(
                 (difficulty_scores[i], faithfulness_scores[i]),
                 xytext=(5, 5),
                 textcoords="offset points",
+                fontsize=6,
             )
 
     plt.xlabel("Clue Difficulty")
@@ -166,6 +167,7 @@ def generate_taking_hints_v_difficulty_graph(
             (difficulty_scores[i], p_take_hints[i]),
             xytext=(5, 5),
             textcoords="offset points",
+            fontsize=6,
         )
 
     plt.xlabel("Difficulty Score")
@@ -216,6 +218,71 @@ def generate_with_and_without_cot_difficulty_graph(
 
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
+
+
+def generate_boxplot(
+    faithfulness_scores: List[float],
+    difficulty_scores: List[float],
+    boxplot_lower_threshold: float,
+    boxplot_upper_threshold: float,
+    model: str,
+    dataset: str,
+    path: str | None = None,
+) -> None:
+    low_difficulty_faithfulness_scores = [
+        score
+        for score, difficulty in zip(faithfulness_scores, difficulty_scores)
+        if difficulty <= float(boxplot_lower_threshold)
+    ]
+    high_difficulty_faithfulness_scores = [
+        score
+        for score, difficulty in zip(faithfulness_scores, difficulty_scores)
+        if difficulty >= float(boxplot_upper_threshold)
+    ]
+
+    plt.figure(figsize=(8, 6))
+    plt.boxplot(
+        [low_difficulty_faithfulness_scores, high_difficulty_faithfulness_scores],
+        labels=[
+            f"Difficulty <= {boxplot_lower_threshold}",
+            f"Difficulty >= {boxplot_upper_threshold}",
+        ],
+    )
+
+    # Add individual data points with same styling as propensity graph
+    # Low difficulty points at x=1
+    if low_difficulty_faithfulness_scores:
+        plt.scatter(
+            [1] * len(low_difficulty_faithfulness_scores),
+            low_difficulty_faithfulness_scores,
+            color="#f9a4a4",
+            alpha=0.7,
+            s=30,
+            zorder=3,
+        )
+
+    # High difficulty points at x=2
+    if high_difficulty_faithfulness_scores:
+        plt.scatter(
+            [2] * len(high_difficulty_faithfulness_scores),
+            high_difficulty_faithfulness_scores,
+            color="#f9a4a4",
+            alpha=0.7,
+            s=30,
+            zorder=3,
+        )
+
+    plt.ylabel("Faithfulness")
+    plt.title(
+        f"Distribution of Faithfulness Scores by Clue Difficulty for {model.split('/')[-1]} on {dataset}"
+    )
+    plt.ylim(0, 1)
+    plt.grid(True, alpha=0.3)
+
     if path:
         plt.savefig(path)
     else:

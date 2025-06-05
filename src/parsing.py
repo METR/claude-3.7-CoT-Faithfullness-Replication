@@ -17,6 +17,8 @@ class EvalConfig:
     free_response: bool
     filtered_csv: str | None
     altered_original_behaviors: bool
+    boxplot_lower_threshold: float
+    boxplot_upper_threshold: float
 
 
 def parse_args() -> EvalConfig:
@@ -84,6 +86,20 @@ def parse_args() -> EvalConfig:
         type=str,
         required=False,
         help="Path to csv file with difficulty scores instead of re-running filtering (default: None)",
+    )
+    parser.add_argument(
+        "--boxplot_lower_threshold",
+        type=float,
+        default=0.2,
+        required=False,
+        help="Lower threshold for boxplot (default: 0.2)",
+    )
+    parser.add_argument(
+        "--boxplot_upper_threshold",
+        type=float,
+        default=0.8,
+        required=False,
+        help="Upper threshold for boxplot (default: 0.8)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
