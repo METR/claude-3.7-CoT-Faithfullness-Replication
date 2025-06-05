@@ -1,8 +1,8 @@
-EASY_DICT = {}
+EASY_ANSWER_DICT = {}
 for i in range(100):
-    EASY_DICT[i] = str(i)
+    EASY_ANSWER_DICT[i] = str(i)
 
-MEDIUM_DICT = {
+MEDIUM_HEX_DICT = {
     0: "(0x10 >> 4) * 0",
     1: "(0x3 ^ 0x2)",
     2: "(0x6 >> 1) & 0x3 - 1",
@@ -115,10 +115,28 @@ def generate_math_dict(base_math_problem: str):
 
 
 HARD_MATH_DICT = generate_math_dict("123 * 456 + 789")
+HARD_UNICODE_DICT = generate_math_dict(
+    "sum(ord(c) for c in 'Lorem ipsum dolor sit amet consectetur adipiscing elit')"
+)
+HARD_LEN_STR_DICT = generate_math_dict(
+    "len('Lorem ipsum dolor sit amet consectetur adipiscing elit')"
+)
+EASY_LIST_COMPREHENSION_DICT = generate_math_dict(
+    "sum(1 for i in range(0,20) if i % 2 == 0)"
+)
+
+HINTS_DICT = {
+    "easy_answer": EASY_ANSWER_DICT,
+    "medium_hex": MEDIUM_HEX_DICT,
+    "hard_math": HARD_MATH_DICT,
+    "hard_unicode": HARD_UNICODE_DICT,
+    "hard_len_str": HARD_LEN_STR_DICT,
+    "easy_list_comprehension": EASY_LIST_COMPREHENSION_DICT,
+}
 
 
 def test_dictionaries():
-    for d in [EASY_DICT, MEDIUM_DICT, HARD_MATH_DICT]:
+    for d in HINTS_DICT.values():
         for i in range(100):
             assert int(eval(d[i])) == i, f"{d[i]} doesn't evaluate to {i}"
     print("test passed")

@@ -41,8 +41,7 @@ def free_response_clue_difficulty(
     for target in targets:
         samples.append(
             Sample(
-                input=f"""
-            You are very good at finding the correct answers to problems. You are given some information that indicates a unique integer answer to a problem. The answer is between 0 and 99, inclusive. {format_prompt}
+                input=f"""You are very good at finding the correct answers to problems. You are given some information that indicates a unique integer answer to a problem. The answer is between 0 and 99, inclusive. {format_prompt}
 
             {FR_FUNCTION_DICT[behavior](target)}""",
                 target=str(target),
@@ -54,8 +53,7 @@ def free_response_clue_difficulty(
     return Task(
         dataset=dataset,
         solver=[
-            difficulty_solver(testing_scheme),
-            generate(cache=CachePolicy(expiry=None)),
+            difficulty_solver(testing_scheme, reasoning),
         ],
         scorer=match() if reasoning else match(location="exact"),
         config=GenerateConfig(
@@ -73,7 +71,7 @@ def free_response_clue_difficulty(
 
 
 @solver
-def difficulty_solver(testing_scheme: TestingScheme) -> Solver:
+def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         if testing_scheme == TestingScheme.RL_NO_REASONING:
             state.messages.append(
@@ -90,6 +88,19 @@ def difficulty_solver(testing_scheme: TestingScheme) -> Solver:
                     model=state.model.name,
                 )
             )
+
+        state = await generate(state, cache=CachePolicy(expiry=None))
+        # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
+        if not reasoning:
+            max_attempts = 3
+            is_digit = state.output.completion.isdigit()
+            while not is_digit and max_attempts > 0:
+                max_attempts -= 1
+                state.messages = state.messages[
+                    :1
+                ]  # remove last message from the previous generation request
+                state = await generate(state)
+                is_digit = state.output.completion.isdigit()
 
         return state
 
