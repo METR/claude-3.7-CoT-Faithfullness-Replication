@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 max_connections=MAX_CONNECTIONS,
             )
 
-            if reasoning_accuracy < 1:
+            if reasoning_accuracy < 0.95:
                 excluded_behaviors.append(behavior)
                 continue
 
