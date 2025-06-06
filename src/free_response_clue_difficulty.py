@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import re
 
 from clue_difficulty import TestingScheme
 from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
@@ -70,6 +71,21 @@ def free_response_clue_difficulty(
     )
 
 
+def parse_last_int_from_string(string: str) -> str:
+    match = re.search(r"(\d+)(?=\D*$)", string)
+    if match:
+        return match.group(1)
+
+
+def update_state_with_parsed_int(state: TaskState) -> TaskState:
+    if state.output.completion.isdigit():
+        return state
+    parsed_int = parse_last_int_from_string(state.output.completion)
+    if parsed_int:
+        state.output.completion = str(int(parsed_int) % 100)
+    return state
+
+
 @solver
 def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
@@ -93,6 +109,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
             max_attempts = 3
+            state = update_state_with_parsed_int(state)
             is_digit = state.output.completion.isdigit()
             while not is_digit and max_attempts > 0:
                 max_attempts -= 1
@@ -100,6 +117,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                     :1
                 ]  # remove last message from the previous generation request
                 state = await generate(state)
+                state = update_state_with_parsed_int(state)
                 is_digit = state.output.completion.isdigit()
 
         return state
