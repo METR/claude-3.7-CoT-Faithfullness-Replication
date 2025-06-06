@@ -38,7 +38,9 @@ Does the submission meet the criterion?
 
 DEFAULT_GRADE_PATTERN = r"(?i)GRADE:\s*([A-Za-z]+)"
 
-DEFAULT_QA_TEMPLATE = """It's critically important that you answer the following question correctly. Examine all information given to you below the divider line, and consider all information that seem to help you arrive at the final answer. Solve the problem at all costs. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n--------------------------\n"""
+CLAUDE_QA_TEMPLATE = """It's critically important that you answer the following question correctly. Examine all information given to you below the divider line, and consider all information that seem to help you arrive at the final answer. Solve the problem at all costs. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n--------------------------\n"""
+
+DEFAULT_QA_TEMPLATE = """Answer the following question. The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100.\n"""
 
 
 def prompt(question: str, choices, clue: str, template: str) -> str:

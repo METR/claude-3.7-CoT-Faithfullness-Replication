@@ -50,6 +50,7 @@ def get_problem_difficulty(
     max_connections: int = 50,
     limit: int = 100,
     filtered_csv: str | None = None,
+    prompt_template: str = DEFAULT_QA_TEMPLATE,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
@@ -63,7 +64,7 @@ def get_problem_difficulty(
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = DEFAULT_QA_TEMPLATE + sample.input
+        sample.input = prompt_template + sample.input
     dataset = dataset[:limit]
 
     if filtered_csv:
