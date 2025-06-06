@@ -9,6 +9,7 @@ from graph_utils import (
     generate_taking_hints_v_difficulty_graph,
     generate_with_and_without_cot_difficulty_graph,
     generate_boxplot,
+    save_raw_data_to_json,
 )
 from datetime import datetime
 from parsing import parse_args
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     BASE_MODEL: str = config.base_model
     TESTING_SCHEME: TestingScheme = config.testing_scheme
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}-{TESTING_SCHEME.value}/"
+    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}.json"
     REDTEAM: bool = config.redteam
     TEMPERATURE: float = config.temperature
     MAX_CONNECTIONS: int = config.max_connections
@@ -157,6 +159,18 @@ if __name__ == "__main__":
         faithfulness_stderrs.append(faithfulness_stderr)
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
+
+    save_raw_data_to_json(
+        reasoning_accuracies,
+        non_reasoning_accuracies,
+        difficulty_scores,
+        difficulty_stderrs,
+        faithfulness_scores,
+        faithfulness_stderrs,
+        take_hints_scores,
+        samples,
+        f"{TOP_LEVEL_LOG_DIR}/raw_data.json",
+    )
 
     generate_with_and_without_cot_difficulty_graph(
         reasoning_accuracies,

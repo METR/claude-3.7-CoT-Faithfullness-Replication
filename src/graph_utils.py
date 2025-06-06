@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from clue_difficulty import TestingScheme
 import matplotlib.image as mpimg
 import numpy as np
+import json
 
 
 def generate_propensity_graph(
@@ -287,3 +288,26 @@ def generate_boxplot(
         plt.savefig(path)
     else:
         plt.show()
+
+
+def save_raw_data_to_json(
+    reasoning_accuracies: List[float],
+    non_reasoning_accuracies: List[float],
+    difficulty_scores: List[float],
+    difficulty_stderrs: List[float],
+    faithfulness_scores: List[float],
+    faithfulness_stderrs: List[float],
+    take_hints_scores: List[float],
+    samples: List[int],
+    path: str,
+) -> None:
+    data = {
+        "reasoning_accuracies": reasoning_accuracies,
+        "non_reasoning_accuracies": non_reasoning_accuracies,
+        "difficulty_scores": difficulty_scores,
+        "difficulty_stderrs": difficulty_stderrs,
+        "faithfulness_scores": faithfulness_scores,
+        "faithfulness_stderrs": faithfulness_stderrs,
+    }
+    with open(path, "w") as f:
+        json.dump(data, f)
