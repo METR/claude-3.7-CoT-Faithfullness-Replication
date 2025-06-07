@@ -1,145 +1,155 @@
-import datetime
+from graph_utils import (
+    generate_propensity_graph,
+    generate_taking_hints_graph,
+    generate_taking_hints_v_difficulty_graph,
+    generate_with_and_without_cot_difficulty_graph,
+    generate_boxplot,
+    save_raw_data_to_json,
+    generate_violin_plot,
+)
 import json
-import os
-import time
-from behaviors import FUNCTION_DICT
-import matplotlib.pyplot as plt
-from clue_difficulty import get_clue_difficulty, TestingScheme
-from llm_faithfulness import get_faithfulness_score
-from tqdm import tqdm
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--model",
-    type=str,
-    help="Model to use for evaluation",
-    default="together/Qwen/QwQ-32B",
-)
-parser.add_argument(
-    "--base_model",
-    type=str,
-    help="Base model to compare against",
-    default="together/Qwen/QwQ-32B",
-)
-args = parser.parse_args()
 
-MODEL = args.model
-BASE_MODEL = args.base_model
-TESTING_SCHEME = TestingScheme.BASE
+def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
+    """
+    Filter multiple lists based on a threshold applied to one list.
 
-start_timestamp = (
-    datetime.datetime.now(datetime.timezone.utc)
-    .strftime("%Y-%m-%dT%H-%M-%S")
-    .replace("+", "-")
-)
+    Args:
+        filter_list: The list to apply the threshold condition to
+        *other_lists: Variable number of other lists to filter correspondingly
+        threshold: Values below this in filter_list will be removed (default 0.1)
 
+    Returns:
+        Tuple of filtered lists (filter_list, *other_lists)
+    """
+    # Create mask for values >= threshold
+    filtered_data = [
+        (filter_val, *other_vals)
+        for filter_val, *other_vals in zip(filter_list, *other_lists)
+        if filter_val >= threshold
+    ]
 
-def save_scores(**kwargs):
-    data = {
-        "model": MODEL,
-        "base_model": BASE_MODEL,
-        "testing_scheme": TESTING_SCHEME.value,
-        **kwargs,
-    }
-
-    if not os.path.exists("scores"):
-        os.makedirs("scores")
-    with open(f"scores/{start_timestamp}.jsonl", "a") as f:
-        f.write(json.dumps(data) + "\n")
+    # Unpack back into separate lists
+    if filtered_data:
+        return tuple(zip(*filtered_data))
+    else:
+        # Handle empty result case
+        return tuple([] for _ in range(len(other_lists) + 1))
 
 
 if __name__ == "__main__":
-    faithfulness_scores = []
-    faithfulness_stderr_scores = []
-    cot_difficulty_scores = []
-    cot_difficulty_stderr_scores = []
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        type=str,
+        help="Model to use for evaluation",
+        default="anthropic/claude-3-7-sonnet-latest",
+    )
+    parser.add_argument(
+        "--hint_taking_threshold",
+        type=float,
+        help="Threshold for hint taking",
+        default=0.1,
+    )
+    parser.add_argument(
+        "--show_labels",
+        type=bool,
+        help="Whether to show labels on the graph",
+        default=False,
+    )
+    parser.add_argument(
+        "--raw_data_path",
+        type=str,
+        help="Path to raw data",
+    )
+    args = parser.parse_args()
 
-    labels = [x.value for x in FUNCTION_DICT.keys()]
-    cases = list(FUNCTION_DICT.keys())
+    RAW_DATA_PATH = args.raw_data_path
+    MODEL = args.model
+    HINT_TAKING_THRESHOLD = args.hint_taking_threshold
+    SHOW_LABELS = args.show_labels
+    dataset_name = "metr/hard-math"
+    BOXPLOT_LOWER_THRESHOLD = 0.2
+    BOXPLOT_UPPER_THRESHOLD = 0.8
 
-    for behavior in tqdm(cases):
-        (
-            cot_difficulty,
-            cot_difficulty_stderr,
-            reasoning_accuracy,
-            non_reasoning_accuracy,
-        ) = get_clue_difficulty(
-            behavior,
-            reasoning_model=MODEL,
-            non_reasoning_model=BASE_MODEL,
-            display="full",
-            epochs=10,
-            testing_scheme=TESTING_SCHEME,
-        )
-        (
-            faithfulness_score,
-            faithfulness_stderr,
-            delta_correctness,
-            completed_samples,
-            ic_count,
-        ) = get_faithfulness_score(
-            behavior,
-            model=MODEL,
-            max_connections=100,
-            limit=100,
-            display="none",
-        )
-        save_scores(
-            behavior=behavior.value,
-            cot_difficulty=cot_difficulty,
-            cot_difficulty_stderr=cot_difficulty_stderr,
-            reasoning_accuracy=reasoning_accuracy,
-            non_reasoning_accuracy=non_reasoning_accuracy,
-            faithfulness_score=faithfulness_score,
-            faithfulness_stderr=faithfulness_stderr,
-            delta_correctness=delta_correctness,
-            completed_samples=completed_samples,
-            ic_count=ic_count,
-        )
+    with open(RAW_DATA_PATH, "r") as f:
+        data = json.load(f)
 
-        faithfulness_scores.append(faithfulness_score)
-        faithfulness_stderr_scores.append(faithfulness_stderr)
-        cot_difficulty_scores.append(cot_difficulty)
-        cot_difficulty_stderr_scores.append(cot_difficulty_stderr)
-    # plot the scores
+    labels = data["labels"]
+    reasoning_accuracies = data["reasoning_accuracies"]
+    non_reasoning_accuracies = data["non_reasoning_accuracies"]
+    difficulty_scores = data["difficulty_scores"]
+    difficulty_stderrs = data["difficulty_stderrs"]
+    faithfulness_scores = data["faithfulness_scores"]
+    faithfulness_stderrs = data["faithfulness_stderrs"]
+    take_hints_scores = data["take_hints_scores"]
+    samples = data["samples"]
 
-    plt.figure(figsize=(10, 6))
-    # Plot all points except the last one
-    plt.errorbar(
-        cot_difficulty_scores[:-1],
-        faithfulness_scores[:-1],
-        xerr=cot_difficulty_stderr_scores[:-1],
-        yerr=faithfulness_stderr_scores[:-1],
-        fmt="o",
-        ecolor="gray",
-        capsize=5,
+    (
+        take_hints_scores,
+        labels,
+        reasoning_accuracies,
+        non_reasoning_accuracies,
+        difficulty_scores,
+        difficulty_stderrs,
+        faithfulness_scores,
+        faithfulness_stderrs,
+        samples,
+    ) = filter_lists_by_threshold(
+        take_hints_scores,
+        labels,
+        reasoning_accuracies,
+        non_reasoning_accuracies,
+        difficulty_scores,
+        difficulty_stderrs,
+        faithfulness_scores,
+        faithfulness_stderrs,
+        samples,
+        threshold=HINT_TAKING_THRESHOLD,
     )
 
-    # Plot the last point in red
-    plt.errorbar(
-        cot_difficulty_scores[-1:],
-        faithfulness_scores[-1:],
-        xerr=cot_difficulty_stderr_scores[-1:],
-        yerr=faithfulness_stderr_scores[-1:],
-        fmt="ro",
-        ecolor="gray",
-        capsize=5,
+    generate_taking_hints_graph(
+        take_hints_scores,
+        labels=labels,
+        model=MODEL,
+        dataset=dataset_name,
     )
 
-    # Add labels to each point
-    # for i, label in enumerate(cases):
-    #     plt.annotate(
-    #         label.value,
-    #         (cot_difficulty_scores[i], faithfulness_scores[i]),
-    #         xytext=(5, 5),
-    #         textcoords="offset points",
-    #     )
-
-    plt.xlabel("Chain of Thought Difficulty")
-    plt.ylabel("Faithfulness Score")
-    plt.title(
-        f"Faithfulness vs Chain of Thought Difficulty by Behavior for {MODEL} with {TESTING_SCHEME} testing scheme"
+    generate_taking_hints_v_difficulty_graph(
+        take_hints_scores,
+        difficulty_scores,
+        labels=labels,
+        model=MODEL,
+        dataset=dataset_name,
+        show_labels=SHOW_LABELS,
     )
-    plt.grid(True)
-    plt.show()
+
+    generate_propensity_graph(
+        faithfulness_scores,
+        faithfulness_stderrs,
+        difficulty_scores,
+        difficulty_stderrs,
+        labels=labels,
+        model=MODEL,
+        dataset=dataset_name,
+        show_labels=SHOW_LABELS,
+    )
+
+    generate_boxplot(
+        faithfulness_scores,
+        difficulty_scores,
+        BOXPLOT_LOWER_THRESHOLD,
+        BOXPLOT_UPPER_THRESHOLD,
+        MODEL,
+        dataset_name,
+    )
+
+    generate_violin_plot(
+        faithfulness_scores,
+        difficulty_scores,
+        BOXPLOT_LOWER_THRESHOLD,
+        BOXPLOT_UPPER_THRESHOLD,
+        MODEL,
+        dataset_name,
+    )

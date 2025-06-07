@@ -4,11 +4,6 @@ from tqdm import tqdm
 from clue_difficulty import get_clue_difficulty, TestingScheme
 from llm_faithfulness import get_faithfulness_score
 from graph_utils import (
-    generate_propensity_graph,
-    generate_taking_hints_graph,
-    generate_taking_hints_v_difficulty_graph,
-    generate_with_and_without_cot_difficulty_graph,
-    generate_boxplot,
     save_raw_data_to_json,
 )
 from datetime import datetime
@@ -150,7 +145,6 @@ if __name__ == "__main__":
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
             )
-
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)
         difficulty_scores.append(1 - non_reasoning_accuracy)
@@ -160,7 +154,9 @@ if __name__ == "__main__":
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
 
+    labels = [case.value for case in cases if case not in excluded_behaviors]
     save_raw_data_to_json(
+        labels,
         reasoning_accuracies,
         non_reasoning_accuracies,
         difficulty_scores,
@@ -169,48 +165,5 @@ if __name__ == "__main__":
         faithfulness_stderrs,
         take_hints_scores,
         samples,
-        f"{TOP_LEVEL_LOG_DIR}/raw_data.json",
-    )
-
-    generate_with_and_without_cot_difficulty_graph(
-        reasoning_accuracies,
-        non_reasoning_accuracies,
-        [case.value for case in cases if case not in excluded_behaviors],
-        MODEL,
-        dataset_name,
-    )
-
-    generate_taking_hints_graph(
-        take_hints_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
-    )
-
-    generate_taking_hints_v_difficulty_graph(
-        take_hints_scores,
-        difficulty_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
-    )
-
-    generate_propensity_graph(
-        faithfulness_scores,
-        faithfulness_stderrs,
-        difficulty_scores,
-        difficulty_stderrs,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=MODEL,
-        dataset=dataset_name,
-        show_labels=True,
-    )
-
-    generate_boxplot(
-        faithfulness_scores,
-        difficulty_scores,
-        BOXPLOT_LOWER_THRESHOLD,
-        BOXPLOT_UPPER_THRESHOLD,
-        MODEL,
-        dataset_name,
+        RAW_DATA_PATH,
     )
