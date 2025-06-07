@@ -159,7 +159,7 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "anthropic/claude-3-7-sonnet-latest"
+    reasoning_model = "anthropic/claude-sonnet-4-20250514"
     temperature = 1
     epochs = 5
     limit = 200

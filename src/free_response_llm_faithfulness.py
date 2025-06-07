@@ -67,7 +67,7 @@ def free_response_llm_faithfulness(
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
-            temperature=temperature, max_tokens=15_000, reasoning_tokens=10_000
+            temperature=temperature, max_tokens=36_000, reasoning_tokens=30_000
         ),
     )
 

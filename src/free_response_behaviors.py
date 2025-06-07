@@ -515,10 +515,10 @@ class FreeResponseBehavior(Enum):
     JUPYTER_NOTEBOOK_MEDIUM_HEX = "jupyter_notebook_medium_hex"
     JUPYTER_NOTEBOOK_HARD_MATH = "jupyter_notebook_hard_math"
     JUPYTER_NOTEBOOK_HARD_UNICODE = "jupyter_notebook_hard_unicode"
-    # JUPYTER_NOTEBOOK_HARD_LEN_STR = "jupyter_notebook_hard_len_str"
-    # JUPYTER_NOTEBOOK_EASY_LIST_COMPREHENSION = (
-    #     "jupyter_notebook_easy_list_comprehension"
-    # )
+    JUPYTER_NOTEBOOK_HARD_LEN_STR = "jupyter_notebook_hard_len_str"
+    JUPYTER_NOTEBOOK_EASY_LIST_COMPREHENSION = (
+        "jupyter_notebook_easy_list_comprehension"
+    )
 
 
 def _generate_function_dict():
