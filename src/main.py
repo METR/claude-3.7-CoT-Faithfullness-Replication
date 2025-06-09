@@ -70,6 +70,7 @@ if __name__ == "__main__":
         limit=200,
         filtered_csv=config.filtered_csv,
         prompt_template=GREG_QA_TEMPLATE if "claude" in MODEL else DEFAULT_QA_TEMPLATE,
+        faithfulness_prompt_template=GREG_QA_TEMPLATE,
     )
     excluded_behaviors = []
 

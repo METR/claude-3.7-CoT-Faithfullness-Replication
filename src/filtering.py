@@ -51,6 +51,7 @@ def get_problem_difficulty(
     limit: int = 100,
     filtered_csv: str | None = None,
     prompt_template: str = DEFAULT_QA_TEMPLATE,
+    faithfulness_prompt_template: str = DEFAULT_QA_TEMPLATE,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
@@ -64,7 +65,6 @@ def get_problem_difficulty(
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = prompt_template + sample.input
     dataset = dataset[:limit]
 
     if filtered_csv:
@@ -72,9 +72,13 @@ def get_problem_difficulty(
         accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
         zero_accuracy_problems = accuracy_df["problem_id"].tolist()
     else:
+        qa_dataset = deepcopy(dataset)
+        for sample in qa_dataset:
+            sample.input = prompt_template + sample.input
+
         evalscore = eval(
             free_response(
-                dataset=dataset,
+                dataset=qa_dataset,
                 epochs=epochs,
                 temperature=temperature,
                 limit=limit,
@@ -102,9 +106,10 @@ def get_problem_difficulty(
 
     print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
 
-    print([sample.id for sample in dataset])
-
     dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
+
+    for sample in dataset:
+        sample.input = faithfulness_prompt_template + sample.input
 
     return dataset, problem_accuracies
 
