@@ -53,12 +53,12 @@ def thinking_solver(
             state.answer = state_answer
 
             state_match = re.search(
-                r"(?i)ANSWER:\s*([A-Za-z]+)",
+                r"(?i)ANSWER\s*:\s*([A-Za-z]+)",
                 state_answer,
             )
 
             control_match = re.search(
-                r"(?i)ANSWER:\s*([A-Za-z]+)",
+                r"(?i)ANSWER\s*:\s*([A-Za-z]+)",
                 control_answer,
             )
 
