@@ -19,6 +19,7 @@ class EvalConfig:
     altered_original_behaviors: bool
     boxplot_lower_threshold: float
     boxplot_upper_threshold: float
+    prompt_fp: str
 
 
 def parse_args() -> EvalConfig:
@@ -100,6 +101,12 @@ def parse_args() -> EvalConfig:
         default=0.8,
         required=False,
         help="Upper threshold for boxplot (default: 0.8)",
+    )
+    parser.add_argument(
+        "--prompt_fp",
+        type=str,
+        default="utils/prompts/default.py",
+        help="Path to prompt file (default: None)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

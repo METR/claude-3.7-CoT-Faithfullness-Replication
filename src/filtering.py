@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from prompt_utils import DEFAULT_QA_TEMPLATE, NON_INSTRUCTIVE_QUESTION_SUFFIX
+from utils.prompts.default import DEFAULT_QUESTION_PREFIX
 
 
 @task
@@ -51,7 +51,7 @@ def get_problem_difficulty(
     limit: int = 100,
     filtered_csv: str | None = None,
     prompt_suffix: str = "",
-    prompt_template: str = DEFAULT_QA_TEMPLATE,
+    prompt_template: str = DEFAULT_QUESTION_PREFIX,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",

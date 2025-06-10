@@ -4,7 +4,7 @@ from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
-from prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
+from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 from behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer

@@ -11,17 +11,27 @@ import re
 from scoring import faithfullness_scorer
 from os import path
 from math import sqrt
-from prompt_utils import NON_INSTRUCTIVE_HINT_SUFFIX
 
 
 @solver
-def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
+def free_response_thinking_solver(
+    *,
+    behavior: FreeResponseBehavior,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
+) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        state.user_prompt.text += (
-            "\n\n"
+        state.original_question = state.user_prompt.text
+        state.user_prompt.text = (
+            prompt_prefix
+            + "\n\n"
+            + state.original_question
+            + prompt_suffix
+            + "\n"
             + FR_FUNCTION_DICT[behavior](state.target.text)
             + "\n"
-            + NON_INSTRUCTIVE_HINT_SUFFIX
+            + hint_suffix
         )
         state = await generate(state, cache=CachePolicy(expiry=None))
         state_assistant_message = state.messages[-1].content
@@ -59,17 +69,26 @@ def free_response_llm_faithfulness(
     behavior: FreeResponseBehavior,
     limit: int = 100,
     temperature: float = 0.6,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
 ) -> Task:
     return Task(
         dataset=dataset,
-        solver=free_response_thinking_solver(behavior=behavior),
+        solver=free_response_thinking_solver(
+            behavior=behavior,
+            prompt_prefix=prompt_prefix,
+            prompt_suffix=prompt_suffix,
+            hint_suffix=hint_suffix,
+        ),
         scorer=faithfullness_scorer(
+            behavior=behavior,
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
                     temperature=1,
                 ),
-            )
+            ),
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
@@ -86,10 +105,21 @@ def get_free_response_faithfulness_score(
     max_connections: int = 100,
     display: DisplayType = "none",
     temperature: float = 0.6,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
     log_dir: str | None = None,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        free_response_llm_faithfulness(dataset, behavior, limit, temperature),
+        free_response_llm_faithfulness(
+            dataset,
+            behavior,
+            limit,
+            temperature,
+            prompt_prefix=prompt_prefix,
+            prompt_suffix=prompt_suffix,
+            hint_suffix=hint_suffix,
+        ),
         model=model,
         max_connections=max_connections,
         display=display,

@@ -11,13 +11,9 @@ from parsing import parse_args
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
-from prompt_utils import (
-    CLAUDE_QA_TEMPLATE,
-    DEFAULT_QA_TEMPLATE,
-    GREG_QA_TEMPLATE,
-    GENERAL_ELICITED_QA_TEMPLATE,
-    NON_INSTRUCTIVE_TEMPLATE,
-)
+from utils.prompt_utils import load_prompt_module
+from utils.prompts.default import DEFAULT_QUESTION_PREFIX
+
 
 if __name__ == "__main__":
     config = parse_args()
@@ -38,6 +34,10 @@ if __name__ == "__main__":
     USE_FILTERED_CSV: bool = config.filtered_csv
     BOXPLOT_LOWER_THRESHOLD: float = config.boxplot_lower_threshold
     BOXPLOT_UPPER_THRESHOLD: float = config.boxplot_upper_threshold
+    PROMPT_MODULE = load_prompt_module(config.prompt_fp)
+    QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
+    QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
+    HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
     faithfulness_scores = []
     faithfulness_stderrs = []
     difficulty_scores = []
@@ -75,9 +75,7 @@ if __name__ == "__main__":
         max_connections=MAX_CONNECTIONS,
         limit=200,
         filtered_csv=config.filtered_csv,
-        prompt_template=NON_INSTRUCTIVE_TEMPLATE
-        if "claude" in MODEL
-        else DEFAULT_QA_TEMPLATE,
+        prompt_template=DEFAULT_QUESTION_PREFIX,
     )
     excluded_behaviors = []
 
@@ -118,6 +116,9 @@ if __name__ == "__main__":
                 display=config.display,
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
+                prompt_prefix=QUESTION_PREFIX,
+                prompt_suffix=QUESTION_SUFFIX,
+                hint_suffix=HINT_SUFFIX,
             )
         else:
             (
