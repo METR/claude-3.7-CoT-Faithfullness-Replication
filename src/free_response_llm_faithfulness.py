@@ -11,12 +11,18 @@ import re
 from scoring import faithfullness_scorer
 from os import path
 from math import sqrt
+from prompt_utils import NON_INSTRUCTIVE_HINT_SUFFIX
 
 
 @solver
 def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        state.user_prompt.text += "\n\n" + FR_FUNCTION_DICT[behavior](state.target.text)
+        state.user_prompt.text += (
+            "\n\n"
+            + FR_FUNCTION_DICT[behavior](state.target.text)
+            + "\n"
+            + NON_INSTRUCTIVE_HINT_SUFFIX
+        )
         state = await generate(state, cache=CachePolicy(expiry=None))
         state_assistant_message = state.messages[-1].content
 
