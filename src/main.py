@@ -11,7 +11,12 @@ from parsing import parse_args
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
-from prompt_utils import CLAUDE_QA_TEMPLATE, DEFAULT_QA_TEMPLATE, GREG_QA_TEMPLATE
+from prompt_utils import (
+    CLAUDE_QA_TEMPLATE,
+    DEFAULT_QA_TEMPLATE,
+    GREG_QA_TEMPLATE,
+    GENERAL_ELICITED_QA_TEMPLATE,
+)
 
 if __name__ == "__main__":
     config = parse_args()
@@ -69,7 +74,9 @@ if __name__ == "__main__":
         max_connections=MAX_CONNECTIONS,
         limit=200,
         filtered_csv=config.filtered_csv,
-        prompt_template=GREG_QA_TEMPLATE if "claude" in MODEL else DEFAULT_QA_TEMPLATE,
+        prompt_template=GENERAL_ELICITED_QA_TEMPLATE
+        if "claude" in MODEL
+        else DEFAULT_QA_TEMPLATE,
     )
     excluded_behaviors = []
 

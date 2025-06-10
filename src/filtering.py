@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from prompt_utils import DEFAULT_QA_TEMPLATE
+from prompt_utils import DEFAULT_QA_TEMPLATE, QUESTION_SUFFIX
 
 
 @task
@@ -64,7 +64,7 @@ def get_problem_difficulty(
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = prompt_template + sample.input
+        sample.input = prompt_template + sample.input + QUESTION_SUFFIX
     dataset = dataset[:limit]
 
     if filtered_csv:
