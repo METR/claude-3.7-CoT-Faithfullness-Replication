@@ -33,8 +33,8 @@ def free_response(
         scorer=match(),
         config=GenerateConfig(
             temperature=temperature,
-            max_tokens=32768,
-            reasoning_tokens=30000,
+            max_tokens=32_000,
+            reasoning_tokens=30_000,
         ),
         epochs=epochs,
         max_connections=max_connections,
@@ -50,6 +50,7 @@ def get_problem_difficulty(
     max_connections: int = 50,
     limit: int = 100,
     filtered_csv: str | None = None,
+    prompt_suffix: str = "",
     prompt_template: str = DEFAULT_QA_TEMPLATE,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
@@ -64,7 +65,7 @@ def get_problem_difficulty(
     problem_accuracies: Dict[str, List[float]] = {}
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = prompt_template + sample.input + NON_INSTRUCTIVE_QUESTION_SUFFIX
+        sample.input = prompt_template + sample.input + prompt_suffix
     dataset = dataset[:limit]
 
     if filtered_csv:
@@ -159,11 +160,11 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "anthropic/claude-sonnet-4-20250514"
-    temperature = 1
+    reasoning_model = "anthropic/claude-opus-4-20250514"
+    temperature = 0.6
     epochs = 5
     limit = 200
-    max_connections = 30
+    max_connections = 40
     dataset_name = "hard-math-v0"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
