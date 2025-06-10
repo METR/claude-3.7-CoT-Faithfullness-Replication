@@ -6,6 +6,35 @@ import numpy as np
 import json
 import seaborn as sns
 import pandas as pd
+import math
+
+
+COLOR_MAP = {
+    "default": "#808080",  # Gray
+    "reward_hacking": "#f9a4a4",  # Light Red
+    "sycophancy": "#7fc97f",  # Light Green
+    "metadata": "#fdc086",  # Light Orange
+    "database_schema": "#485F52",  # Dark Green
+    "config_file": "#a6cee3",  # Light Blue
+    "cache": "#1f78b4",  # Blue
+    "error_message": "#b2df8a",  # Light Green
+    "backup_data": "#33a02c",  # Green
+    "machine_learning": "#fb9a99",  # Light Pink
+    "version_control": "#e31a1c",  # Red
+    "csv_data": "#fdbf6f",  # Light Orange
+    "security_audit": "#ff7f00",  # Orange
+    "jupyter_notebook": "#cab2d6",  # Light Purple
+}
+
+SHAPE_MAP = {
+    "default": "o",
+    "easy_answer": "s",
+    "medium_hex": "D",
+    "hard_math": "v",
+    "hard_unicode": "P",
+    "hard_len_str": "X",
+    "easy_list_comprehension": "d",
+}
 
 
 def generate_propensity_graph(
@@ -14,9 +43,13 @@ def generate_propensity_graph(
     difficulty_scores: List[float],
     difficulty_stderrs: List[float],
     labels: List[str],
+    take_hints_scores: List[float],
+    samples: List[int],
     model: str,
     dataset: str,
     show_labels: bool = False,
+    show_color: bool = True,
+    show_shape: bool = True,
 ) -> None:
     """
     Generate a graph comparing faithfulness scores against difficulty scores.
@@ -55,16 +88,74 @@ def generate_propensity_graph(
     faithfulness_ci = [se * z_score for se in faithfulness_stderrs]
     difficulty_ci = [se * z_score for se in difficulty_stderrs]
 
+    # Calculate dot sizes based on take_hints_scores * samples
+    dot_sizes = [
+        round(take_hints_scores[i] * samples[i]) * 10
+        for i in range(len(take_hints_scores))
+    ]
+
+    # Determine colors based on labels and COLOR_MAP (only if show_color is True)
+    colors = []
+    if show_color:
+        for label in labels:
+            color_found = False
+            for key in COLOR_MAP:
+                if key != "default" and key in label.lower():
+                    colors.append(COLOR_MAP[key])
+                    color_found = True
+                    break
+            if not color_found:
+                colors.append(COLOR_MAP["default"])
+    else:
+        colors = [COLOR_MAP["default"]] * len(labels)
+
+    # Determine shapes based on labels and SHAPE_MAP (only if show_shape is True)
+    shapes = []
+    if show_shape:
+        for label in labels:
+            shape_found = False
+            for key in SHAPE_MAP:
+                if key != "default" and key in label.lower():
+                    shapes.append(SHAPE_MAP[key])
+                    shape_found = True
+                    break
+            if not shape_found:
+                shapes.append(SHAPE_MAP["default"])
+    else:
+        shapes = [SHAPE_MAP["default"]] * len(labels)
+
+    # Plot error bars without markers
     plt.errorbar(
         difficulty_scores,
         faithfulness_scores,
         xerr=difficulty_ci,
         yerr=faithfulness_ci,
-        fmt="o",
-        color="#f9a4a4",
+        fmt="none",
         ecolor="lightgray",
         capsize=5,
     )
+
+    # Group data points by shape and plot each group
+    unique_shapes = list(set(shapes))
+    for shape in unique_shapes:
+        # Get indices for this shape
+        shape_indices = [i for i, s in enumerate(shapes) if s == shape]
+
+        # Extract data for this shape
+        shape_difficulty = [difficulty_scores[i] for i in shape_indices]
+        shape_faithfulness = [faithfulness_scores[i] for i in shape_indices]
+        shape_colors = [colors[i] for i in shape_indices]
+        shape_sizes = [dot_sizes[i] for i in shape_indices]
+
+        # Plot scatter points with variable size and varying colors/shapes
+        plt.scatter(
+            shape_difficulty,
+            shape_faithfulness,
+            s=shape_sizes,
+            c=shape_colors,
+            marker=shape,
+            alpha=0.7,
+        )
 
     plt.xlim(0, 1.01)
     plt.ylim(0, 1.05)

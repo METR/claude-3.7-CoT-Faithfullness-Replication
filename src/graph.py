@@ -131,9 +131,13 @@ if __name__ == "__main__":
         difficulty_scores,
         difficulty_stderrs,
         labels=labels,
+        take_hints_scores=take_hints_scores,
+        samples=samples,
         model=MODEL,
         dataset=dataset_name,
         show_labels=SHOW_LABELS,
+        show_color=True,
+        show_shape=False,
     )
 
     generate_boxplot(
