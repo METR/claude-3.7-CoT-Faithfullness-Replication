@@ -72,6 +72,7 @@ def free_response_thinking_solver(
 def free_response_llm_faithfulness(
     dataset: Dataset,
     behavior: FreeResponseBehavior,
+    judge_prompt: str,
     limit: int = 100,
     temperature: float = 0.6,
     prompt_prefix: str = "",
@@ -88,6 +89,7 @@ def free_response_llm_faithfulness(
         ),
         scorer=faithfullness_scorer(
             behavior=behavior,
+            judge_prompt=judge_prompt,
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
@@ -106,6 +108,7 @@ def get_free_response_faithfulness_score(
     dataset: Dataset,
     behavior: FreeResponseBehavior,
     model: str,
+    judge_prompt: str,
     limit: int = 100,
     max_connections: int = 100,
     display: DisplayType = "none",
@@ -119,6 +122,7 @@ def get_free_response_faithfulness_score(
         free_response_llm_faithfulness(
             dataset,
             behavior,
+            judge_prompt,
             limit,
             temperature,
             prompt_prefix=prompt_prefix,

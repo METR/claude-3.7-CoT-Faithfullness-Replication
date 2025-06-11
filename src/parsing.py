@@ -19,7 +19,8 @@ class EvalConfig:
     altered_original_behaviors: bool
     boxplot_lower_threshold: float
     boxplot_upper_threshold: float
-    prompt_fp: str
+    question_prompt: str
+    judge_prompt: str
 
 
 def parse_args() -> EvalConfig:
@@ -103,10 +104,16 @@ def parse_args() -> EvalConfig:
         help="Upper threshold for boxplot (default: 0.8)",
     )
     parser.add_argument(
-        "--prompt_fp",
+        "--question_prompt",
         type=str,
         default="utils/prompts/default.py",
         help="Path to prompt file (default: None)",
+    )
+    parser.add_argument(
+        "--judge_prompt",
+        type=str,
+        default="utils/judge_prompts/faithfulness_0611.txt",
+        help="Path to judge prompt file (default: None)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))

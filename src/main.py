@@ -12,7 +12,7 @@ from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
-from utils.prompts.default import DEFAULT_QUESTION_PREFIX
+from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 
 if __name__ == "__main__":
@@ -34,10 +34,11 @@ if __name__ == "__main__":
     USE_FILTERED_CSV: bool = config.filtered_csv
     BOXPLOT_LOWER_THRESHOLD: float = config.boxplot_lower_threshold
     BOXPLOT_UPPER_THRESHOLD: float = config.boxplot_upper_threshold
-    PROMPT_MODULE = load_prompt_module(config.prompt_fp)
+    PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
+    JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
     faithfulness_scores = []
     faithfulness_stderrs = []
     difficulty_scores = []
@@ -111,6 +112,7 @@ if __name__ == "__main__":
                 dataset,
                 behavior,
                 model=MODEL,
+                judge_prompt=JUDGE_PROMPT,
                 max_connections=MAX_CONNECTIONS,
                 limit=100,
                 display=config.display,
