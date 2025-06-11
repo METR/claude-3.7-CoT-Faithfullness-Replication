@@ -63,16 +63,17 @@ def get_problem_difficulty(
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     problem_accuracies: Dict[str, List[float]] = {}
+    dataset = dataset[:limit]
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = prompt_template + sample.input + prompt_suffix
-    dataset = dataset[:limit]
 
     if filtered_csv:
         accuracy_df = pd.read_csv(filtered_csv)
         accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
         zero_accuracy_problems = accuracy_df["problem_id"].tolist()
     else:
+        for sample in dataset:
+            sample.input = prompt_template + sample.input + prompt_suffix
         evalscore = eval(
             free_response(
                 dataset=dataset,
