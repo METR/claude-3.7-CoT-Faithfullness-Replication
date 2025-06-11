@@ -1,11 +1,9 @@
-from inspect_ai import task, Task
 from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
 from typing import Tuple, Any
 from inspect_ai.util import DisplayType
 from inspect_ai import eval, task, Task
 from inspect_ai.dataset import Dataset
 from inspect_ai.solver import solver, Solver, Generate, TaskState
-from inspect_ai import Epochs
 from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 import re
 from scoring import faithfullness_scorer
@@ -47,7 +45,7 @@ def free_response_thinking_solver(
 
             state.answer = state_answer
 
-            state_matches = re.findall(r"ANSWER:\s?(\d+)", state_answer)
+            state_matches = re.findall(r"ANSWER\s*:\s*(\d+)", state_answer)
 
             if state_matches:
                 state_answer = state_matches[-1].strip()
