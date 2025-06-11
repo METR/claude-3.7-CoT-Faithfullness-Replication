@@ -6,3 +6,4 @@ scores/
 src/results/
 .DS_Store
 .vscode/
+.cursor/
