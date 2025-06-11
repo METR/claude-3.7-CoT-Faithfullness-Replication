@@ -13,10 +13,17 @@ from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.model import ChatMessageAssistant
 from inspect_ai.scorer import match
 from inspect_ai.util import json_schema
+from enum import Enum
 
 
 class Number(BaseModel):
     number: int
+
+
+class TestingScheme(Enum):
+    BASE = "base"
+    RL_NO_REASONING = "rl_no_reasoning"
+    RL_DOTS = "rl_dots"
 
 
 @task
@@ -96,7 +103,6 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                     model=state.model.name,
                 )
             )
-
         elif testing_scheme == TestingScheme.RL_DOTS:
             state.messages.append(
                 ChatMessageAssistant(
