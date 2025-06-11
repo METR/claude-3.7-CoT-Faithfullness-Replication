@@ -33,8 +33,13 @@ def free_response_thinking_solver(
             + "\n"
             + hint_suffix
         )
-        state = await generate(state, cache=CachePolicy(expiry=None))
-        state_assistant_message = state.messages[-1].content
+        for _ in range(5):
+            try:
+                state = await generate(state, cache=CachePolicy(expiry=None))
+                state_assistant_message = state.messages[-1].content
+                break
+            except Exception as e:
+                print(f"Error: {e}")
 
         if len(state_assistant_message) == 2:
             state_reasoning = state_assistant_message[0].reasoning
