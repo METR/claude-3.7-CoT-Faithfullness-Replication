@@ -82,6 +82,8 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
             state = await generate(state, cache=CachePolicy(expiry=None))
         elif not reasoning:
             if testing_scheme == TestingScheme.BASE:
+                if "qwen3" in state.model.name.lower():
+                    state.user_prompt.text = "/no_think " + state.user_prompt.text
                 state = await generate(state, cache=CachePolicy(expiry=None))
             elif testing_scheme == TestingScheme.RL_NO_REASONING:
                 state.messages.append(
