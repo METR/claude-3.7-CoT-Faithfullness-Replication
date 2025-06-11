@@ -3,4 +3,4 @@
 __pycache__/
 logs/
 scores/
-src/results/
+.cursor/
