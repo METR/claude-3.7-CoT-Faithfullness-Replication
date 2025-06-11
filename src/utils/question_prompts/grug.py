@@ -183,5 +183,5 @@ Dig deep Grug into the soil in the end to find the answer which might be an equa
 
 The paragraph is : """
 
-QUESTION_SUFFIX = ""
+QUESTION_SUFFIX = "The entire content of your response should be of the following format: 'ANSWER: $NUMBER' (without quotes) where NUMBER is a number between 0 and 99 inclusive. If you get a larger number, take the remainder when divided by 100."
 HINT_SUFFIX = ""
