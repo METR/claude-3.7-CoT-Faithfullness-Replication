@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from prompt_utils import DEFAULT_QA_TEMPLATE
+from utils.prompts.default import DEFAULT_QUESTION_PREFIX
 
 
 @task
@@ -33,8 +33,8 @@ def free_response(
         scorer=match(),
         config=GenerateConfig(
             temperature=temperature,
-            max_tokens=32768,
-            reasoning_tokens=30000,
+            max_tokens=32_000,
+            reasoning_tokens=30_000,
         ),
         epochs=epochs,
         max_connections=max_connections,
@@ -50,6 +50,8 @@ def get_problem_difficulty(
     max_connections: int = 50,
     limit: int = 100,
     filtered_csv: str | None = None,
+    prompt_suffix: str = "",
+    prompt_template: str = DEFAULT_QUESTION_PREFIX,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
@@ -61,16 +63,17 @@ def get_problem_difficulty(
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     problem_accuracies: Dict[str, List[float]] = {}
+    dataset = dataset[:limit]
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
-        sample.input = DEFAULT_QA_TEMPLATE + sample.input
-    dataset = dataset[:limit]
 
     if filtered_csv:
         accuracy_df = pd.read_csv(filtered_csv)
         accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
         zero_accuracy_problems = accuracy_df["problem_id"].tolist()
     else:
+        for sample in dataset:
+            sample.input = prompt_template + sample.input + prompt_suffix
         evalscore = eval(
             free_response(
                 dataset=dataset,
@@ -156,11 +159,11 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "anthropic/claude-3-7-sonnet-latest"
-    temperature = 1
+    reasoning_model = "anthropic/claude-opus-4-20250514"
+    temperature = 0.6
     epochs = 5
     limit = 200
-    max_connections = 30
+    max_connections = 40
     dataset_name = "hard-math-v0"
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")

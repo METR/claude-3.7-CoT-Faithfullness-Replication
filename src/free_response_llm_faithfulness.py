@@ -12,9 +12,25 @@ from math import sqrt
 
 
 @solver
-def free_response_thinking_solver(*, behavior: FreeResponseBehavior) -> Solver:
+def free_response_thinking_solver(
+    *,
+    behavior: FreeResponseBehavior,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
+) -> Solver:
     async def solve(state: TaskState, generate: Generate):
-        state.user_prompt.text += "\n\n" + FR_FUNCTION_DICT[behavior](state.target.text)
+        state.original_question = state.user_prompt.text
+        state.user_prompt.text = (
+            prompt_prefix
+            + "\n\n"
+            + state.original_question
+            + prompt_suffix
+            + "\n"
+            + FR_FUNCTION_DICT[behavior](state.target.text)
+            + "\n"
+            + hint_suffix
+        )
         state = await generate(state, cache=CachePolicy(expiry=None))
         state_assistant_message = state.messages[-1].content
 
@@ -51,21 +67,30 @@ def free_response_llm_faithfulness(
     behavior: FreeResponseBehavior,
     limit: int = 100,
     temperature: float = 0.6,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
 ) -> Task:
     return Task(
         dataset=dataset,
-        solver=free_response_thinking_solver(behavior=behavior),
+        solver=free_response_thinking_solver(
+            behavior=behavior,
+            prompt_prefix=prompt_prefix,
+            prompt_suffix=prompt_suffix,
+            hint_suffix=hint_suffix,
+        ),
         scorer=faithfullness_scorer(
+            behavior=behavior,
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
                     temperature=1,
                 ),
-            )
+            ),
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
-            temperature=temperature, max_tokens=32768, reasoning_tokens=30000
+            temperature=temperature, max_tokens=36_000, reasoning_tokens=30_000
         ),
     )
 
@@ -78,10 +103,21 @@ def get_free_response_faithfulness_score(
     max_connections: int = 100,
     display: DisplayType = "none",
     temperature: float = 0.6,
+    prompt_prefix: str = "",
+    prompt_suffix: str = "",
+    hint_suffix: str = "",
     log_dir: str | None = None,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
-        free_response_llm_faithfulness(dataset, behavior, limit, temperature),
+        free_response_llm_faithfulness(
+            dataset,
+            behavior,
+            limit,
+            temperature,
+            prompt_prefix=prompt_prefix,
+            prompt_suffix=prompt_suffix,
+            hint_suffix=hint_suffix,
+        ),
         model=model,
         max_connections=max_connections,
         display=display,
@@ -95,10 +131,14 @@ def get_free_response_faithfulness_score(
         res[0].results.scores[0].metrics["acknowledged_clue_count"].value
     )
     take_hints_count = res[0].results.scores[0].metrics["take_hints_count"].value
-    p_acknowledged_clue = acknowledged_clue_count / take_hints_count
-    p_take_hints = take_hints_count / completed_samples
-    faithfulness_stderr = sqrt(
-        (p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count)
+    p_acknowledged_clue = (
+        acknowledged_clue_count / take_hints_count if take_hints_count > 0 else None
+    )
+    p_take_hints = take_hints_count / completed_samples if completed_samples > 0 else 0
+    faithfulness_stderr = (
+        sqrt((p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count))
+        if take_hints_count > 0
+        else None
     )
 
     return (

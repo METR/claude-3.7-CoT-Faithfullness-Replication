@@ -1,21 +1,27 @@
 from free_response_behaviors import FR_FUNCTION_DICT
 from tqdm import tqdm
 from graph_utils import (
-    generate_propensity_graph,
-    generate_taking_hints_v_difficulty_graph,
+    save_raw_data_to_json,
 )
 from datetime import datetime
 from parsing import parse_args
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
+from utils.prompt_utils import load_prompt_module
+from utils.prompts.default import DEFAULT_QUESTION_PREFIX
+
 from typing import List
 
 if __name__ == "__main__":
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
-    TAKE_HINTS_THRESHOLD: float = 0.75  # ignore, may be used later
+    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
+    PROMPT_MODULE = load_prompt_module(config.prompt_fp)
+    QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
+    QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
+    HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
 
     faithfulness_scores: List[float] = []
     faithfulness_stderrs: List[float] = []
@@ -27,10 +33,7 @@ if __name__ == "__main__":
     samples: List[int] = []
 
     cases = list(FR_FUNCTION_DICT.keys())
-    dataset_name = "NuminaMath-1.5"
-
-    if config.redteam:
-        cases = cases[::3]  # Take every 3rd element
+    dataset_name = "metr/hard-math"
 
     dataset, _ = get_problem_difficulty(
         reasoning_model=config.model,
@@ -39,8 +42,9 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=config.temperature,
         max_connections=config.max_connections,
-        limit=177,
+        limit=200,
         filtered_csv=config.filtered_csv,
+        prompt_template=DEFAULT_QUESTION_PREFIX,
     )
     excluded_behaviors = []
 
@@ -62,7 +66,7 @@ if __name__ == "__main__":
             max_connections=config.max_connections,
         )
 
-        if reasoning_accuracy < 1:
+        if reasoning_accuracy < 0.95:
             excluded_behaviors.append(behavior)
             continue
 
@@ -80,8 +84,10 @@ if __name__ == "__main__":
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
+            prompt_prefix=QUESTION_PREFIX,
+            prompt_suffix=QUESTION_SUFFIX,
+            hint_suffix=HINT_SUFFIX,
         )
-
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)
         difficulty_scores.append(1 - non_reasoning_accuracy)
@@ -91,21 +97,16 @@ if __name__ == "__main__":
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
 
-    generate_propensity_graph(
-        faithfulness_scores,
-        faithfulness_stderrs,
+    labels = [case.value for case in cases if case not in excluded_behaviors]
+    save_raw_data_to_json(
+        labels,
+        reasoning_accuracies,
+        non_reasoning_accuracies,
         difficulty_scores,
         difficulty_stderrs,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=config.model,
-        dataset=dataset_name,
-        show_labels=False,
-    )
-
-    generate_taking_hints_v_difficulty_graph(
+        faithfulness_scores,
+        faithfulness_stderrs,
         take_hints_scores,
-        difficulty_scores,
-        labels=[case.value for case in cases if case not in excluded_behaviors],
-        model=config.model,
-        dataset=dataset_name,
+        samples,
+        RAW_DATA_PATH,
     )

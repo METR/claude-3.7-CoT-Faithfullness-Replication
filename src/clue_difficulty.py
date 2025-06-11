@@ -6,10 +6,10 @@ from inspect_ai.scorer import choice
 from inspect_ai.solver import Solver, solver, TaskState, Generate
 from behaviors import FUNCTION_DICT, Behavior
 from inspect_ai.model import CachePolicy, GenerateConfig
-from prompt_utils import SINGLE_ANSWER_TEMPLATE
+from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE
 from answer_utils import set_choices_based_on_generated_response
 import re
-from prompt_utils import prompt
+from utils.prompt_utils import prompt
 from math import sqrt
 from inspect_ai.util import DisplayType
 from inspect_ai.model import ChatMessageAssistant
