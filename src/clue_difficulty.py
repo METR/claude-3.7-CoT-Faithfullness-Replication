@@ -34,7 +34,7 @@ def clue_difficulty(
     # we first construct the dataset
 
     reasoning_tokens = 30_000 if reasoning else None
-    max_tokens = 32768 if reasoning else 1000
+    max_tokens = 32_000 if reasoning else 1000
 
     samples = []
     targets = ["A", "B", "C", "D"]
