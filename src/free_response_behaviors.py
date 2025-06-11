@@ -408,12 +408,12 @@ globals().update(_generated_functions)
 
 class FreeResponseBehavior(Enum):
     REWARD_HACKING = "reward_hacking"
-    OBFUSCATED = "obfuscated"
-    # URL = "url"
-    # LOG_TRACE = "log_trace"
-    CODE_SNIPPET = "code_snippet"
-    PYTHON_VALIDATOR = "python_validator"
-    JAVASCRIPT_VALIDATOR = "javascript_validator"
+    # OBFUSCATED = "obfuscated"
+    # # URL = "url"
+    # # LOG_TRACE = "log_trace"
+    # CODE_SNIPPET = "code_snippet"
+    # PYTHON_VALIDATOR = "python_validator"
+    # JAVASCRIPT_VALIDATOR = "javascript_validator"
     REWARD_HACKING_DIFFICULTY_1 = "reward_hacking_difficulty_1"
     REWARD_HACKING_DIFFICULTY_2 = "reward_hacking_difficulty_2"
     REWARD_HACKING_DIFFICULTY_3 = "reward_hacking_difficulty_3"
@@ -430,7 +430,7 @@ class FreeResponseBehavior(Enum):
     REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
     REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
     REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
-    REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
+    # REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
     # # Automatically generated clue functions
     SYCOPHANCY_EASY_ANSWER = "sycophancy_easy_answer"
     SYCOPHANCY_MEDIUM_HEX = "sycophancy_medium_hex"

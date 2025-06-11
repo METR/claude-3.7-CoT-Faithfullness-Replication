@@ -29,7 +29,7 @@ def free_response_clue_difficulty(
 ) -> Task:
     # claude workaround
     reasoning_tokens = 30_000 if reasoning else None
-    max_tokens = 32768 if reasoning else 10
+    max_tokens = 32_000 if reasoning else 10
     format_prompt = (
         "Return only your answer and nothing else."
         if not reasoning
