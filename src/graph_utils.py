@@ -1,7 +1,5 @@
 from typing import List
 import matplotlib.pyplot as plt
-from clue_difficulty import TestingScheme
-import matplotlib.image as mpimg
 import numpy as np
 
 
@@ -112,8 +110,8 @@ def generate_taking_hints_graph(
 
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    p1 = ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
-    p2 = ax.bar(
+    ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
+    ax.bar(
         indices,
         did_not_take_hint,
         width,

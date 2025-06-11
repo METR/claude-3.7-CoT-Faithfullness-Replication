@@ -1,7 +1,7 @@
 from inspect_ai import task, Task
 from inspect_ai.dataset import hf_dataset, FieldSpec, Dataset
 from inspect_ai.solver import generate
-from inspect_ai.model import CachePolicy, GenerateConfig, get_model
+from inspect_ai.model import CachePolicy, GenerateConfig
 from inspect_ai.scorer import match
 from inspect_ai import eval
 from typing import Dict, List
@@ -99,9 +99,7 @@ def get_problem_difficulty(
             if np.mean(accuracies) == 0:
                 zero_accuracy_problems.append(problem_id)
 
-    print(f"Filtering {len(zero_accuracy_problems)} problems with 0 accuracy")
-
-    print([sample.id for sample in dataset])
+    print(f"Using {len(zero_accuracy_problems)} problems with 0 accuracy")
 
     dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
 
