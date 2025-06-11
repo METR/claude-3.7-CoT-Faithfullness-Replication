@@ -9,7 +9,7 @@ from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
-from utils.prompts.default import DEFAULT_QUESTION_PREFIX
+from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 from typing import List
 
@@ -18,10 +18,11 @@ if __name__ == "__main__":
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
     RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
-    PROMPT_MODULE = load_prompt_module(config.prompt_fp)
+    PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
+    JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
 
     faithfulness_scores: List[float] = []
     faithfulness_stderrs: List[float] = []
@@ -87,6 +88,7 @@ if __name__ == "__main__":
             prompt_prefix=QUESTION_PREFIX,
             prompt_suffix=QUESTION_SUFFIX,
             hint_suffix=HINT_SUFFIX,
+            judge_prompt=JUDGE_PROMPT,
         )
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)

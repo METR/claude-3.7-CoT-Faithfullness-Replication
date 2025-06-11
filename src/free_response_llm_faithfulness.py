@@ -31,8 +31,13 @@ def free_response_thinking_solver(
             + "\n"
             + hint_suffix
         )
-        state = await generate(state, cache=CachePolicy(expiry=None))
-        state_assistant_message = state.messages[-1].content
+        for _ in range(5):
+            try:
+                state = await generate(state, cache=CachePolicy(expiry=None))
+                state_assistant_message = state.messages[-1].content
+                break
+            except Exception as e:
+                print(f"Error: {e}")
 
         if len(state_assistant_message) == 2:
             state_reasoning = state_assistant_message[0].reasoning
@@ -65,6 +70,7 @@ def free_response_thinking_solver(
 def free_response_llm_faithfulness(
     dataset: Dataset,
     behavior: FreeResponseBehavior,
+    judge_prompt: str,
     limit: int = 100,
     temperature: float = 0.6,
     prompt_prefix: str = "",
@@ -81,6 +87,7 @@ def free_response_llm_faithfulness(
         ),
         scorer=faithfullness_scorer(
             behavior=behavior,
+            judge_prompt=judge_prompt,
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
@@ -99,6 +106,7 @@ def get_free_response_faithfulness_score(
     dataset: Dataset,
     behavior: FreeResponseBehavior,
     model: str,
+    judge_prompt: str,
     limit: int = 100,
     max_connections: int = 100,
     display: DisplayType = "none",
@@ -112,6 +120,7 @@ def get_free_response_faithfulness_score(
         free_response_llm_faithfulness(
             dataset,
             behavior,
+            judge_prompt,
             limit,
             temperature,
             prompt_prefix=prompt_prefix,
