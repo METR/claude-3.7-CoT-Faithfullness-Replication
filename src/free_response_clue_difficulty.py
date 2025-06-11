@@ -1,14 +1,12 @@
 from pydantic import BaseModel
 import re
-
-from clue_difficulty import TestingScheme
 from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
 from inspect_ai.util import DisplayType
 from inspect_ai import task, Task, eval
 from os import path
 from math import sqrt
 from inspect_ai.dataset import MemoryDataset, Sample
-from inspect_ai.solver import solver, Solver, TaskState, Generate, generate
+from inspect_ai.solver import solver, Solver, TaskState, Generate
 from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.model import ChatMessageAssistant
 from inspect_ai.scorer import match

@@ -13,10 +13,7 @@ class EvalConfig:
     redteam: bool
     temperature: float
     max_connections: int
-    original_behaviors: bool
-    free_response: bool
     filtered_csv: str | None
-    altered_original_behaviors: bool
     boxplot_lower_threshold: float
     boxplot_upper_threshold: float
     prompt_fp: str
@@ -25,42 +22,47 @@ class EvalConfig:
 def parse_args() -> EvalConfig:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model", type=str, default="together/Qwen/QwQ-32B", required=False
+        "--model",
+        type=str,
+        default="together/Qwen/QwQ-32B",
+        required=False,
+        help="Model to test faithfulness on (default: together/Qwen/QwQ-32B)",
     )
     parser.add_argument(
-        "--reasoning_difficulty_model", type=str, default=None, required=False
+        "--reasoning_difficulty_model",
+        type=str,
+        default=None,
+        required=False,
+        help="Model to test difficulty with reasoning (defaults to same as --model)",
     )
     parser.add_argument(
         "--base_model",
         type=str,
         default="openai-api/nebius/Qwen/Qwen2.5-32B-Instruct",
         required=False,
+        help="Model to test difficulty without reasoning (default: openai-api/nebius/Qwen/Qwen2.5-32B-Instruct)",
     )
-    parser.add_argument("--display", type=str, default="none", required=False)
+    parser.add_argument(
+        "--display",
+        type=str,
+        default="none",
+        required=False,
+        help="Display mode for evaluation progress ('none' or 'full', default: none)",
+    )
     parser.add_argument(
         "--testing_scheme",
         type=str,
         default="base",
         required=False,
         choices=TestingScheme.__members__.keys(),
+        help="Testing scheme to use (base, rl_no_reasoning, or rl_dots, default: base)",
     )
     parser.add_argument(
         "--redteam",
         default=False,
         required=False,
         action="store_true",
-    )
-    parser.add_argument(
-        "--original_behaviors",
-        default=False,
-        required=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--altered_original_behaviors",
-        default=False,
-        required=False,
-        action="store_true",
+        help="Run evaluation on a subset of test cases",
     )
     parser.add_argument(
         "--temperature",
@@ -75,12 +77,6 @@ def parse_args() -> EvalConfig:
         default=20,
         required=False,
         help="Maximum number of concurrent connections with model provider (default: 20)",
-    )
-    parser.add_argument(
-        "--free_response",
-        default=False,
-        action="store_true",
-        required=False,
     )
     parser.add_argument(
         "--filtered_csv",
@@ -106,7 +102,7 @@ def parse_args() -> EvalConfig:
         "--prompt_fp",
         type=str,
         default="utils/prompts/default.py",
-        help="Path to prompt file (default: None)",
+        help="Path to prompts file (default: utils/prompts/default.py)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
