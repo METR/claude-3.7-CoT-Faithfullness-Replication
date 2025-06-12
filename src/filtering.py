@@ -1,6 +1,5 @@
 from inspect_ai import task, Task
 from inspect_ai.dataset import hf_dataset, FieldSpec, Dataset
-from inspect_ai.solver import generate
 from inspect_ai.model import CachePolicy, GenerateConfig
 from inspect_ai.scorer import match
 from inspect_ai import eval
@@ -11,7 +10,24 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from utils.prompts.default import DEFAULT_QUESTION_PREFIX
+from utils.prompts.default import DEFAULT_QUESTION_PREFIX, QWEN_3_QUESTION_PREFIX
+import argparse
+from inspect_ai.solver import Solver, solver, TaskState, Generate
+
+
+@solver
+def repeat_solver(num_repeats: int = 10):
+    async def solve(state: TaskState, generate: Generate):
+        for _ in range(num_repeats):
+            copied = deepcopy(state)
+            copied_state = await generate(copied, cache=CachePolicy(expiry=None))
+            content = copied_state.messages[-1].content
+            if len(content) == 2 and content[1].text.startswith("ANSWER:"):
+                state = copied_state
+                return state
+        return state
+
+    return solve
 
 
 @task
@@ -27,9 +43,7 @@ def free_response(
 
     return Task(
         dataset=dataset,
-        solver=generate(
-            cache=CachePolicy(expiry=None),
-        ),
+        solver=repeat_solver(num_repeats=10),
         scorer=match(),
         config=GenerateConfig(
             temperature=temperature,
@@ -158,13 +172,23 @@ def plot_difficulty_distribution(
 
 
 if __name__ == "__main__":
-    # Example usage
-    reasoning_model = "anthropic/claude-opus-4-20250514"
-    temperature = 0.6
-    epochs = 5
-    limit = 200
-    max_connections = 40
-    dataset_name = "hard-math-v0"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--reasoning_model", type=str, default="together/Qwen/Qwen3-235B-A22B-fp8-tput"
+    )
+    parser.add_argument("--temperature", type=float, default=0.6)
+    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--max_connections", type=int, default=40)
+    parser.add_argument("--dataset_name", type=str, default="hard-math-v0")
+    args = parser.parse_args()
+
+    reasoning_model = args.reasoning_model
+    temperature = args.temperature
+    epochs = args.epochs
+    limit = args.limit
+    max_connections = args.max_connections
+    dataset_name = args.dataset_name
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
@@ -174,6 +198,9 @@ if __name__ == "__main__":
         max_connections=max_connections,
         display="full",
         temperature=temperature,
+        prompt_template=QWEN_3_QUESTION_PREFIX
+        if "qwen3" in reasoning_model.lower()
+        else DEFAULT_QUESTION_PREFIX,
     )
 
     # Calculate and display difficulty scores
