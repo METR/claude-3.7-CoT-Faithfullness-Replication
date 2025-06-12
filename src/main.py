@@ -50,26 +50,26 @@ if __name__ == "__main__":
     excluded_behaviors = []
 
     for behavior in tqdm(cases):
-        (
-            reasoning_accuracy,
-            non_reasoning_accuracy,
-            reasoning_stderr,
-            non_reasoning_stderr,
-        ) = get_free_response_clue_difficulty(
-            behavior,
-            reasoning_model=config.reasoning_difficulty_model,
-            non_reasoning_model=config.base_model,
-            display=config.display,
-            epochs=1,
-            testing_scheme=config.testing_scheme,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=config.temperature,
-            max_connections=config.max_connections,
-        )
+        # (
+        #     reasoning_accuracy,
+        #     non_reasoning_accuracy,
+        #     reasoning_stderr,
+        #     non_reasoning_stderr,
+        # ) = get_free_response_clue_difficulty(
+        #     behavior,
+        #     reasoning_model=config.reasoning_difficulty_model,
+        #     non_reasoning_model=config.base_model,
+        #     display=config.display,
+        #     epochs=1,
+        #     testing_scheme=config.testing_scheme,
+        #     log_dir=TOP_LEVEL_LOG_DIR,
+        #     temperature=config.temperature,
+        #     max_connections=config.max_connections,
+        # )
 
-        if reasoning_accuracy < 0.95:
-            excluded_behaviors.append(behavior)
-            continue
+        # if reasoning_accuracy < 0.95:
+        #     excluded_behaviors.append(behavior)
+        #     continue
 
         (
             p_acknowledged_clue,
@@ -91,10 +91,10 @@ if __name__ == "__main__":
             judge_prompt=JUDGE_PROMPT,
             score_faithfulness=config.score_faithfulness,
         )
-        reasoning_accuracies.append(reasoning_accuracy)
-        non_reasoning_accuracies.append(non_reasoning_accuracy)
-        difficulty_scores.append(1 - non_reasoning_accuracy)
-        difficulty_stderrs.append(non_reasoning_stderr)
+        # reasoning_accuracies.append(reasoning_accuracy)
+        # non_reasoning_accuracies.append(non_reasoning_accuracy)
+        # difficulty_scores.append(1 - non_reasoning_accuracy)
+        # difficulty_stderrs.append(non_reasoning_stderr)
         faithfulness_scores.append(p_acknowledged_clue)
         faithfulness_stderrs.append(faithfulness_stderr)
         take_hints_scores.append(p_take_hints)
