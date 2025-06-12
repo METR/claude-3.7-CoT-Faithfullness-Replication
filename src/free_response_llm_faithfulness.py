@@ -76,7 +76,7 @@ def free_response_llm_faithfulness(
     prompt_prefix: str = "",
     prompt_suffix: str = "",
     hint_suffix: str = "",
-    faithfulness_flag: bool = True,
+    score_faithfulness: bool = True,
 ) -> Task:
     return Task(
         dataset=dataset,
@@ -97,7 +97,7 @@ def free_response_llm_faithfulness(
                     max_connections=80,
                 ),
             ),
-            faithfulness=faithfulness_flag,
+            score_faithfulness=score_faithfulness,
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
@@ -131,7 +131,7 @@ def get_free_response_faithfulness_score(
             prompt_prefix=prompt_prefix,
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
-            faithfulness_flag=score_faithfulness,
+            score_faithfulness=score_faithfulness,
         ),
         model=model,
         max_connections=max_connections,
