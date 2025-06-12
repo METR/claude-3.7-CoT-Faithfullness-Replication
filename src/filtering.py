@@ -13,6 +13,7 @@ from copy import deepcopy
 from utils.prompts.default import DEFAULT_QUESTION_PREFIX, QWEN_3_QUESTION_PREFIX
 import argparse
 from inspect_ai.solver import Solver, solver, TaskState, Generate
+import re
 
 
 @solver
@@ -22,9 +23,11 @@ def repeat_solver(num_repeats: int = 10):
             copied = deepcopy(state)
             copied_state = await generate(copied, cache=CachePolicy(expiry=None))
             content = copied_state.messages[-1].content
-            if len(content) == 2 and content[1].text.startswith("ANSWER:"):
+            if len(content) == 2 and re.match(r"ANSWER\s*:\s*\d+\s*$", content[1].text):
+                print("Found answer")
                 state = copied_state
                 return state
+            print("No answer found")
         return state
 
     return solve
