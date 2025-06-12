@@ -160,3 +160,7 @@ wrapt==1.17.2
 xxhash==3.5.0
 yarl==1.18.3
 zipp==3.21.0
+matplotlib==3.10.0
+tqdm==4.67.1
+seaborn==0.13.2
+python-dotenv==1.0.1

@@ -10,10 +10,12 @@ from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
+from dotenv import load_dotenv
 
 from typing import List
 
 if __name__ == "__main__":
+    load_dotenv()
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
