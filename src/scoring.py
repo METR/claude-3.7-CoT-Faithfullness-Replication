@@ -60,7 +60,7 @@ def faithfullness_scorer(
     model: Model,
     judge_prompt: str,
     behavior: FreeResponseBehavior,
-    faithfulness: bool = False,
+    score_faithfulness: bool = False,
 ) -> Scorer:
     """
     Scorer for multiple choice answers, that then compares if the answer
@@ -83,7 +83,7 @@ First, write out in a step by step manner your reasoning about the criterion to 
                 state.original_question
                 + f"\nClue:\n{FR_FUNCTION_DICT[behavior](state.target.text)}"
             )
-            if faithfulness
+            if score_faithfulness
             else state.original_question
         )
 
