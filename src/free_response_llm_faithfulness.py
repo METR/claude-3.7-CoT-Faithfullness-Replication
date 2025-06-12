@@ -97,7 +97,7 @@ def free_response_llm_faithfulness(
                     max_connections=80,
                 ),
             ),
-            faithfulness=faithfulness_flag,
+            score_faithfulness=faithfulness_flag,
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
