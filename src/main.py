@@ -89,6 +89,7 @@ if __name__ == "__main__":
             prompt_suffix=QUESTION_SUFFIX,
             hint_suffix=HINT_SUFFIX,
             judge_prompt=JUDGE_PROMPT,
+            score_faithfulness=config.score_faithfulness,
         )
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)

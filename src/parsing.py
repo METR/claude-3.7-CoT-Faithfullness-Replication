@@ -21,6 +21,7 @@ class EvalConfig:
     boxplot_upper_threshold: float
     question_prompt: str
     judge_prompt: str
+    score_faithfulness: bool
 
 
 def parse_args() -> EvalConfig:
@@ -114,6 +115,12 @@ def parse_args() -> EvalConfig:
         type=str,
         default="utils/judge_prompts/faithfulness_0611.txt",
         help="Path to judge prompt file (default: None)",
+    )
+    parser.add_argument(
+        "--score_faithfulness",
+        default=False,
+        action="store_true",
+        help="Whether to score faithfulness (default: False)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
