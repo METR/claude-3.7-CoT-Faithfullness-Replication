@@ -14,6 +14,7 @@ from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 from typing import List
 from dotenv import load_dotenv
+
 load_dotenv()
 
 if __name__ == "__main__":
@@ -22,7 +23,7 @@ if __name__ == "__main__":
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
-    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
+    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-faithfulness_{config.score_faithfulness}-question_prompt_{config.question_prompt.split('/')[-1].split('.')[0]}-judge_prompt_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
@@ -107,6 +108,7 @@ if __name__ == "__main__":
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
     save_raw_data_to_json(
+        config,
         labels,
         reasoning_accuracies,
         non_reasoning_accuracies,
