@@ -1,7 +1,7 @@
 from inspect_ai import task, Task
 from inspect_ai.dataset import hf_dataset, FieldSpec, Dataset
 from inspect_ai.model import CachePolicy, GenerateConfig
-from inspect_ai.scorer import match
+from inspect_ai.scorer import match, scorer, Scorer
 from inspect_ai import eval
 from typing import Dict, List
 from os import path
@@ -12,30 +12,65 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 from utils.prompts.default import DEFAULT_QUESTION_PREFIX, QWEN_3_QUESTION_PREFIX
 import argparse
-from inspect_ai.solver import Solver, solver, TaskState, Generate
+from inspect_ai.solver import Solver, solver, TaskState, Generate, generate
 import re
+from inspect_ai.scorer import match, scorer, Scorer, accuracy, stderr, Score
 
 
 @solver
-def repeat_solver(num_repeats: int = 10):
+def qwen_repeat_solver(num_repeats: int = 10):
     async def solve(state: TaskState, generate: Generate):
         for _ in range(num_repeats):
             copied = deepcopy(state)
-            copied_state = await generate(copied, cache=CachePolicy(expiry=None))
+            copied_state = await generate(copied)
             content = copied_state.messages[-1].content
-            if len(content) == 2 and re.match(r"ANSWER\s*:\s*\d+\s*$", content[1].text):
-                print("Found answer")
+            if len(content) == 2 and "\\boxed" in content[1].text:
+                # print("Found answer")
                 state = copied_state
                 return state
-            print("No answer found")
+            # print("No answer found")
         return state
 
     return solve
 
 
+@scorer(
+    metrics=[
+        accuracy(),
+        stderr(),
+    ]
+)
+def qwen_scorer():
+    async def score(state: TaskState, target):
+        content = state.messages[-1].content
+        if len(content) == 2:
+            answer = content[1].text
+            if len(answer.split("boxed{")) > 1:
+                print("uwa!")
+                num = answer.split("boxed{")[-1].split("}")[0].strip()
+                if num == target.text:
+                    return Score(
+                        value="C",
+                        explanation=f"The answer {num} is correct and equal to the target {target.text}",
+                    )
+                else:
+                    return Score(
+                        value="I",
+                        explanation=f"The answer {num} is incorrect and not equal to the target {target.text}",
+                    )
+        else:
+            return Score(
+                value="I",
+                explanation="No answer found",
+            )
+
+    return score
+
+
 @task
 def free_response(
     dataset: Dataset,
+    model_name: str,
     epochs: int = 10,
     temperature: float = 0.6,
     limit: int = 100,
@@ -46,8 +81,10 @@ def free_response(
 
     return Task(
         dataset=dataset,
-        solver=repeat_solver(num_repeats=10),
-        scorer=match(),
+        solver=qwen_repeat_solver(num_repeats=10)
+        if "qwen3" in model_name.lower()
+        else generate(cache=CachePolicy(expiry=None)),
+        scorer=qwen_scorer() if "qwen3" in model_name.lower() else match(),
         config=GenerateConfig(
             temperature=temperature,
             max_tokens=32_000,
@@ -94,6 +131,7 @@ def get_problem_difficulty(
         evalscore = eval(
             free_response(
                 dataset=dataset,
+                model_name=reasoning_model,
                 epochs=epochs,
                 temperature=temperature,
                 limit=limit,
@@ -181,8 +219,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--limit", type=int, default=10)
-    parser.add_argument("--max_connections", type=int, default=40)
+    parser.add_argument("--limit", type=int, default=200)
+    parser.add_argument("--max_connections", type=int, default=30)
     parser.add_argument("--dataset_name", type=str, default="hard-math-v0")
     args = parser.parse_args()
 

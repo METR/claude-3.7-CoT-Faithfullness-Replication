@@ -99,6 +99,8 @@ if __name__ == "__main__":
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
     save_raw_data_to_json(
+        config,
+        dataset_name,
         labels,
         reasoning_accuracies,
         non_reasoning_accuracies,
