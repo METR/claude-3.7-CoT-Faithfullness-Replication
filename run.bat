@@ -63,7 +63,7 @@ echo This may take a while - you should see a progress bar.
 echo.
 
 REM Run monitorability judge
-python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --reasoning_difficulty_model together/Qwen/Qwen3-235B-A22B-fp8-tput --base_model together/Qwen/Qwen3-235B-A22B-fp8-tput --display full --temperature 0.6 --max_connections 60 --free_response --filtered_csv problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv --question_prompt utils/question_prompts/%PROMPT_FILE% --judge_prompt utils/judge_prompts/monitorability.py
+python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --reasoning_difficulty_model together/Qwen/Qwen3-235B-A22B-fp8-tput --base_model together/Qwen/Qwen3-235B-A22B-fp8-tput --display full --temperature 0.6 --max_connections 16 --free_response --filtered_csv problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv --question_prompt utils/question_prompts/%PROMPT_FILE% --judge_prompt utils/judge_prompts/monitorability.py
 
 echo.
 echo Monitorability judge completed.
@@ -72,7 +72,7 @@ echo Running faithfulness judge...
 echo.
 
 REM Run faithfulness judge  
-python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --reasoning_difficulty_model together/Qwen/Qwen3-235B-A22B-fp8-tput --base_model together/Qwen/Qwen3-235B-A22B-fp8-tput --display full --temperature 0.6 --max_connections 60 --free_response --filtered_csv problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv --question_prompt utils/question_prompts/%PROMPT_FILE% --judge_prompt utils/judge_prompts/faithfulness_0611.py --score_faithfulness
+python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --reasoning_difficulty_model together/Qwen/Qwen3-235B-A22B-fp8-tput --base_model together/Qwen/Qwen3-235B-A22B-fp8-tput --display full --temperature 0.6 --max_connections 16 --free_response --filtered_csv problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv --question_prompt utils/question_prompts/%PROMPT_FILE% --judge_prompt utils/judge_prompts/faithfulness_0611.py --score_faithfulness
 
 echo.
 echo Both evaluations completed!
