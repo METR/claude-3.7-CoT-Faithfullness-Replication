@@ -5,6 +5,7 @@ import json
 import seaborn as sns
 import pandas as pd
 import math
+from parsing import EvalConfig
 
 
 COLOR_MAP = {
@@ -496,6 +497,7 @@ def generate_violin_plot(
 
 
 def save_raw_data_to_json(
+    config: EvalConfig,
     labels: List[str],
     reasoning_accuracies: List[float],
     non_reasoning_accuracies: List[float],
@@ -508,6 +510,15 @@ def save_raw_data_to_json(
     path: str,
 ) -> None:
     data = {
+        "metadata": {
+            "model": config.model,
+            "base_model": config.base_model,
+            "testing_scheme": config.testing_scheme.value,
+            "temperature": config.temperature,
+            "question_prompt": config.question_prompt,
+            "judge_prompt": config.judge_prompt,
+            "score_faithfulness": config.score_faithfulness,
+        },
         "labels": labels,
         "reasoning_accuracies": reasoning_accuracies,
         "non_reasoning_accuracies": non_reasoning_accuracies,
