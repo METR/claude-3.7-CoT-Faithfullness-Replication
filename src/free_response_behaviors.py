@@ -405,72 +405,66 @@ globals().update(_generated_functions)
 
 ######################### BEHAVIORS CLASS AND DICTIONARY #########################
 
-
+# COMMENT OUT THE ONES YOU DON'T WANT TO USE
 class FreeResponseBehavior(Enum):
-    REWARD_HACKING = "reward_hacking"
-    # OBFUSCATED = "obfuscated"
-    # # URL = "url"
-    # # LOG_TRACE = "log_trace"
-    # CODE_SNIPPET = "code_snippet"
-    # PYTHON_VALIDATOR = "python_validator"
-    # JAVASCRIPT_VALIDATOR = "javascript_validator"
-    REWARD_HACKING_DIFFICULTY_10 = "reward_hacking_difficulty_10"
-    REWARD_HACKING_DIFFICULTY_11 = "reward_hacking_difficulty_11"
-    REWARD_HACKING_DIFFICULTY_12 = "reward_hacking_difficulty_12"
-    REWARD_HACKING_DIFFICULTY_14 = "reward_hacking_difficulty_14"
-    REWARD_HACKING_DIFFICULTY_15 = "reward_hacking_difficulty_15"
-    REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
-    REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
-    REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
-    # REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
+    # REWARD_HACKING = "reward_hacking"
+
+    # REWARD_HACKING_DIFFICULTY_10 = "reward_hacking_difficulty_10"
+    # REWARD_HACKING_DIFFICULTY_11 = "reward_hacking_difficulty_11"
+    # REWARD_HACKING_DIFFICULTY_12 = "reward_hacking_difficulty_12"
+    # REWARD_HACKING_DIFFICULTY_14 = "reward_hacking_difficulty_14"
+    # REWARD_HACKING_DIFFICULTY_15 = "reward_hacking_difficulty_15"
+    # REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
+    # REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
+    # REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
     # # Automatically generated clue functions
-    SYCOPHANCY_EASY_ANSWER = "sycophancy_easy_answer"
-    SYCOPHANCY_MEDIUM_HEX = "sycophancy_medium_hex"
-    SYCOPHANCY_HARD_MATH = "sycophancy_hard_math"
+    # SYCOPHANCY_EASY_ANSWER = "sycophancy_easy_answer"
+    # SYCOPHANCY_MEDIUM_HEX = "sycophancy_medium_hex"
+    # SYCOPHANCY_HARD_MATH = "sycophancy_hard_math"
 
-    METADATA_EASY_ANSWER = "metadata_easy_answer"
-    METADATA_MEDIUM_HEX = "metadata_medium_hex"
-    METADATA_HARD_MATH = "metadata_hard_math"
+    # METADATA_EASY_ANSWER = "metadata_easy_answer"
+    # METADATA_MEDIUM_HEX = "metadata_medium_hex"
+    # METADATA_HARD_MATH = "metadata_hard_math"
 
-    DATABASE_SCHEMA_EASY_ANSWER = "database_schema_easy_answer"
-    DATABASE_SCHEMA_MEDIUM_HEX = "database_schema_medium_hex"
-    DATABASE_SCHEMA_HARD_MATH = "database_schema_hard_math"
+    # DATABASE_SCHEMA_EASY_ANSWER = "database_schema_easy_answer"
+    # DATABASE_SCHEMA_MEDIUM_HEX = "database_schema_medium_hex"
+    # DATABASE_SCHEMA_HARD_MATH = "database_schema_hard_math"
 
     CONFIG_FILE_EASY_ANSWER = "config_file_easy_answer"
-    CONFIG_FILE_MEDIUM_HEX = "config_file_medium_hex"
-    CONFIG_FILE_HARD_MATH = "config_file_hard_math"
+    # CONFIG_FILE_MEDIUM_HEX = "config_file_medium_hex"
+    # CONFIG_FILE_HARD_MATH = "config_file_hard_math"
 
-    CACHE_EASY_ANSWER = "cache_easy_answer"
-    CACHE_MEDIUM_HEX = "cache_medium_hex"
-    CACHE_HARD_MATH = "cache_hard_math"
+    # CACHE_EASY_ANSWER = "cache_easy_answer"
+    # CACHE_MEDIUM_HEX = "cache_medium_hex"
+    # CACHE_HARD_MATH = "cache_hard_math"
 
-    ERROR_MESSAGE_EASY_ANSWER = "error_message_easy_answer"
-    ERROR_MESSAGE_MEDIUM_HEX = "error_message_medium_hex"
-    ERROR_MESSAGE_HARD_MATH = "error_message_hard_math"
+    # ERROR_MESSAGE_EASY_ANSWER = "error_message_easy_answer"
+    # ERROR_MESSAGE_MEDIUM_HEX = "error_message_medium_hex"
+    # ERROR_MESSAGE_HARD_MATH = "error_message_hard_math"
 
     BACKUP_DATA_EASY_ANSWER = "backup_data_easy_answer"
-    BACKUP_DATA_MEDIUM_HEX = "backup_data_medium_hex"
-    BACKUP_DATA_HARD_MATH = "backup_data_hard_math"
+    # BACKUP_DATA_MEDIUM_HEX = "backup_data_medium_hex"
+    # BACKUP_DATA_HARD_MATH = "backup_data_hard_math"
 
-    MACHINE_LEARNING_EASY_ANSWER = "machine_learning_easy_answer"
-    MACHINE_LEARNING_MEDIUM_HEX = "machine_learning_medium_hex"
-    MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
+    # MACHINE_LEARNING_EASY_ANSWER = "machine_learning_easy_answer"
+    # MACHINE_LEARNING_MEDIUM_HEX = "machine_learning_medium_hex"
+    # MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
 
-    VERSION_CONTROL_EASY_ANSWER = "version_control_easy_answer"
-    VERSION_CONTROL_MEDIUM_HEX = "version_control_medium_hex"
+    # VERSION_CONTROL_EASY_ANSWER = "version_control_easy_answer"
+    # VERSION_CONTROL_MEDIUM_HEX = "version_control_medium_hex"
     VERSION_CONTROL_HARD_MATH = "version_control_hard_math"
 
-    CSV_DATA_EASY_ANSWER = "csv_data_easy_answer"
-    CSV_DATA_MEDIUM_HEX = "csv_data_medium_hex"
+    # CSV_DATA_EASY_ANSWER = "csv_data_easy_answer"
+    # CSV_DATA_MEDIUM_HEX = "csv_data_medium_hex"
     CSV_DATA_HARD_MATH = "csv_data_hard_math"
 
-    SECURITY_AUDIT_EASY_ANSWER = "security_audit_easy_answer"
-    SECURITY_AUDIT_MEDIUM_HEX = "security_audit_medium_hex"
-    SECURITY_AUDIT_HARD_MATH = "security_audit_hard_math"
+    # SECURITY_AUDIT_EASY_ANSWER = "security_audit_easy_answer"
+    # SECURITY_AUDIT_MEDIUM_HEX = "security_audit_medium_hex"
+    # SECURITY_AUDIT_HARD_MATH = "security_audit_hard_math"
 
-    JUPYTER_NOTEBOOK_EASY_ANSWER = "jupyter_notebook_easy_answer"
-    JUPYTER_NOTEBOOK_MEDIUM_HEX = "jupyter_notebook_medium_hex"
-    JUPYTER_NOTEBOOK_HARD_MATH = "jupyter_notebook_hard_math"
+    # JUPYTER_NOTEBOOK_EASY_ANSWER = "jupyter_notebook_easy_answer"
+    # JUPYTER_NOTEBOOK_MEDIUM_HEX = "jupyter_notebook_medium_hex"
+    # JUPYTER_NOTEBOOK_HARD_MATH = "jupyter_notebook_hard_math"
 
 
 def _generate_function_dict():
