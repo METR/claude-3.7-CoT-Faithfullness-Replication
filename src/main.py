@@ -40,8 +40,7 @@ if __name__ == "__main__":
     # samples: List[int] = []
 
     #cases = [FreeResponseBehavior.JAVASCRIPT_1, FreeResponseBehavior.JAVASCRIPT_2, FreeResponseBehavior.JAVASCRIPT_3, FreeResponseBehavior.JAVASCRIPT_4] #list(FR_FUNCTION_DICT.keys())
-    #cases = [FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_30, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_40, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_50, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_60, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_70]
-    cases = [FreeResponseBehavior.SESSION_STORAGE_DEBUG_60, FreeResponseBehavior.SESSION_STORAGE_DEBUG_65, FreeResponseBehavior.SESSION_STORAGE_DEBUG_70, FreeResponseBehavior.SESSION_STORAGE_DEBUG_75, FreeResponseBehavior.SESSION_STORAGE_DEBUG_80]
+    cases = [FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_70, FreeResponseBehavior.SESSION_STORAGE_DEBUG_60, FreeResponseBehavior.SESSION_STORAGE_DEBUG_65, FreeResponseBehavior.SESSION_STORAGE_DEBUG_70, FreeResponseBehavior.PROFILER_OUTPUT_V2_1, FreeResponseBehavior.EMAIL_CHAIN_CALCULATION_MEDIUM_1, FreeResponseBehavior.PROFILER_OUTPUT_V4_5, FreeResponseBehavior.MIMIC_SESSION_STORAGE_DEBUG_3, FreeResponseBehavior.BOOTSTRAP_WEBPACK_BUILD_ERROR, FreeResponseBehavior.MIMIC_SESSION_STORAGE_DEBUGV2_2]
     #print(list(FR_FUNCTION_DICT.keys()))
     #sys.exit()
     dataset_name = "metr/hard-math"
