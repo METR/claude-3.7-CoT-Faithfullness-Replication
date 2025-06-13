@@ -11,6 +11,7 @@ from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 from dotenv import load_dotenv
+from graph import generate_taking_hints_graph
 
 from typing import List
 
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=config.temperature,
         max_connections=config.max_connections,
-        limit=10, # YOU CAN CHANGE THIS NUMBER TO RUN ON MORE QUESTIONS, THIS IS SMALL SO ITERATION CAN BE FAST
+        limit=70, # YOU CAN CHANGE THIS NUMBER TO RUN ON MORE QUESTIONS, THIS IS SMALL SO ITERATION CAN BE FAST
         filtered_csv=config.filtered_csv,
         prompt_template=DEFAULT_QUESTION_PREFIX,
     )
@@ -114,4 +115,13 @@ if __name__ == "__main__":
         take_hints_scores,
         samples,
         RAW_DATA_PATH,
+    )
+
+    # Automatically run the graph script to show the bar chart and other graphs
+
+    generate_taking_hints_graph(
+        take_hints_scores,
+        labels=labels,
+        model=config.model,
+        dataset=dataset_name,
     )
