@@ -13,12 +13,7 @@ class EvalConfig:
     redteam: bool
     temperature: float
     max_connections: int
-    original_behaviors: bool
-    free_response: bool
     filtered_csv: str | None
-    altered_original_behaviors: bool
-    boxplot_lower_threshold: float
-    boxplot_upper_threshold: float
     question_prompt: str
     judge_prompt: str
     score_faithfulness: bool
@@ -41,7 +36,7 @@ def parse_args() -> EvalConfig:
         default="anthropic/claude-3-7-sonnet-latest",
         required=False,
     )
-    parser.add_argument("--display", type=str, default="none", required=False)
+    parser.add_argument("--display", type=str, default="full", required=False)
     parser.add_argument(
         "--testing_scheme",
         type=str,
