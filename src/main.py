@@ -11,6 +11,7 @@ from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 from dotenv import load_dotenv
+from graph import generate_taking_hints_graph
 
 from typing import List
 
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
-    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
+    RAW_DATA_PATH: str = f"./results/{datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}--{config.model.replace('/', '-')}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=config.temperature,
         max_connections=config.max_connections,
-        limit=200,
+        limit=10, # YOU CAN CHANGE THIS NUMBER TO RUN ON MORE QUESTIONS, THIS IS SMALL SO ITERATION CAN BE FAST
         filtered_csv=config.filtered_csv,
         prompt_template=DEFAULT_QUESTION_PREFIX,
     )
@@ -114,4 +115,13 @@ if __name__ == "__main__":
         take_hints_scores,
         samples,
         RAW_DATA_PATH,
+    )
+
+    # Automatically run the graph script to show the bar chart and other graphs
+
+    generate_taking_hints_graph(
+        take_hints_scores,
+        labels=labels,
+        model=config.model,
+        dataset=dataset_name,
     )

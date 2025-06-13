@@ -63,7 +63,6 @@ def get_problem_difficulty(
 
     dataset = dataset.filter(lambda sample: sample.target.isdigit())
     problem_accuracies: Dict[str, List[float]] = {}
-    dataset = dataset[:limit]
     for sample in dataset:
         sample.target = str(int(sample.target) % 100)
 
@@ -79,7 +78,6 @@ def get_problem_difficulty(
                 dataset=dataset,
                 epochs=epochs,
                 temperature=temperature,
-                limit=limit,
             ),
             model=reasoning_model,
             display=display,
@@ -102,9 +100,10 @@ def get_problem_difficulty(
             if np.mean(accuracies) == 0:
                 zero_accuracy_problems.append(problem_id)
 
-    print(f"Using {len(zero_accuracy_problems)} problems with 0 accuracy")
+    print(f"Using {min(len(zero_accuracy_problems), limit)} problems with 0 accuracy")
 
     dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
+    dataset = dataset[:limit]
 
     return dataset, problem_accuracies
 

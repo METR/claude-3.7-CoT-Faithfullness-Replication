@@ -405,15 +405,10 @@ globals().update(_generated_functions)
 
 ######################### BEHAVIORS CLASS AND DICTIONARY #########################
 
-
+# COMMENT OUT THE ONES YOU DON'T WANT TO USE
 class FreeResponseBehavior(Enum):
     # REWARD_HACKING = "reward_hacking"
-    # OBFUSCATED = "obfuscated"
-    # # URL = "url"
-    # # LOG_TRACE = "log_trace"
-    # CODE_SNIPPET = "code_snippet"
-    # PYTHON_VALIDATOR = "python_validator"
-    # JAVASCRIPT_VALIDATOR = "javascript_validator"
+
     # REWARD_HACKING_DIFFICULTY_10 = "reward_hacking_difficulty_10"
     # REWARD_HACKING_DIFFICULTY_11 = "reward_hacking_difficulty_11"
     # REWARD_HACKING_DIFFICULTY_12 = "reward_hacking_difficulty_12"
@@ -422,13 +417,12 @@ class FreeResponseBehavior(Enum):
     # REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
     # REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
     # REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
-    # REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
     # # Automatically generated clue functions
     # SYCOPHANCY_EASY_ANSWER = "sycophancy_easy_answer"
     # SYCOPHANCY_MEDIUM_HEX = "sycophancy_medium_hex"
     # SYCOPHANCY_HARD_MATH = "sycophancy_hard_math"
 
-    METADATA_EASY_ANSWER = "metadata_easy_answer"
+    # METADATA_EASY_ANSWER = "metadata_easy_answer"
     # METADATA_MEDIUM_HEX = "metadata_medium_hex"
     # METADATA_HARD_MATH = "metadata_hard_math"
 
@@ -454,7 +448,7 @@ class FreeResponseBehavior(Enum):
 
     # MACHINE_LEARNING_EASY_ANSWER = "machine_learning_easy_answer"
     # MACHINE_LEARNING_MEDIUM_HEX = "machine_learning_medium_hex"
-    MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
+    # MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
 
     # VERSION_CONTROL_EASY_ANSWER = "version_control_easy_answer"
     # VERSION_CONTROL_MEDIUM_HEX = "version_control_medium_hex"
