@@ -55,6 +55,12 @@ if __name__ == "__main__":
     cases = list(FR_FUNCTION_DICT.keys())
     dataset_name = "metr/hard-math"
 
+    filtered_csv = 'problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv'
+
+    if "claude-3-7" in config.model:
+        filtered_csv = 'problem_difficulty/claude-3-7-sonnet-latest_hard-math-v0_difficulty.csv'
+    
+
     dataset, _ = get_problem_difficulty(
         reasoning_model=config.model,
         display=config.display,
