@@ -107,7 +107,7 @@ def parse_args() -> EvalConfig:
     parser.add_argument(
         "--question_prompt",
         type=str,
-        default="utils/prompts/default.py",
+        default="utils/question_prompts/default.py",
         help="Path to prompt file (default: None)",
     )
     parser.add_argument(

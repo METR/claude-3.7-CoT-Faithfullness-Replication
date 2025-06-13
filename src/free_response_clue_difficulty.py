@@ -44,7 +44,7 @@ def free_response_clue_difficulty(
     )
 
     samples = []
-    targets = list([i for i in range(100)])
+    targets = list([i for i in range(100)])[:10]
 
     for target in targets:
         samples.append(

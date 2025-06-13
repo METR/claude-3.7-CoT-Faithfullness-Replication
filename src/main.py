@@ -1,5 +1,6 @@
 import os
-from free_response_behaviors import FR_FUNCTION_DICT
+import sys
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from tqdm import tqdm
 from graph_utils import (
     save_raw_data_to_json,
@@ -7,7 +8,7 @@ from graph_utils import (
 from datetime import datetime
 from parsing import parse_args
 from free_response_clue_difficulty import get_free_response_clue_difficulty
-from free_response_llm_faithfulness import get_free_response_faithfulness_score
+# from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
@@ -18,40 +19,44 @@ load_dotenv()
 
 if __name__ == "__main__":
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
-    print(f"Anthropic API Key: {anthropic_api_key}")
+    #print(f"Anthropic API Key: {anthropic_api_key}")
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
-    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
+    RAW_DATA_PATH: str = f"./results/clue_difficulty_only/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
-    JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
+    # JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
 
-    faithfulness_scores: List[float] = []
-    faithfulness_stderrs: List[float] = []
+    # faithfulness_scores: List[float] = []
+    # faithfulness_stderrs: List[float] = []
     difficulty_scores: List[float] = []
     difficulty_stderrs: List[float] = []
     reasoning_accuracies: List[float] = []
     non_reasoning_accuracies: List[float] = []
-    take_hints_scores: List[float] = []
-    samples: List[int] = []
+    # take_hints_scores: List[float] = []
+    # samples: List[int] = []
 
-    cases = list(FR_FUNCTION_DICT.keys())
+    #cases = [FreeResponseBehavior.JAVASCRIPT_1, FreeResponseBehavior.JAVASCRIPT_2, FreeResponseBehavior.JAVASCRIPT_3, FreeResponseBehavior.JAVASCRIPT_4] #list(FR_FUNCTION_DICT.keys())
+    #cases = [FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_30, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_40, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_50, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_60, FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_70]
+    cases = [FreeResponseBehavior.SESSION_STORAGE_DEBUG_60, FreeResponseBehavior.SESSION_STORAGE_DEBUG_65, FreeResponseBehavior.SESSION_STORAGE_DEBUG_70, FreeResponseBehavior.SESSION_STORAGE_DEBUG_75, FreeResponseBehavior.SESSION_STORAGE_DEBUG_80]
+    #print(list(FR_FUNCTION_DICT.keys()))
+    #sys.exit()
     dataset_name = "metr/hard-math"
 
-    dataset, _ = get_problem_difficulty(
-        reasoning_model=config.model,
-        display=config.display,
-        epochs=5,
-        log_dir=TOP_LEVEL_LOG_DIR,
-        temperature=config.temperature,
-        max_connections=config.max_connections,
-        limit=200,
-        filtered_csv=config.filtered_csv,
-        prompt_template=DEFAULT_QUESTION_PREFIX,
-    )
+    # dataset, _ = get_problem_difficulty(
+    #     reasoning_model=config.model,
+    #     display=config.display,
+    #     epochs=5,
+    #     log_dir=TOP_LEVEL_LOG_DIR,
+    #     temperature=config.temperature,
+    #     max_connections=config.max_connections,
+    #     limit=200,
+    #     filtered_csv=config.filtered_csv,
+    #     prompt_template=DEFAULT_QUESTION_PREFIX,
+    # )
     excluded_behaviors = []
 
     for behavior in tqdm(cases):
@@ -76,45 +81,45 @@ if __name__ == "__main__":
             excluded_behaviors.append(behavior)
             continue
 
-        (
-            p_acknowledged_clue,
-            p_take_hints,
-            faithfulness_stderr,
-            completed_samples,
-        ) = get_free_response_faithfulness_score(
-            dataset,
-            behavior,
-            model=config.model,
-            max_connections=config.max_connections,
-            limit=100,
-            display=config.display,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=config.temperature,
-            prompt_prefix=QUESTION_PREFIX,
-            prompt_suffix=QUESTION_SUFFIX,
-            hint_suffix=HINT_SUFFIX,
-            judge_prompt=JUDGE_PROMPT,
-            score_faithfulness=config.score_faithfulness,
-        )
+        # (
+        #     p_acknowledged_clue,
+        #     p_take_hints,
+        #     faithfulness_stderr,
+        #     completed_samples,
+        # ) = get_free_response_faithfulness_score(
+        #     dataset,
+        #     behavior,
+        #     model=config.model,
+        #     max_connections=config.max_connections,
+        #     limit=100,
+        #     display=config.display,
+        #     log_dir=TOP_LEVEL_LOG_DIR,
+        #     temperature=config.temperature,
+        #     prompt_prefix=QUESTION_PREFIX,
+        #     prompt_suffix=QUESTION_SUFFIX,
+        #     hint_suffix=HINT_SUFFIX,
+        #     judge_prompt=JUDGE_PROMPT,
+        #     score_faithfulness=config.score_faithfulness,
+        # )
         reasoning_accuracies.append(reasoning_accuracy)
         non_reasoning_accuracies.append(non_reasoning_accuracy)
         difficulty_scores.append(1 - non_reasoning_accuracy)
         difficulty_stderrs.append(non_reasoning_stderr)
-        faithfulness_scores.append(p_acknowledged_clue)
-        faithfulness_stderrs.append(faithfulness_stderr)
-        take_hints_scores.append(p_take_hints)
-        samples.append(completed_samples)
+        # faithfulness_scores.append(p_acknowledged_clue)
+        # faithfulness_stderrs.append(faithfulness_stderr)
+        # take_hints_scores.append(p_take_hints)
+        # samples.append(completed_samples)
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
-    save_raw_data_to_json(
-        labels,
-        reasoning_accuracies,
-        non_reasoning_accuracies,
-        difficulty_scores,
-        difficulty_stderrs,
-        faithfulness_scores,
-        faithfulness_stderrs,
-        take_hints_scores,
-        samples,
-        RAW_DATA_PATH,
-    )
+    #save_raw_data_to_json(
+     #   labels,
+      #  reasoning_accuracies,
+       # non_reasoning_accuracies,
+        #difficulty_scores,
+        #difficulty_stderrs,
+        # faithfulness_scores,
+        # faithfulness_stderrs,
+        # take_hints_scores,
+        # samples,
+        #RAW_DATA_PATH,
+    #)
