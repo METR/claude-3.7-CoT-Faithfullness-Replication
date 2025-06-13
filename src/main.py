@@ -45,7 +45,7 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=config.temperature,
         max_connections=config.max_connections,
-        limit=200,
+        limit=10, # YOU CAN CHANGE THIS NUMBER TO RUN ON MORE QUESTIONS, THIS IS SMALL SO ITERATION CAN BE FAST
         filtered_csv=config.filtered_csv,
         prompt_template=DEFAULT_QUESTION_PREFIX,
     )
