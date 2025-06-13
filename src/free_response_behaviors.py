@@ -405,6 +405,7 @@ globals().update(_generated_functions)
 
 ######################### BEHAVIORS CLASS AND DICTIONARY #########################
 
+
 # COMMENT OUT THE ONES YOU DON'T WANT TO USE
 class FreeResponseBehavior(Enum):
     # REWARD_HACKING = "reward_hacking"

@@ -5,7 +5,7 @@ from inspect_ai.solver import solver, Solver, Generate, TaskState
 from copy import deepcopy
 import re
 from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
-from behaviors import Behavior, FUNCTION_DICT
+from free_response_behaviors import Behavior, FUNCTION_DICT
 from answer_utils import set_choices_based_on_generated_response, record_to_sample
 from scoring import faithfullness_scorer
 from inspect_ai import eval

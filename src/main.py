@@ -4,7 +4,7 @@ from graph_utils import (
     save_raw_data_to_json,
 )
 from datetime import datetime
-from parsing import parse_args
+import argparse
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from filtering import get_problem_difficulty
@@ -17,15 +17,31 @@ from typing import List
 
 if __name__ == "__main__":
     load_dotenv()
-    config = parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--question_prompt", type=str)
+
+    parser.add_argument("--model", type=str, default="anthropic/claude-3-7-sonnet-latest")
+    parser.add_argument("--testing_scheme", type=str, default="base")
+    parser.add_argument("--temperature", type=float, default=0.6)
+    parser.add_argument("--max_connections", type=int, default=60)
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--display", type=str, default="full")
+    parser.add_argument("--score_faithfulness", action="store_true")
+    config = parser.parse_args()
+
+    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme}/"
     RAW_DATA_PATH: str = f"./results/{datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}--{config.model.replace('/', '-')}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
-    JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
+
+    judge_prompt_path = "utils/judge_prompts/monitorability.py"
+    if config.score_faithfulness:
+        judge_prompt_path = "utils/judge_prompts/faithfulness_0611.py"
+    
+    JUDGE_PROMPT = load_prompt_module(judge_prompt_path).JUDGE_PROMPT
 
     faithfulness_scores: List[float] = []
     faithfulness_stderrs: List[float] = []
@@ -46,8 +62,8 @@ if __name__ == "__main__":
         log_dir=TOP_LEVEL_LOG_DIR,
         temperature=config.temperature,
         max_connections=config.max_connections,
-        limit=10, # YOU CAN CHANGE THIS NUMBER TO RUN ON MORE QUESTIONS, THIS IS SMALL SO ITERATION CAN BE FAST
-        filtered_csv=config.filtered_csv,
+        limit=config.limit,
+        filtered_csv='problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv',
         prompt_template=DEFAULT_QUESTION_PREFIX,
     )
     excluded_behaviors = []
