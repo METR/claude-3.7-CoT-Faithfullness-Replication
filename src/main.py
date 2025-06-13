@@ -1,3 +1,4 @@
+import os
 from free_response_behaviors import FR_FUNCTION_DICT
 from tqdm import tqdm
 from graph_utils import (
@@ -12,8 +13,12 @@ from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 from typing import List
+from dotenv import load_dotenv
+load_dotenv()
 
 if __name__ == "__main__":
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
+    print(f"Anthropic API Key: {anthropic_api_key}")
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"

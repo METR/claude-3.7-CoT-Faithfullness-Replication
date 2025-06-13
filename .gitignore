@@ -7,3 +7,5 @@ src/results/
 .DS_Store
 .vscode/
 .cursor/
+src/myenv/
+*.env
