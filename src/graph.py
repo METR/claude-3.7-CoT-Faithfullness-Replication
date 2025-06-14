@@ -9,6 +9,7 @@ from graph_utils import (
 )
 import json
 import argparse
+import os
 
 
 def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
@@ -73,8 +74,26 @@ if __name__ == "__main__":
     BOXPLOT_LOWER_THRESHOLD = 0.2
     BOXPLOT_UPPER_THRESHOLD = 0.8
 
-    with open(RAW_DATA_PATH, "r") as f:
-        data = json.load(f)
+    try:
+        with open(RAW_DATA_PATH, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: File not found at {RAW_DATA_PATH}")
+        # Try to find the file in the results directory
+        fallback_path = os.path.join("results", os.path.basename(RAW_DATA_PATH))
+        try:
+            with open(fallback_path, "r") as f:
+                data = json.load(f)
+            print(f"Successfully loaded data from fallback location: {fallback_path}")
+        except FileNotFoundError:
+            print(f"Error: File not found at fallback location {fallback_path}")
+            exit(1)
+    except json.JSONDecodeError:
+        print(f"Error: Invalid JSON in file {RAW_DATA_PATH}")
+        exit(1)
+    except Exception as e:
+        print(f"Error reading file {RAW_DATA_PATH}: {str(e)}")
+        exit(1)
 
     labels = data["labels"]
     reasoning_accuracies = data["reasoning_accuracies"]
@@ -108,6 +127,10 @@ if __name__ == "__main__":
         samples,
         threshold=HINT_TAKING_THRESHOLD,
     )
+
+    # Create output directory for graphs if it doesn't exist
+    output_dir = os.path.join("results", "graphs")
+    os.makedirs(output_dir, exist_ok=True)
 
     generate_taking_hints_graph(
         take_hints_scores,

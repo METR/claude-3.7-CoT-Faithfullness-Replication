@@ -12,6 +12,7 @@ from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 from dotenv import load_dotenv
 from graph import generate_taking_hints_graph
+import os
 
 from typing import List
 
@@ -30,16 +31,25 @@ if __name__ == "__main__":
     parser.add_argument("--score_faithfulness", action="store_true")
     config = parser.parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme}/"
-    RAW_DATA_PATH: str = f"./results/{datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}--{config.model.replace('/', '-')}.json"
+    # Use os.path.join for cross-platform path construction
+    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    model_name = config.model.replace('/', '-')
+    
+    TOP_LEVEL_LOG_DIR = os.path.join("logs", f"{timestamp}-{model_name}-{config.testing_scheme}")
+    RAW_DATA_PATH = os.path.join("results", f"{datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}--{model_name}.json")
+    
+    # Ensure directories exist
+    os.makedirs(os.path.dirname(TOP_LEVEL_LOG_DIR), exist_ok=True)
+    os.makedirs(os.path.dirname(RAW_DATA_PATH), exist_ok=True)
+    
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
 
-    judge_prompt_path = "utils/judge_prompts/monitorability.py"
+    judge_prompt_path = os.path.join("utils", "judge_prompts", "monitorability.py")
     if config.score_faithfulness:
-        judge_prompt_path = "utils/judge_prompts/faithfulness_0611.py"
+        judge_prompt_path = os.path.join("utils", "judge_prompts", "faithfulness_0611.py")
     
     JUDGE_PROMPT = load_prompt_module(judge_prompt_path).JUDGE_PROMPT
 
@@ -55,10 +65,10 @@ if __name__ == "__main__":
     cases = list(FR_FUNCTION_DICT.keys())
     dataset_name = "metr/hard-math"
 
-    filtered_csv = 'problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv'
+    filtered_csv = os.path.join('problem_difficulty', 'claude-opus-4-20250514_hard-math-v0_difficulty.csv')
 
     if "claude-3-7" in config.model:
-        filtered_csv = 'problem_difficulty/claude-3-7-sonnet-latest_hard-math-v0_difficulty.csv'
+        filtered_csv = os.path.join('problem_difficulty', 'claude-3-7-sonnet-latest_hard-math-v0_difficulty.csv')
     
 
     dataset, _ = get_problem_difficulty(
@@ -69,7 +79,7 @@ if __name__ == "__main__":
         temperature=config.temperature,
         max_connections=config.max_connections,
         limit=config.limit,
-        filtered_csv='problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv',
+        filtered_csv=os.path.join('problem_difficulty', 'claude-opus-4-20250514_hard-math-v0_difficulty.csv'),
         prompt_template=DEFAULT_QUESTION_PREFIX,
     )
     excluded_behaviors = []
