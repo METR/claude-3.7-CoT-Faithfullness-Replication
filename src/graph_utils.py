@@ -5,6 +5,7 @@ import json
 import seaborn as sns
 import pandas as pd
 import math
+import os
 
 
 COLOR_MAP = {
@@ -518,5 +519,21 @@ def save_raw_data_to_json(
         "take_hints_scores": take_hints_scores,
         "samples": samples,
     }
-    with open(path, "w") as f:
-        json.dump(data, f)
+    
+    # Ensure the directory exists before writing
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        with open(path, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"Error saving data to {path}: {str(e)}")
+        # Try saving to a fallback location if the original path fails
+        try:
+            fallback_path = os.path.join(os.getcwd(), "results", os.path.basename(path))
+            os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
+            with open(fallback_path, "w") as f:
+                json.dump(data, f)
+            print(f"Data saved to fallback location: {fallback_path}")
+        except Exception as fallback_error:
+            print(f"Failed to save to fallback location: {str(fallback_error)}")
