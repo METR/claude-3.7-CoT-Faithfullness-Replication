@@ -63,7 +63,7 @@ echo This may take a while - you should see a progress bar.
 echo.
 
 REM Run monitorability judge
-python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --question_prompt utils/question_prompts/%PROMPT_FILE%
+python main.py --model openrouter/qwen/qwen3-235b-a22b --question_prompt utils/question_prompts/%PROMPT_FILE%
 
 echo.
 echo Monitorability judge completed.
@@ -72,11 +72,10 @@ echo Running faithfulness judge...
 echo.
 
 REM Run faithfulness judge  
-@REM python main.py --model together/Qwen/Qwen3-235B-A22B-fp8-tput --score_faithfulness --question_prompt utils/question_prompts/%PROMPT_FILE%
+@REM python main.py --model openrouter/qwen/qwen3-235b-a22b --score_faithfulness --question_prompt utils/question_prompts/%PROMPT_FILE%
 
 echo.
 echo Both evaluations completed!
 echo.
 echo The inspect view window should still be open for viewing generations.
 echo Press any key to close this window...
-pause >nul
