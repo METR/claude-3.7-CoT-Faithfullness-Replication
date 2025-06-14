@@ -3,7 +3,7 @@
 __pycache__/
 logs/
 scores/
-src/results/
+src/results/*
 .DS_Store
 .vscode/
 .cursor/
