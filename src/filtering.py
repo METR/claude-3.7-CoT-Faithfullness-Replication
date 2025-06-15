@@ -7,12 +7,17 @@ import numpy as np
 import pandas as pd
 from inspect_ai import Task, eval, task
 from inspect_ai.dataset import Dataset, FieldSpec, hf_dataset
-from inspect_ai.model import CachePolicy, GenerateConfig
+from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.scorer import match
 from inspect_ai.solver import generate
 from inspect_ai.util import DisplayType
+from pydantic import BaseModel
 
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
+
+
+class Number(BaseModel):
+    number: int
 
 
 @task
@@ -36,6 +41,7 @@ def free_response(
             temperature=temperature,
             max_tokens=32_000,
             reasoning_tokens=30_000,
+            response_schema=ResponseSchema(name="number", json_schema=Number),
         ),
         epochs=epochs,
         max_connections=max_connections,

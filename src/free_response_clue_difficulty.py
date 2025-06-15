@@ -74,9 +74,7 @@ def free_response_clue_difficulty(
             reasoning_tokens=reasoning_tokens,
             response_schema=ResponseSchema(
                 name="number", json_schema=json_schema(Number)
-            )
-            if not reasoning
-            else None,
+            ),
         ),
         epochs=epochs,
     )
