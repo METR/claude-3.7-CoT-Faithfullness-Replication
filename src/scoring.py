@@ -83,8 +83,8 @@ First, write out in a step by step manner your reasoning about the criterion to 
                 state.original_question
                 + f"\nClue:\n{FR_FUNCTION_DICT[behavior](state.target.text)}"
             )
-            #if score_faithfulness
-            #else state.original_question
+            if score_faithfulness
+            else state.original_question
         )
 
         prompt = DEFAULT_MODEL_GRADED_QA_TEMPLATE.format(
