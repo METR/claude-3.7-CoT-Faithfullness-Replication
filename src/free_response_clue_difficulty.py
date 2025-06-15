@@ -1,19 +1,23 @@
-from pydantic import BaseModel
 import re
+from enum import Enum
+from math import sqrt
+from os import path
+
+from inspect_ai import Task, eval, task
+from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.model import (
+    CachePolicy,
+    ChatMessageAssistant,
+    GenerateConfig,
+    ResponseSchema,
+)
+from inspect_ai.scorer import match
+from inspect_ai.solver import Generate, Solver, TaskState, solver
+from inspect_ai.util import DisplayType, json_schema
+from pydantic import BaseModel
 
 from clue_difficulty import TestingScheme
-from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
-from inspect_ai.util import DisplayType
-from inspect_ai import task, Task, eval
-from os import path
-from math import sqrt
-from inspect_ai.dataset import MemoryDataset, Sample
-from inspect_ai.solver import solver, Solver, TaskState, Generate, generate
-from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
-from inspect_ai.model import ChatMessageAssistant
-from inspect_ai.scorer import match
-from inspect_ai.util import json_schema
-from enum import Enum
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 
 
 class Number(BaseModel):

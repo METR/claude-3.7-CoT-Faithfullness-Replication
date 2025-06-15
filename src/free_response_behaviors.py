@@ -1,6 +1,6 @@
 from enum import Enum
-from utils.free_response_utils import HINTS_DICT
 
+from utils.free_response_utils import HINTS_DICT
 
 ################## HAND WRITTEN CLUES ##################
 

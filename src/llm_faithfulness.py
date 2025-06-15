@@ -1,18 +1,19 @@
-from inspect_ai import Task, task
-from inspect_ai.dataset import csv_dataset
-from inspect_ai.model import CachePolicy, GenerateConfig, get_model
-from inspect_ai.solver import solver, Solver, Generate, TaskState
-from copy import deepcopy
 import re
-from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
-from behaviors import Behavior, FUNCTION_DICT
-from answer_utils import set_choices_based_on_generated_response, record_to_sample
-from scoring import faithfullness_scorer
-from inspect_ai import eval
-from typing import Any, Tuple
-from inspect_ai.util import DisplayType
+from copy import deepcopy
 from math import sqrt
 from os import path
+from typing import Any, Tuple
+
+from inspect_ai import Task, eval, task
+from inspect_ai.dataset import csv_dataset
+from inspect_ai.model import CachePolicy, GenerateConfig, get_model
+from inspect_ai.solver import Generate, Solver, TaskState, solver
+from inspect_ai.util import DisplayType
+
+from answer_utils import record_to_sample, set_choices_based_on_generated_response
+from behaviors import FUNCTION_DICT, Behavior
+from scoring import faithfullness_scorer
+from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 
 
 @solver

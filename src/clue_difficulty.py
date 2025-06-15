@@ -1,20 +1,19 @@
-from inspect_ai import eval
-from inspect_ai import Task, task
-from inspect_ai.dataset import MemoryDataset, Sample
-from typing import Tuple
-from inspect_ai.scorer import choice
-from inspect_ai.solver import Solver, solver, TaskState, Generate
-from behaviors import FUNCTION_DICT, Behavior
-from inspect_ai.model import CachePolicy, GenerateConfig
-from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE
-from answer_utils import set_choices_based_on_generated_response
 import re
-from utils.prompt_utils import prompt
-from math import sqrt
-from inspect_ai.util import DisplayType
-from inspect_ai.model import ChatMessageAssistant
 from enum import Enum
+from math import sqrt
 from os import path
+from typing import Tuple
+
+from inspect_ai import Task, eval, task
+from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.model import CachePolicy, ChatMessageAssistant, GenerateConfig
+from inspect_ai.scorer import choice
+from inspect_ai.solver import Generate, Solver, TaskState, solver
+from inspect_ai.util import DisplayType
+
+from answer_utils import set_choices_based_on_generated_response
+from behaviors import FUNCTION_DICT, Behavior
+from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 
 
 class TestingScheme(Enum):

@@ -1,12 +1,12 @@
+import json
 from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
-import json
-import seaborn as sns
 import pandas as pd
-import math
-from parsing import EvalConfig
+import seaborn as sns
 
+from parsing import EvalConfig
 
 COLOR_MAP = {
     "default": "#808080",  # Gray
