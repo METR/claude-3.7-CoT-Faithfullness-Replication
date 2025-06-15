@@ -49,6 +49,7 @@ def generate_propensity_graph(
     show_labels: bool = False,
     show_color: bool = True,
     show_shape: bool = True,
+    path: str | None = None,
 ) -> None:
     """
     Generate a graph comparing faithfulness scores against difficulty scores.
@@ -188,7 +189,10 @@ def generate_propensity_graph(
     ax.axis("off")
 
     plt.grid(True)
-    plt.show()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
 
 
 def generate_taking_hints_graph(

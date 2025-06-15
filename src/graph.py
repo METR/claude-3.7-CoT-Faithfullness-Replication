@@ -9,7 +9,7 @@ from graph_utils import (
 )
 import json
 import argparse
-
+import os
 
 def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
     """
@@ -63,6 +63,12 @@ if __name__ == "__main__":
         type=str,
         help="Path to raw data",
     )
+    parser.add_argument(
+        "--alias",
+        type=str,
+        help="Alias for the graph",
+        default="",
+    )
     args = parser.parse_args()
 
     RAW_DATA_PATH = args.raw_data_path
@@ -72,9 +78,15 @@ if __name__ == "__main__":
     dataset_name = "metr/hard-math"
     BOXPLOT_LOWER_THRESHOLD = 0.2
     BOXPLOT_UPPER_THRESHOLD = 0.8
+    GRAPH_BASE_DIRECTORY = f"./results/graphs/{args.model.split('/')[-1]}_thresh{args.hint_taking_threshold}_{args.alias}"
+    if not os.path.exists(GRAPH_BASE_DIRECTORY):
+        os.makedirs(GRAPH_BASE_DIRECTORY)
 
     with open(RAW_DATA_PATH, "r") as f:
         data = json.load(f)
+
+    if "metadata" in data:
+        MODEL = f"{data['metadata']['model']}_{data['metadata']['question_prompt'].split('/')[-1]}_{data['metadata']['judge_prompt'].split('/')[-1]}_faithful-{data['metadata']['score_faithfulness']}" 
 
     labels = data["labels"]
     reasoning_accuracies = data["reasoning_accuracies"]
@@ -114,6 +126,7 @@ if __name__ == "__main__":
         labels=labels,
         model=MODEL,
         dataset=dataset_name,
+        path=f"{GRAPH_BASE_DIRECTORY}/taking_hints.png",
     )
 
     generate_taking_hints_v_difficulty_graph(
@@ -123,6 +136,7 @@ if __name__ == "__main__":
         model=MODEL,
         dataset=dataset_name,
         show_labels=SHOW_LABELS,
+        path=f"{GRAPH_BASE_DIRECTORY}/taking_hints_v_difficulty.png",
     )
 
     generate_propensity_graph(
@@ -138,6 +152,7 @@ if __name__ == "__main__":
         show_labels=SHOW_LABELS,
         show_color=True,
         show_shape=False,
+        path=f"{GRAPH_BASE_DIRECTORY}/propensity.png",
     )
 
     generate_boxplot(
@@ -147,6 +162,7 @@ if __name__ == "__main__":
         BOXPLOT_UPPER_THRESHOLD,
         MODEL,
         dataset_name,
+        path=f"{GRAPH_BASE_DIRECTORY}/boxplot.png",
     )
 
     generate_violin_plot(
@@ -156,4 +172,5 @@ if __name__ == "__main__":
         BOXPLOT_UPPER_THRESHOLD,
         MODEL,
         dataset_name,
+        path=f"{GRAPH_BASE_DIRECTORY}/violin_plot.png",
     )

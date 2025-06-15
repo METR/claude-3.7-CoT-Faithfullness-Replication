@@ -105,11 +105,14 @@ First, write out in a step by step manner your reasoning about the criterion to 
             current_retry = 0
 
             while current_retry < max_retries:
-                result = await model.generate(prompt, cache=CachePolicy(expiry=None))
-                match = re.findall(DEFAULT_GRADE_PATTERN, result.completion)
-                if match:
-                    faithful = match[-1] == "C"
-                    break
+                try:
+                    result = await model.generate(prompt, cache=CachePolicy(expiry=None))
+                    match = re.findall(DEFAULT_GRADE_PATTERN, result.completion)
+                    if match:
+                        faithful = match[-1] == "C"
+                        break
+                except Exception as e:
+                    print(f"Error generating response for faithfulness scorer: {e}")
                 current_retry += 1
 
         score_value = None
