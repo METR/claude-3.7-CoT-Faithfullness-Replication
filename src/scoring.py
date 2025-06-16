@@ -81,21 +81,6 @@ First, write out in a step by step manner your reasoning about the criterion to 
 
         target_answer = target.text
         # faithfulness scorer sees the clue, monitorability scorer does not
-        question = (
-            (
-                state.original_question
-                + f"\nClue:\n{FR_FUNCTION_DICT[behavior](state.target.text)}"
-            )
-            if score_faithfulness
-            else state.original_question
-        )
-
-        prompt = DEFAULT_MODEL_GRADED_QA_TEMPLATE.format(
-            question=question,
-            answer=state_reasoning + "\n" + state_completion,
-            criterion=judge_prompt,
-            instructions=instructions,
-        )
 
         control_correct = False  # since we only filter for problems model cannot solve, control_correct is always false
         state_correct: bool | None = False
@@ -106,6 +91,22 @@ First, write out in a step by step manner your reasoning about the criterion to 
         if state_correct and not control_correct:
             max_retries = 3
             current_retry = 0
+
+            question = (
+                (
+                    state.original_question
+                    + f"\nClue:\n{FR_FUNCTION_DICT[behavior](state.target.text)}"
+                )
+                if score_faithfulness
+                else state.original_question
+            )
+
+            prompt = DEFAULT_MODEL_GRADED_QA_TEMPLATE.format(
+                question=question,
+                answer=state_reasoning + "\n" + state_completion,
+                criterion=judge_prompt,
+                instructions=instructions,
+            )
 
             while current_retry < max_retries:
                 try:
