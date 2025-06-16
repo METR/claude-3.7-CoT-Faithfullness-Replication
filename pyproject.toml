@@ -1,0 +1,34 @@
+[project]
+name = "cot-faithfulness"
+version = "0.1.0"
+description = "Evaluate faithfulness and monitorability of LLMs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "inspect_ai==0.3.100",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "seaborn>=0.13.2",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+  "basedpyright>=0.1.1",
+  "nbqa",
+  "pytest-asyncio>=1.0.0",
+  "pytest-mock>=3.14.0",
+  "pytest-watcher>=0.4.0",
+  "pytest>=8.4.0",
+  "ruff==0.11.13",
+]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "I"]
+ignore = ["E501"]

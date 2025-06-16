@@ -1,17 +1,19 @@
 import re
 from typing import List
+
+from inspect_ai.model import CachePolicy, Model
 from inspect_ai.scorer import (
-    scorer,
+    Metric,
+    SampleScore,
+    Score,
     Scorer,
     Target,
-    Score,
-    Metric,
     metric,
-    SampleScore,
+    scorer,
 )
-from inspect_ai.model import CachePolicy, Model
-from utils.prompt_utils import DEFAULT_MODEL_GRADED_QA_TEMPLATE, DEFAULT_GRADE_PATTERN
-from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
+
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
+from utils.prompt_utils import DEFAULT_GRADE_PATTERN, DEFAULT_MODEL_GRADED_QA_TEMPLATE
 
 
 @metric

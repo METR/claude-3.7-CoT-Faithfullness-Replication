@@ -1,11 +1,13 @@
-from datetime import datetime
+import argparse
 import json
-from llm_faithfulness import get_faithfulness_score
-from behaviors import ALTERED_ORIGINAL_BEHAVIORS
-from clue_difficulty import TestingScheme
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
-import argparse
+
+from behaviors import ALTERED_ORIGINAL_BEHAVIORS
+from clue_difficulty import TestingScheme
+from llm_faithfulness import get_faithfulness_score
 
 MODEL = "anthropic/claude-3-7-sonnet-latest"
 MAX_CONNECTIONS = 3

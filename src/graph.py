@@ -1,15 +1,15 @@
+import argparse
+import json
+
 from graph_utils import (
+    generate_boxplot,
     generate_propensity_graph,
     generate_taking_hints_graph,
     generate_taking_hints_v_difficulty_graph,
-    generate_with_and_without_cot_difficulty_graph,
-    generate_boxplot,
-    save_raw_data_to_json,
     generate_violin_plot,
 )
-import json
-import argparse
 import os
+
 
 def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
     """

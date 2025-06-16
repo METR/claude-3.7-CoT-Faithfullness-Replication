@@ -1,16 +1,17 @@
-from inspect_ai import task, Task
-from inspect_ai.dataset import hf_dataset, FieldSpec, Dataset
-from inspect_ai.solver import generate
+from copy import deepcopy
+from os import path
+from typing import Dict, List
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from inspect_ai import Task, eval, task
+from inspect_ai.dataset import Dataset, FieldSpec, hf_dataset
 from inspect_ai.model import CachePolicy, GenerateConfig
 from inspect_ai.scorer import match
-from inspect_ai import eval
-from typing import Dict, List
-from os import path
+from inspect_ai.solver import generate
 from inspect_ai.util import DisplayType
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from copy import deepcopy
+
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 
