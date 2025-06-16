@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 from graph_utils import (
     generate_boxplot,
@@ -8,7 +9,6 @@ from graph_utils import (
     generate_taking_hints_v_difficulty_graph,
     generate_violin_plot,
 )
-import os
 
 
 def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         data = json.load(f)
 
     if "metadata" in data:
-        MODEL = f"{data['metadata']['model']}_{data['metadata']['question_prompt'].split('/')[-1]}_{data['metadata']['judge_prompt'].split('/')[-1]}_faithful-{data['metadata']['score_faithfulness']}" 
+        MODEL = f"{data['metadata']['model']}_{data['metadata']['question_prompt'].split('/')[-1]}_{data['metadata']['judge_prompt'].split('/')[-1]}_faithful-{data['metadata']['score_faithfulness']}"
 
     labels = data["labels"]
     reasoning_accuracies = data["reasoning_accuracies"]

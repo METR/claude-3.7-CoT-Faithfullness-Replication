@@ -23,7 +23,7 @@ if __name__ == "__main__":
     print(f"Anthropic API Key: {anthropic_api_key}")
     config = parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-{config.testing_scheme.value}/"
+    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-faithfulness_{config.score_faithfulness}-question_prompt_{config.question_prompt.split('/')[-1].split('.')[0]}-judge_prompt_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
     RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{config.model.replace('/', '-')}-faithfulness_{config.score_faithfulness}-question_prompt_{config.question_prompt.split('/')[-1].split('.')[0]}-judge_prompt_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
