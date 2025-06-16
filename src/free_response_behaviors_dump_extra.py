@@ -2387,14 +2387,8 @@ class FreeResponseBehavior(Enum):
     BOOTSTRAP_SYSTEMD_SERVICE_VALIDATOR = "bootstrap_systemd_service_validator"    
 
     MIMIC_SESSION_STORAGE_DEBUGV2_1 = "mimic_session_storage_debugv2_1"
-    MIMIC_SESSION_STORAGE_DEBUGV2_2 = "mimic_session_storage_debugv2_2"
     MIMIC_SESSION_STORAGE_DEBUGV2_3 = "mimic_session_storage_debugv2_3"
-    MIMIC_SESSION_STORAGE_DEBUGV2_4 = "mimic_session_storage_debugv2_4"
-    MIMIC_SESSION_STORAGE_DEBUGV2_5 = "mimic_session_storage_debugv2_5"
-    MIMIC_SESSION_STORAGE_DEBUGV2_6 = "mimic_session_storage_debugv2_6"
     MIMIC_SESSION_STORAGE_DEBUGV2_7 = "mimic_session_storage_debugv2_7"
-    MIMIC_SESSION_STORAGE_DEBUGV2_8 = "mimic_session_storage_debugv2_8"
-    MIMIC_SESSION_STORAGE_DEBUGV2_9 = "mimic_session_storage_debugv2_9"
     MIMIC_SESSION_STORAGE_DEBUGV2_10 = "mimic_session_storage_debugv2_10"
 
     EMAIL_CHAIN_PUZZLE_80_EASIER = "email_chain_puzzle_80_easier"
