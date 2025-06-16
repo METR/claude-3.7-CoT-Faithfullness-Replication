@@ -1,3 +1,4 @@
+import argparse
 from copy import deepcopy
 from os import path
 from typing import Dict, List
@@ -7,12 +8,17 @@ import numpy as np
 import pandas as pd
 from inspect_ai import Task, eval, task
 from inspect_ai.dataset import Dataset, FieldSpec, hf_dataset
-from inspect_ai.model import CachePolicy, GenerateConfig
+from inspect_ai.model import CachePolicy, GenerateConfig, ResponseSchema
 from inspect_ai.scorer import match
 from inspect_ai.solver import generate
-from inspect_ai.util import DisplayType
+from inspect_ai.util import DisplayType, json_schema
+from pydantic import BaseModel
 
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
+
+
+class Number(BaseModel):
+    number: int
 
 
 @task
@@ -36,6 +42,9 @@ def free_response(
             temperature=temperature,
             max_tokens=32_000,
             reasoning_tokens=30_000,
+            response_schema=ResponseSchema(
+                name="number", json_schema=json_schema(Number)
+            ),
         ),
         epochs=epochs,
         max_connections=max_connections,
@@ -160,12 +169,38 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "anthropic/claude-opus-4-20250514"
-    temperature = 0.6
-    epochs = 5
-    limit = 200
-    max_connections = 40
-    dataset_name = "hard-math-v0"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--reasoning_model",
+        required=False,
+        type=str,
+        default="anthropic/claude-3-7-sonnet-latest",
+    )
+    parser.add_argument(
+        "--temperature",
+        required=False,
+        default=1,
+        type=float,
+    )
+    parser.add_argument(
+        "--epochs",
+        required=False,
+        default=5,
+        type=int,
+    )
+    parser.add_argument("--limit", required=False, default=200, type=int)
+    parser.add_argument("--max_connections", required=False, default=40, type=int)
+    parser.add_argument(
+        "--dataset_name", default="hard-math-v0", type=str, required=False
+    )
+
+    args = parser.parse_args()
+    reasoning_model = args.reasoning_model
+    temperature = args.temperature
+    epochs = args.epochs
+    limit = args.limit
+    max_connections = args.max_connections
+    dataset_name = args.dataset_name
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
