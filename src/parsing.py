@@ -34,7 +34,7 @@ def parse_args() -> EvalConfig:
     parser.add_argument(
         "--base_model",
         type=str,
-        default="anthropic/claude-3-7-sonnet-latest",
+        default=None,
         required=False,
     )
     parser.add_argument("--display", type=str, default="full", required=False)
@@ -94,4 +94,6 @@ def parse_args() -> EvalConfig:
     ret.testing_scheme = TestingScheme(ret.testing_scheme.lower())
     if ret.reasoning_difficulty_model is None:
         ret.reasoning_difficulty_model = ret.model
+    if ret.base_model is None:
+        ret.base_model = ret.model
     return ret
