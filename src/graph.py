@@ -1,13 +1,13 @@
 import argparse
 import json
 import os
-
 from graph_utils import (
     generate_boxplot,
     generate_propensity_graph,
     generate_taking_hints_graph,
     generate_taking_hints_v_difficulty_graph,
     generate_violin_plot,
+    GraphMetadata,
 )
 
 
@@ -86,7 +86,15 @@ if __name__ == "__main__":
         data = json.load(f)
 
     if "metadata" in data:
-        MODEL = f"{data['metadata']['model']}_{data['metadata']['question_prompt'].split('/')[-1]}_{data['metadata']['judge_prompt'].split('/')[-1]}_faithful-{data['metadata']['score_faithfulness']}"
+        MODEL = data["metadata"]["model"]
+        metadata = GraphMetadata(
+            threshold=HINT_TAKING_THRESHOLD,
+            faithfulness=data["metadata"]["score_faithfulness"],
+            question_prompt=data["metadata"]["question_prompt"],
+            judge_prompt=data["metadata"]["judge_prompt"],
+        )
+    else:
+        metadata = None
 
     labels = data["labels"]
     reasoning_accuracies = data["reasoning_accuracies"]
@@ -123,6 +131,7 @@ if __name__ == "__main__":
 
     generate_taking_hints_graph(
         take_hints_scores,
+        metadata,
         labels=labels,
         model=MODEL,
         dataset=dataset_name,
@@ -132,6 +141,7 @@ if __name__ == "__main__":
     generate_taking_hints_v_difficulty_graph(
         take_hints_scores,
         difficulty_scores,
+        metadata,
         labels=labels,
         model=MODEL,
         dataset=dataset_name,
@@ -144,6 +154,7 @@ if __name__ == "__main__":
         faithfulness_stderrs,
         difficulty_scores,
         difficulty_stderrs,
+        metadata,
         labels=labels,
         take_hints_scores=take_hints_scores,
         samples=samples,
@@ -158,6 +169,7 @@ if __name__ == "__main__":
     generate_boxplot(
         faithfulness_scores,
         difficulty_scores,
+        metadata,
         BOXPLOT_LOWER_THRESHOLD,
         BOXPLOT_UPPER_THRESHOLD,
         MODEL,
@@ -170,6 +182,7 @@ if __name__ == "__main__":
         difficulty_scores,
         BOXPLOT_LOWER_THRESHOLD,
         BOXPLOT_UPPER_THRESHOLD,
+        metadata,
         MODEL,
         dataset_name,
         path=f"{GRAPH_BASE_DIRECTORY}/violin_plot.png",

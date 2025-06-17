@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 
 from parsing import EvalConfig
+from dataclasses import dataclass
 
 COLOR_MAP = {
     "default": "#808080",  # Gray
@@ -36,11 +37,20 @@ SHAPE_MAP = {
 }
 
 
+@dataclass
+class GraphMetadata:
+    threshold: float
+    faithfulness: bool
+    question_prompt: str
+    judge_prompt: str
+
+
 def generate_propensity_graph(
     faithfulness_scores: List[float],
     faithfulness_stderrs: List[float],
     difficulty_scores: List[float],
     difficulty_stderrs: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     take_hints_scores: List[float],
     samples: List[int],
@@ -69,6 +79,25 @@ def generate_propensity_graph(
         None
     """
     plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -197,6 +226,7 @@ def generate_propensity_graph(
 
 def generate_taking_hints_graph(
     p_take_hints: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     model: str,
     dataset: str,
@@ -209,7 +239,23 @@ def generate_taking_hints_graph(
     did_not_take_hint = 1 - took_hint  # Will sum to 1 for each bar
 
     fig, ax = plt.subplots(figsize=(12, 6))
-
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
     ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
     ax.bar(
         indices,
@@ -239,6 +285,7 @@ def generate_taking_hints_graph(
 def generate_taking_hints_v_difficulty_graph(
     p_take_hints: List[float],
     difficulty_scores: List[float],
+    metadata: GraphMetadata,
     labels: List[str],
     model: str,
     dataset: str,
@@ -246,6 +293,25 @@ def generate_taking_hints_v_difficulty_graph(
     show_labels: bool = False,
 ) -> None:
     plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -292,12 +358,32 @@ def generate_taking_hints_v_difficulty_graph(
 def generate_with_and_without_cot_difficulty_graph(
     reasoning_accuracy_scores: List[float],
     non_reasoning_accuracy_scores: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     model: str,
     dataset: str,
     path: str | None = None,
 ) -> None:
     plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
 
     plt.scatter(reasoning_accuracy_scores, non_reasoning_accuracy_scores, alpha=0.6)
 
@@ -326,6 +412,7 @@ def generate_with_and_without_cot_difficulty_graph(
 def generate_boxplot(
     faithfulness_scores: List[float],
     difficulty_scores: List[float],
+    metadata: GraphMetadata | None,
     boxplot_lower_threshold: float,
     boxplot_upper_threshold: float,
     model: str,
@@ -370,6 +457,25 @@ def generate_boxplot(
     )
 
     plt.figure(figsize=(8, 6))
+
+    # Add metadata box if metadata is provided
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
 
     # Create boxplot using seaborn (without outliers since swarm plot shows all points)
     sns.boxplot(
@@ -418,6 +524,7 @@ def generate_violin_plot(
     difficulty_scores: List[float],
     boxplot_lower_threshold: float,
     boxplot_upper_threshold: float,
+    metadata: GraphMetadata | None,
     model: str,
     dataset: str,
     path: str | None = None,
@@ -460,6 +567,25 @@ def generate_violin_plot(
     )
 
     plt.figure(figsize=(8, 6))
+
+    # Add metadata box if metadata is provided
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt}\n"
+            f"Judge Prompt: {metadata.judge_prompt}"
+        )
+        plt.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=plt.gca().transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
 
     # Create violin plot using seaborn
     sns.violinplot(
