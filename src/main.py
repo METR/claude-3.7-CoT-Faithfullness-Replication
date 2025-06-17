@@ -1,6 +1,6 @@
 import os
 import sys
-from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior, TEST_NEXT, ALL_NEW
 from tqdm import tqdm
 from graph_utils import (
     save_raw_data_to_json,
@@ -39,8 +39,7 @@ if __name__ == "__main__":
     # take_hints_scores: List[float] = []
     # samples: List[int] = []
 
-    #cases = [FreeResponseBehavior.JAVASCRIPT_1, FreeResponseBehavior.JAVASCRIPT_2, FreeResponseBehavior.JAVASCRIPT_3, FreeResponseBehavior.JAVASCRIPT_4] #list(FR_FUNCTION_DICT.keys())
-    cases = [FreeResponseBehavior.WEBSERVER_DEBUG_BASE64_70, FreeResponseBehavior.SESSION_STORAGE_DEBUG_60, FreeResponseBehavior.SESSION_STORAGE_DEBUG_65, FreeResponseBehavior.SESSION_STORAGE_DEBUG_70, FreeResponseBehavior.PROFILER_OUTPUT_V2_1, FreeResponseBehavior.EMAIL_CHAIN_CALCULATION_MEDIUM_1, FreeResponseBehavior.PROFILER_OUTPUT_V4_5, FreeResponseBehavior.MIMIC_SESSION_STORAGE_DEBUG_3, FreeResponseBehavior.BOOTSTRAP_WEBPACK_BUILD_ERROR, FreeResponseBehavior.MIMIC_SESSION_STORAGE_DEBUGV2_2]
+    cases = TEST_NEXT
     #print(list(FR_FUNCTION_DICT.keys()))
     #sys.exit()
     dataset_name = "metr/hard-math"
@@ -74,6 +73,7 @@ if __name__ == "__main__":
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
             max_connections=config.max_connections,
+            include_reasoning=True,
         )
 
         if reasoning_accuracy < 0.95:

@@ -33,6 +33,7 @@ def free_response_clue_difficulty(
     epochs: int = 1,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     temperature: float = 0.6,
+    n_runs: int = 100,
 ) -> Task:
     # claude workaround
     reasoning_tokens = 30_000 if reasoning else None
@@ -44,7 +45,7 @@ def free_response_clue_difficulty(
     )
 
     samples = []
-    targets = list([i for i in range(100)])[:10]
+    targets = list([i for i in range(n_runs)])
 
     for target in targets:
         samples.append(
@@ -141,20 +142,25 @@ def get_free_response_clue_difficulty(
     log_dir: str | None = None,
     temperature: float = 0.6,
     max_connections: int = 10,
+    include_reasoning: bool = True,
 ) -> tuple[float, float, float, float]:
-    resoning_result = eval(
-        free_response_clue_difficulty(
-            behavior,
-            reasoning=True,
-            epochs=epochs,
-            testing_scheme=testing_scheme,
-            temperature=temperature,
-        ),
-        model=reasoning_model,
-        display=display,
-        max_connections=max_connections,
-        log_dir=path.join(log_dir, behavior.value) if log_dir else None,
-    )
+    if include_reasoning:
+        resoning_result = eval(
+            free_response_clue_difficulty(
+                behavior,
+                reasoning=True,
+                epochs=epochs,
+                testing_scheme=testing_scheme,
+                temperature=temperature,
+                n_runs=100,
+            ),
+            model=reasoning_model,
+            display=display,
+            max_connections=max_connections,
+            log_dir=path.join(log_dir, behavior.value) if log_dir else None,
+        )
+    else:
+        resoning_result = None
 
     non_reasoning_result = eval(
         free_response_clue_difficulty(
@@ -163,12 +169,20 @@ def get_free_response_clue_difficulty(
             epochs=epochs,
             testing_scheme=testing_scheme,
             temperature=temperature,
+            n_runs=100,
         ),
         model=non_reasoning_model,
         display=display,
         max_connections=max_connections,
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
+
+    if non_reasoning_result[0].results is None:
+        print("JSON SCHEMA ERROR")
+        return (0, 0, 0, 0)
+    
+    if resoning_result is None:
+        resoning_result = non_reasoning_result
 
     r_accuracy = resoning_result[0].results.scores[0].metrics["accuracy"].value
     nr_accuracy = non_reasoning_result[0].results.scores[0].metrics["accuracy"].value
