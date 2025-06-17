@@ -50,17 +50,18 @@ def free_response_thinking_solver(
             state_matches = re.findall(r"ANSWER\s*:\s*(\d+)", state_answer)
 
             if state_matches:
-                state_answer = state_matches[-1].strip()
+                state_final_answer = state_matches[-1].strip()
 
                 # this is a bit of hand holding to catch the cases where the model doesn't return the mod answer
                 # we might want to remove this
                 try:
-                    state_answer = str(int(state_answer) % 100)
+                    state_final_answer = str(int(state_final_answer) % 100)
                 except ValueError:
                     pass
 
                 state.store.set("state_reasoning", state_reasoning)
-                state.store.set("state_answer", state_answer)
+                state.store.set("state_answer", state_final_answer)
+                state.store.set("state_completion", state_answer)
                 state.store.set("group", str(behavior))
 
         return state
