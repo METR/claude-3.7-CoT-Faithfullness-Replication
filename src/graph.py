@@ -64,12 +64,6 @@ if __name__ == "__main__":
         type=str,
         help="Path to raw data",
     )
-    parser.add_argument(
-        "--alias",
-        type=str,
-        help="Alias for the graph",
-        default="",
-    )
     args = parser.parse_args()
 
     RAW_DATA_PATH = args.raw_data_path
@@ -79,7 +73,7 @@ if __name__ == "__main__":
     dataset_name = "metr/hard-math"
     BOXPLOT_LOWER_THRESHOLD = 0.2
     BOXPLOT_UPPER_THRESHOLD = 0.8
-    GRAPH_BASE_DIRECTORY = f"./results/graphs/{args.model.split('/')[-1]}_thresh{args.hint_taking_threshold}_{args.alias}"
+    GRAPH_BASE_DIRECTORY = f"./results/graphs/{RAW_DATA_PATH.split('/')[-1].split('.')[0]}_thresh{HINT_TAKING_THRESHOLD}"
     if not os.path.exists(GRAPH_BASE_DIRECTORY):
         os.makedirs(GRAPH_BASE_DIRECTORY)
 
@@ -128,15 +122,6 @@ if __name__ == "__main__":
         faithfulness_stderrs,
         samples,
         threshold=HINT_TAKING_THRESHOLD,
-    )
-
-    generate_taking_hints_graph(
-        take_hints_scores,
-        metadata,
-        labels=labels,
-        model=MODEL,
-        dataset=dataset_name,
-        path=f"{GRAPH_BASE_DIRECTORY}/taking_hints.png",
     )
 
     generate_taking_hints_v_difficulty_graph(

@@ -45,6 +45,26 @@ class GraphMetadata:
     judge_prompt: str
 
 
+def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+        )
+        ax.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=ax.transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
+
+
 def generate_propensity_graph(
     faithfulness_scores: List[float],
     faithfulness_stderrs: List[float],
@@ -81,23 +101,7 @@ def generate_propensity_graph(
     plt.figure(figsize=(10, 6))
 
     # Add metadata box if metadata is provided
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt}\n"
-            f"Judge Prompt: {metadata.judge_prompt}"
-        )
-        plt.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=plt.gca().transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
+    add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -239,23 +243,8 @@ def generate_taking_hints_graph(
     did_not_take_hint = 1 - took_hint  # Will sum to 1 for each bar
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt}\n"
-            f"Judge Prompt: {metadata.judge_prompt}"
-        )
-        plt.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=plt.gca().transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
+    add_metadata(metadata, ax)
+
     ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
     ax.bar(
         indices,
@@ -295,23 +284,7 @@ def generate_taking_hints_v_difficulty_graph(
     plt.figure(figsize=(10, 6))
 
     # Add metadata box if metadata is provided
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt}\n"
-            f"Judge Prompt: {metadata.judge_prompt}"
-        )
-        plt.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=plt.gca().transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
+    add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -370,23 +343,7 @@ def generate_with_and_without_cot_difficulty_graph(
     plt.figure(figsize=(10, 6))
 
     # Add metadata box if metadata is provided
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt}\n"
-            f"Judge Prompt: {metadata.judge_prompt}"
-        )
-        plt.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=plt.gca().transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
+    add_metadata(metadata, plt.axes())
 
     plt.scatter(reasoning_accuracy_scores, non_reasoning_accuracy_scores, alpha=0.6)
 
@@ -462,23 +419,7 @@ def generate_boxplot(
     plt.figure(figsize=(8, 6))
 
     # Add metadata box if metadata is provided
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt}\n"
-            f"Judge Prompt: {metadata.judge_prompt}"
-        )
-        plt.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=plt.gca().transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
+    add_metadata(metadata, plt.axes())
 
     # Create boxplot using seaborn (without outliers since swarm plot shows all points)
     sns.boxplot(
