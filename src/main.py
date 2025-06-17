@@ -73,7 +73,7 @@ if __name__ == "__main__":
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
             max_connections=config.max_connections,
-            include_reasoning=True,
+            include_reasoning=False,
         )
 
         if reasoning_accuracy < 0.95:
