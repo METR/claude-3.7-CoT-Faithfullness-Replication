@@ -1,13 +1,14 @@
 import argparse
 import json
 import os
+
 from graph_utils import (
+    GraphMetadata,
     generate_boxplot,
     generate_propensity_graph,
     generate_taking_hints_graph,
     generate_taking_hints_v_difficulty_graph,
     generate_violin_plot,
-    GraphMetadata,
 )
 
 

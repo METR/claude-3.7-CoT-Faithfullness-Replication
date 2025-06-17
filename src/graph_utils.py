@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -7,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 
 from parsing import EvalConfig
-from dataclasses import dataclass
 
 COLOR_MAP = {
     "default": "#808080",  # Gray
