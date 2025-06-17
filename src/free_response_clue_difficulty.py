@@ -72,9 +72,9 @@ def free_response_clue_difficulty(
             max_tokens=max_tokens,
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
-            response_schema=ResponseSchema(
-                name="number", json_schema=json_schema(Number)
-            ),
+            # response_schema=ResponseSchema(
+            #     name="number", json_schema=json_schema(Number)
+            # ),
         ),
         epochs=epochs,
     )
@@ -113,11 +113,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 )
             )
 
-        try:
-            state = await generate(state, cache=CachePolicy(expiry=None))
-        except Exception as e:
-            print(e)
-            state = await generate(state, cache=CachePolicy(expiry=None))
+        state = await generate(state, cache=CachePolicy(expiry=None))
 
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
@@ -190,4 +186,13 @@ def get_free_response_clue_difficulty(
         nr_accuracy,
         r_stderr,
         nr_stderr,
+    )
+
+
+if __name__ == "__main__":
+    r_accuracy, nr_accuracy, r_stderr, nr_stderr = get_free_response_clue_difficulty(
+        FreeResponseBehavior.REWARD_HACKING_DIFFICULTY_10,
+        reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
+        non_reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
+        display="full",
     )
