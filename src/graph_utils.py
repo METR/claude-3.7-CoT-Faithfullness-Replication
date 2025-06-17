@@ -119,7 +119,7 @@ def generate_propensity_graph(
 
     # Calculate dot sizes based on take_hints_scores * samples
     dot_sizes = [
-        round(take_hints_scores[i] * samples[i]) * 10
+        round(take_hints_scores[i] * samples[i]) * 3
         for i in range(len(take_hints_scores))
     ]
 
@@ -352,7 +352,10 @@ def generate_taking_hints_v_difficulty_graph(
     ax.axis("off")
 
     plt.grid(True)
-    plt.show()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
 
 
 def generate_with_and_without_cot_difficulty_graph(
