@@ -186,3 +186,12 @@ def get_free_response_clue_difficulty(
         r_stderr,
         nr_stderr,
     )
+
+
+if __name__ == "__main__":
+    r_accuracy, nr_accuracy, r_stderr, nr_stderr = get_free_response_clue_difficulty(
+        FreeResponseBehavior.REWARD_HACKING_DIFFICULTY_10,
+        reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
+        non_reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
+        display="full",
+    )
