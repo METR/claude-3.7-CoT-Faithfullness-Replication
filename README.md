@@ -1,6 +1,6 @@
-# METR Faithfulness Eval
+# METR Faithfulness and Monitorability Experiments
 
-This is an evaluation designed to test faithfulness in LLM CoTs.
+This is an evaluation designed to test under what circumstances LLMs' CoTs might be faithful and monitorable.
 
 ## Usage
 
