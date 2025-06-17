@@ -74,7 +74,7 @@ def free_response_clue_difficulty(
             reasoning_tokens=reasoning_tokens,
             response_schema=ResponseSchema(
                 name="number", json_schema=json_schema(Number)
-            )
+            ),
         ),
         epochs=epochs,
     )
@@ -113,7 +113,12 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 )
             )
 
-        state = await generate(state, cache=CachePolicy(expiry=None))
+        try:
+            state = await generate(state, cache=CachePolicy(expiry=None))
+        except Exception as e:
+            print(e)
+            state = await generate(state, cache=CachePolicy(expiry=None))
+
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
             max_attempts = 3
