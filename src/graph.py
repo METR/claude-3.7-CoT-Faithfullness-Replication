@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 from graph_utils import (
     generate_boxplot,
@@ -8,7 +9,6 @@ from graph_utils import (
     generate_taking_hints_v_difficulty_graph,
     generate_violin_plot,
 )
-import os
 
 
 def filter_lists_by_threshold(filter_list, *other_lists, threshold=0.1):
