@@ -97,7 +97,7 @@ def free_response_llm_faithfulness(
                 config=GenerateConfig(
                     temperature=1,
                     reasoning_effort="low",
-                    max_connections=80,
+                    max_connections=120,
                 ),
             ),
             score_faithfulness=faithfulness_flag,
