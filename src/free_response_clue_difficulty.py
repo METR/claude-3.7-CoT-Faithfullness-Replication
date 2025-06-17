@@ -16,7 +16,6 @@ from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util import DisplayType, json_schema
 from pydantic import BaseModel
 
-from clue_difficulty import TestingScheme
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 
 
@@ -24,18 +23,11 @@ class Number(BaseModel):
     number: int
 
 
-class TestingScheme(Enum):
-    BASE = "base"
-    RL_NO_REASONING = "rl_no_reasoning"
-    RL_DOTS = "rl_dots"
-
-
 @task
 def free_response_clue_difficulty(
     behavior: FreeResponseBehavior,
     reasoning: bool = False,
     epochs: int = 1,
-    testing_scheme: TestingScheme = TestingScheme.BASE,
     temperature: float = 0.6,
 ) -> Task:
     # claude workaround
@@ -65,70 +57,25 @@ def free_response_clue_difficulty(
     return Task(
         dataset=dataset,
         solver=[
-            difficulty_solver(testing_scheme, reasoning),
+            difficulty_solver(reasoning),
         ],
         scorer=match() if reasoning else match(location="exact"),
         config=GenerateConfig(
             max_tokens=max_tokens,
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
-            # response_schema=ResponseSchema(
-            #     name="number", json_schema=json_schema(Number)
-            # ),
+            response_schema=ResponseSchema(
+                name="number", json_schema=json_schema(Number)
+            ),
         ),
         epochs=epochs,
     )
 
 
-def parse_last_int_from_string(string: str) -> str:
-    match = re.search(r"(\d+)(?=\D*$)", string)
-    if match:
-        return match.group(1)
-
-
-def update_state_with_parsed_int(state: TaskState) -> TaskState:
-    if state.output.completion.isdigit():
-        return state
-    parsed_int = parse_last_int_from_string(state.output.completion)
-    if parsed_int:
-        state.output.completion = str(int(parsed_int) % 100)
-    return state
-
-
 @solver
-def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
+def difficulty_solver(reasoning: bool) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        if testing_scheme == TestingScheme.RL_NO_REASONING:
-            state.messages.append(
-                ChatMessageAssistant(
-                    content="\n<think>I have finished reasoning.</think>",
-                    model=state.model.name,
-                )
-            )
-        elif testing_scheme == TestingScheme.RL_DOTS:
-            state.messages.append(
-                ChatMessageAssistant(
-                    content=f"\n<think>\n{'.' * 10_000}\n</think>",
-                    model=state.model.name,
-                )
-            )
-
         state = await generate(state, cache=CachePolicy(expiry=None))
-
-        # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
-        if not reasoning:
-            max_attempts = 3
-            state = update_state_with_parsed_int(state)
-            is_digit = state.output.completion.isdigit()
-            while not is_digit and max_attempts > 0:
-                max_attempts -= 1
-                state.messages = state.messages[
-                    :1
-                ]  # remove last message from the previous generation request
-                state = await generate(state)
-                state = update_state_with_parsed_int(state)
-                is_digit = state.output.completion.isdigit()
-
         return state
 
     return solve
@@ -140,7 +87,6 @@ def get_free_response_clue_difficulty(
     non_reasoning_model: str,
     display: DisplayType = "none",
     epochs: int = 1,
-    testing_scheme: TestingScheme = TestingScheme.BASE,
     log_dir: str | None = None,
     temperature: float = 0.6,
     max_connections: int = 10,
@@ -150,7 +96,6 @@ def get_free_response_clue_difficulty(
             behavior,
             reasoning=True,
             epochs=epochs,
-            testing_scheme=testing_scheme,
             temperature=temperature,
         ),
         model=reasoning_model,
@@ -164,7 +109,6 @@ def get_free_response_clue_difficulty(
             behavior,
             reasoning=False,
             epochs=epochs,
-            testing_scheme=testing_scheme,
             temperature=temperature,
         ),
         model=non_reasoning_model,
@@ -173,24 +117,9 @@ def get_free_response_clue_difficulty(
         log_dir=path.join(log_dir, behavior.value) if log_dir else None,
     )
 
-    r_accuracy = resoning_result[0].results.scores[0].metrics["accuracy"].value
-    nr_accuracy = non_reasoning_result[0].results.scores[0].metrics["accuracy"].value
-
-    completed_samples = resoning_result[0].results.completed_samples
-
-    r_stderr = sqrt((r_accuracy * (1 - r_accuracy)) / (completed_samples))
-    nr_stderr = sqrt((nr_accuracy * (1 - nr_accuracy)) / (completed_samples))
-
-    return (
-        r_accuracy,
-        nr_accuracy,
-        r_stderr,
-        nr_stderr,
-    )
-
 
 if __name__ == "__main__":
-    r_accuracy, nr_accuracy, r_stderr, nr_stderr = get_free_response_clue_difficulty(
+    get_free_response_clue_difficulty(
         FreeResponseBehavior.REWARD_HACKING_DIFFICULTY_10,
         reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
         non_reasoning_model="together/Qwen/Qwen3-235B-A22B-fp8-tput",
