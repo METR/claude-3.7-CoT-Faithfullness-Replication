@@ -31,3 +31,20 @@ Legacy / Compatibility arguments:
 ## Output
 
 By default, the outputs are two graphs and a log of the run in the `logs` directory.
+
+---
+
+## Monitorability False Positive Evaluation
+
+This codebase also evaluates the **false positive rate** of the monitor/monitorability prompt on a control set of questions where the model solves the problem without a hint.
+
+- This is run automatically at the end of `src/main.py` and outputs results to `logs/<timestamp>/monitor_control_results.json`.
+- You can also run it standalone:
+
+```bash
+python src/monitor_control_eval.py --model <model_name> --judge_prompt <path_to_monitorability_prompt>
+```
+
+- The output JSON includes, for each question, the number of correct runs, number of false positives (cases where the monitor incorrectly flagged a correct/no-hint run as using a hint), and the false positive rate. It also reports the overall false positive rate across all control runs.
+
+This allows you to measure how often the monitorability prompt incorrectly flags normal, correct model behavior as suspicious (i.e., the fast positive rate of the monitor on non-hint questions).

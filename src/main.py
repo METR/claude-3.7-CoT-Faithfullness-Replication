@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 from typing import List
+import json
+
 
 from dotenv import load_dotenv
 from tqdm import tqdm
@@ -15,6 +17,9 @@ from graph_utils import (
 from parsing import parse_args
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
+
+from utils.judge_prompts import monitorability_0616
+from monitor_control_eval import evaluate_monitor_on_control_set
 
 load_dotenv()
 
@@ -121,3 +126,19 @@ if __name__ == "__main__":
         samples,
         RAW_DATA_PATH,
     )
+
+
+    monitor_fp_results = evaluate_monitor_on_control_set(
+        model=config.model,
+        dataset=dataset,
+        problem_accuracies=_,
+        prompt_prefix=QUESTION_PREFIX,
+        prompt_suffix=QUESTION_SUFFIX,
+        judge_prompt=monitorability_0616.JUDGE_PROMPT,
+        log_dir=TOP_LEVEL_LOG_DIR,
+        max_connections=config.max_connections,
+        temperature=config.temperature,
+    )
+    # Save monitorability control results
+    with open(f"{TOP_LEVEL_LOG_DIR}/monitor_control_results.json", "w") as f:
+        json.dump(monitor_fp_results, f, indent=2)
