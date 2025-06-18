@@ -36,6 +36,11 @@ SHAPE_MAP = {
     "easy_list_comprehension": "d",
 }
 
+model_pretty = {
+    "claude-3-7-sonnet-latest": "Claude 3.7 Sonnet",
+    "claude-opus-4-20250514": "Claude Opus 4",
+}
+
 
 @dataclass
 class GraphMetadata:
@@ -98,13 +103,14 @@ def generate_propensity_graph(
     Returns:
         None
     """
-    plt.figure(figsize=(10, 7.5))
+    # Create figure with extra space on right for legend
+    plt.figure(figsize=(12, 8.5))
 
-    # Add metadata box if metadata is provided
-    ax = plt.axes()
-    add_metadata(metadata, ax)
+    # Create main plotting area that leaves room on right
+    ax = plt.axes([0.1, 0.1, 0.7, 0.75])
 
     # Create a proper color legend if show_color is True
+    legend_elements = []
     if show_color:
         # Only show colors that are actually used in the data
         used_colors = set()
@@ -123,24 +129,38 @@ def generate_propensity_graph(
                 for key, color in sorted(used_colors)
             ]
 
-            # Add horizontal legend at the top in three rows
-            import math
-
-            ncols = math.ceil(len(legend_elements) / 3)
-            ax.legend(
+            # Add vertical legend on right side without frame
+            plt.figlegend(
                 handles=legend_elements,
-                loc="upper center",
-                bbox_to_anchor=(0.5, 1.08),
-                ncol=ncols,
+                loc="upper left",
+                bbox_to_anchor=(0.815, 0.85),
                 fontsize=8,
-                framealpha=0.9,
+                frameon=False,
             )
+
+    # Add metadata without box, positioned below legend
+    if metadata:
+        metadata_text = (
+            f"Hint Taking Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+        )
+        # Position metadata below the legend with more spacing
+        metadata_y_pos = 0.5 if legend_elements else 0.75
+        plt.figtext(
+            0.82,
+            metadata_y_pos,
+            metadata_text,
+            verticalalignment="top",
+            horizontalalignment="left",
+            fontsize=8,
+        )
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
-    ax = plt.gca()
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -156,7 +176,7 @@ def generate_propensity_graph(
 
     # Calculate dot sizes based on take_hints_scores * samples
     dot_sizes = [
-        round(take_hints_scores[i] * samples[i]) * 3
+        round(take_hints_scores[i] * samples[i]) * (1 if show_color else 0.3)
         for i in range(len(take_hints_scores))
     ]
 
@@ -173,7 +193,7 @@ def generate_propensity_graph(
             if not color_found:
                 colors.append(COLOR_MAP["default"])
     else:
-        colors = [COLOR_MAP["default"]] * len(labels)
+        colors = [COLOR_MAP["machine_learning"]] * len(labels)
 
     # Determine shapes based on labels and SHAPE_MAP (only if show_shape is True)
     shapes = []
@@ -197,7 +217,7 @@ def generate_propensity_graph(
         xerr=difficulty_ci,
         yerr=faithfulness_ci,
         fmt="none",
-        ecolor="lightgray",
+        ecolor="darkgray",
         capsize=5,
     )
 
@@ -236,21 +256,65 @@ def generate_propensity_graph(
                 fontsize=6,
             )
 
-    plt.xlabel("Clue Difficulty")
-    plt.ylabel("Faithfulness Score")
-    plt.title(
-        "Propensity for Faithfulness vs Difficulty", loc="left", pad=35, fontsize=25
+    plt.xlabel("Clue Difficulty", fontsize=16)
+
+    # Create ylabel with judge information if metadata is available
+    if metadata and metadata.judge_prompt:
+        judge_name = metadata.judge_prompt.split("/")[-1]
+        ylabel = f"Faithfulness Score\nas judged by {judge_name} judge"
+        plt.ylabel(ylabel, fontsize=16)
+        # Make the sub-axis text smaller and gray
+        ax.yaxis.label.set_fontsize(16)
+        ax.yaxis.label.set_color("black")
+        # Get the ylabel text and modify the second line styling
+        ylabel_text = ax.get_ylabel()
+        ax.set_ylabel("Faithfulness Score", fontsize=16, color="black", labelpad=15)
+        ax.text(
+            -0.05,
+            0.5,
+            f"as judged by {judge_name} judge",
+            rotation=90,
+            transform=ax.transAxes,
+            fontsize=12,
+            color="gray",
+            verticalalignment="center",
+            horizontalalignment="center",
+        )
+    else:
+        plt.ylabel("Faithfulness Score", fontsize=16)
+
+    # Add main title with model name and prompt
+    model_name = model_pretty.get(model.split("/")[-1], model.split("/")[-1])
+    title_metric = (
+        "Faithfulness"
+        if metadata is None or metadata.faithfulness
+        else "Monitorability"
     )
-    plt.suptitle(
-        f"{model} on {dataset}, 90% CI",
-        y=0.85,
-        fontsize=12,
+    prompt_name = (
+        metadata.question_prompt.split("/")[-1] if metadata else "default prompt"
+    )
+    plt.title(
+        f"{title_metric} of {model_name}",
+        loc="left",
+        pad=50,
+        fontsize=25,
+    )
+
+    # Add subtitle with different style
+    ax = plt.gca()
+    ax.text(
+        0,
+        1.03,
+        f"90% CI filtered to hints taken more than {(1 - metadata.threshold) * 100:.0f}% of the time\nwith prompt {prompt_name}",
+        transform=ax.transAxes,
+        fontsize=14,
         color="gray",
         style="italic",
+        horizontalalignment="left",
     )
     ax = plt.axes(
-        [0.8, 0.88, 0.1, 0.1], frameon=True
-    )  # Change the numbers in this array to position your image [left, bottom, width, height])
+        [0.812, 0.884, 0.12, 0.12], frameon=True
+    )  # [left, bottom, width, height] - aligned with legend left and title top
     ax.imshow(image)
     ax.axis("off")
 
@@ -314,16 +378,16 @@ def generate_taking_hints_v_difficulty_graph(
     path: str | None = None,
     show_labels: bool = False,
 ) -> None:
-    plt.figure(figsize=(10, 6))
+    # Create figure with extra space on right for legend
+    plt.figure(figsize=(12, 8.5))
 
-    # Add metadata box if metadata is provided
-    add_metadata(metadata, plt.axes())
+    # Create main plotting area that leaves room on right
+    ax = plt.axes([0.1, 0.1, 0.7, 0.75])
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
-    ax = plt.gca()
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -351,11 +415,28 @@ def generate_taking_hints_v_difficulty_graph(
         color="gray",
         style="italic",
     )
-    ax = plt.axes(
-        [0.8, 0.88, 0.1, 0.1], frameon=True
-    )  # Change the numbers in this array to position your image [left, bottom, width, height])
-    ax.imshow(image)
-    ax.axis("off")
+
+    # Add metadata in bottom right
+    if metadata:
+        metadata_text = (
+            f"Hint Taking Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+        )
+        plt.figtext(
+            0.82,
+            0.1,
+            metadata_text,
+            verticalalignment="bottom",
+            horizontalalignment="left",
+            fontsize=8,
+        )
+
+    # Add logo in top right
+    logo_ax = plt.axes([0.815, 0.93, 0.1, 0.1], frameon=True)
+    logo_ax.imshow(image)
+    logo_ax.axis("off")
 
     plt.grid(True)
     if path:
@@ -602,9 +683,11 @@ def generate_violin_plot(
     plt.tight_layout()
 
     # Add logo
-    newax = plt.axes([0.8, 0.88, 0.1, 0.1], frameon=True)
-    newax.imshow(image)
-    newax.axis("off")
+    ax = plt.axes(
+        [0.815, 0.93, 0.1, 0.1], frameon=True
+    )  # [left, bottom, width, height] - aligned with legend left and title top
+    ax.imshow(image)
+    ax.axis("off")
 
     if path:
         plt.savefig(path)
