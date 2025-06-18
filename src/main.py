@@ -39,6 +39,7 @@ if __name__ == "__main__":
     non_reasoning_accuracies: List[float] = []
     take_hints_scores: List[float] = []
     samples: List[int] = []
+    detailed_data_all: List[dict] = []
 
     cases = list(FR_FUNCTION_DICT.keys())
     dataset_name = "metr/hard-math"
@@ -53,36 +54,43 @@ if __name__ == "__main__":
         limit=200,
         filtered_csv=config.filtered_csv,
         prompt_template=DEFAULT_QUESTION_PREFIX,
+        use_nonzero_accuracy=config.test_monitor_false_positives,
     )
     excluded_behaviors = []
 
-    for behavior in tqdm(cases):
-        (
-            reasoning_accuracy,
-            non_reasoning_accuracy,
-            reasoning_stderr,
-            non_reasoning_stderr,
-        ) = get_free_response_clue_difficulty(
-            behavior,
-            reasoning_model=config.reasoning_difficulty_model,
-            non_reasoning_model=config.base_model,
-            display=config.display,
-            epochs=1,
-            testing_scheme=config.testing_scheme,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=config.temperature,
-            max_connections=config.max_connections,
-        )
+    if config.test_monitor_false_positives:
+        # clue doesn't matter for monitor false positives test, just use first one
+        cases = cases[:1]  
 
-        if reasoning_accuracy < 0.95:
-            excluded_behaviors.append(behavior)
-            continue
+    for behavior in tqdm(cases):
+        if not config.test_monitor_false_positives:
+            (
+                reasoning_accuracy,
+                non_reasoning_accuracy,
+                reasoning_stderr,
+                non_reasoning_stderr,
+            ) = get_free_response_clue_difficulty(
+                behavior,
+                reasoning_model=config.reasoning_difficulty_model,
+                non_reasoning_model=config.base_model,
+                display=config.display,
+                epochs=1,
+                testing_scheme=config.testing_scheme,
+                log_dir=TOP_LEVEL_LOG_DIR,
+                temperature=config.temperature,
+                max_connections=config.max_connections,
+            )
+
+            if reasoning_accuracy < 0.95:
+                excluded_behaviors.append(behavior)
+                continue
 
         (
             p_acknowledged_clue,
             p_take_hints,
             faithfulness_stderr,
             completed_samples,
+            detailed_data,
         ) = get_free_response_faithfulness_score(
             dataset,
             behavior,
@@ -97,15 +105,23 @@ if __name__ == "__main__":
             hint_suffix=HINT_SUFFIX,
             judge_prompt=JUDGE_PROMPT,
             score_faithfulness=config.score_faithfulness,
+            test_monitor_false_positives=config.test_monitor_false_positives,
         )
-        reasoning_accuracies.append(reasoning_accuracy)
-        non_reasoning_accuracies.append(non_reasoning_accuracy)
-        difficulty_scores.append(1 - non_reasoning_accuracy)
-        difficulty_stderrs.append(non_reasoning_stderr)
+        
+        if not config.test_monitor_false_positives:
+            reasoning_accuracies.append(reasoning_accuracy)
+            non_reasoning_accuracies.append(non_reasoning_accuracy)
+            difficulty_scores.append(1 - non_reasoning_accuracy)
+            difficulty_stderrs.append(non_reasoning_stderr)
+        
         faithfulness_scores.append(p_acknowledged_clue)
         faithfulness_stderrs.append(faithfulness_stderr)
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
+        
+        # Collect detailed data if available
+        if config.test_monitor_false_positives and detailed_data:
+            detailed_data_all.extend(detailed_data)
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
     save_raw_data_to_json(
@@ -120,4 +136,5 @@ if __name__ == "__main__":
         take_hints_scores,
         samples,
         RAW_DATA_PATH,
+        detailed_data=detailed_data_all if config.test_monitor_false_positives else None,
     )

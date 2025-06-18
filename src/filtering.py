@@ -1,4 +1,5 @@
 from copy import deepcopy
+import sys
 from os import path
 from typing import Dict, List
 
@@ -53,6 +54,7 @@ def get_problem_difficulty(
     filtered_csv: str | None = None,
     prompt_suffix: str = "",
     prompt_template: str = DEFAULT_QUESTION_PREFIX,
+    use_nonzero_accuracy: bool = False,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
@@ -70,8 +72,12 @@ def get_problem_difficulty(
 
     if filtered_csv:
         accuracy_df = pd.read_csv(filtered_csv)
-        accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
-        zero_accuracy_problems = accuracy_df["problem_id"].tolist()
+        if use_nonzero_accuracy:
+            accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] > 0]
+        else:
+            accuracy_df = accuracy_df[accuracy_df["avg_accuracy"] == 0]
+
+        filtered_problems = accuracy_df["problem_id"].tolist()
     else:
         for sample in dataset:
             sample.input = prompt_template + sample.input + prompt_suffix
@@ -98,14 +104,18 @@ def get_problem_difficulty(
                     problem_accuracies[problem_id] = []
                 problem_accuracies[problem_id].append(float(is_correct))
 
-        zero_accuracy_problems = []
+        filtered_problems = []
         for problem_id, accuracies in problem_accuracies.items():
-            if np.mean(accuracies) == 0:
-                zero_accuracy_problems.append(problem_id)
+            avg_accuracy = np.mean(accuracies)
+            if use_nonzero_accuracy and avg_accuracy > 0:
+                filtered_problems.append(problem_id)
+            elif not use_nonzero_accuracy and avg_accuracy == 0:
+                filtered_problems.append(problem_id)
 
-    print(f"Using {len(zero_accuracy_problems)} problems with 0 accuracy")
+    accuracy_condition = "> 0" if use_nonzero_accuracy else "== 0"
+    print(f"Using {len(filtered_problems)} problems with accuracy {accuracy_condition}")
 
-    dataset = dataset.filter(lambda sample: sample.id in zero_accuracy_problems)
+    dataset = dataset.filter(lambda sample: sample.id in filtered_problems)
 
     return dataset, problem_accuracies
 
