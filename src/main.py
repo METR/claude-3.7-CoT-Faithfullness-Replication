@@ -1,123 +1,43 @@
 import os
-from datetime import datetime
-from typing import List
-
 from dotenv import load_dotenv
-from tqdm import tqdm
 
-from filtering import get_problem_difficulty
-from free_response_behaviors import FR_FUNCTION_DICT
-from free_response_clue_difficulty import get_free_response_clue_difficulty
-from free_response_llm_faithfulness import get_free_response_faithfulness_score
-from graph_utils import (
-    save_raw_data_to_json,
-)
 from parsing import parse_args
-from utils.prompt_utils import load_prompt_module
-from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
+from evaluation import Evaluator
+from graph_utils import save_raw_data_to_json
 
-load_dotenv()
 
-if __name__ == "__main__":
-    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
-    print(f"Anthropic API Key: {anthropic_api_key}")
+def main():
+    """Main entry point for the evaluation pipeline."""
+    # Load environment variables
+    load_dotenv()
+    
+    # Verify API key is present
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not anthropic_api_key:
+        raise ValueError("ANTHROPIC_API_KEY environment variable is required")
+
+    # Parse command line arguments
     config = parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
-    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
-    PROMPT_MODULE = load_prompt_module(config.question_prompt)
-    QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
-    QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
-    HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
-    JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
+    # Run evaluation
+    evaluator = Evaluator(config)
+    results = evaluator.run_evaluation()
 
-    faithfulness_scores: List[float] = []
-    faithfulness_stderrs: List[float] = []
-    difficulty_scores: List[float] = []
-    difficulty_stderrs: List[float] = []
-    reasoning_accuracies: List[float] = []
-    non_reasoning_accuracies: List[float] = []
-    take_hints_scores: List[float] = []
-    samples: List[int] = []
-
-    cases = list(FR_FUNCTION_DICT.keys())
-    dataset_name = "metr/hard-math"
-
-    dataset, _ = get_problem_difficulty(
-        reasoning_model=config.model,
-        display=config.display,
-        epochs=5,
-        log_dir=TOP_LEVEL_LOG_DIR,
-        temperature=config.temperature,
-        max_connections=config.max_connections,
-        limit=200,
-        filtered_csv=config.filtered_csv,
-        prompt_template=DEFAULT_QUESTION_PREFIX,
-    )
-    excluded_behaviors = []
-
-    for behavior in tqdm(cases):
-        (
-            reasoning_accuracy,
-            non_reasoning_accuracy,
-            reasoning_stderr,
-            non_reasoning_stderr,
-        ) = get_free_response_clue_difficulty(
-            behavior,
-            reasoning_model=config.reasoning_difficulty_model,
-            non_reasoning_model=config.base_model,
-            display=config.display,
-            epochs=1,
-            testing_scheme=config.testing_scheme,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=config.temperature,
-            max_connections=config.max_connections,
-        )
-
-        if reasoning_accuracy < 0.95:
-            excluded_behaviors.append(behavior)
-            continue
-
-        (
-            p_acknowledged_clue,
-            p_take_hints,
-            faithfulness_stderr,
-            completed_samples,
-        ) = get_free_response_faithfulness_score(
-            dataset,
-            behavior,
-            model=config.model,
-            max_connections=config.max_connections,
-            limit=100,
-            display=config.display,
-            log_dir=TOP_LEVEL_LOG_DIR,
-            temperature=config.temperature,
-            prompt_prefix=QUESTION_PREFIX,
-            prompt_suffix=QUESTION_SUFFIX,
-            hint_suffix=HINT_SUFFIX,
-            judge_prompt=JUDGE_PROMPT,
-            score_faithfulness=config.score_faithfulness,
-        )
-        reasoning_accuracies.append(reasoning_accuracy)
-        non_reasoning_accuracies.append(non_reasoning_accuracy)
-        difficulty_scores.append(1 - non_reasoning_accuracy)
-        difficulty_stderrs.append(non_reasoning_stderr)
-        faithfulness_scores.append(p_acknowledged_clue)
-        faithfulness_stderrs.append(faithfulness_stderr)
-        take_hints_scores.append(p_take_hints)
-        samples.append(completed_samples)
-
-    labels = [case.value for case in cases if case not in excluded_behaviors]
+    # Save results
     save_raw_data_to_json(
-        config,
-        labels,
-        reasoning_accuracies,
-        non_reasoning_accuracies,
-        difficulty_scores,
-        difficulty_stderrs,
-        faithfulness_scores,
-        faithfulness_stderrs,
-        take_hints_scores,
-        samples,
-        RAW_DATA_PATH,
+        config=config,
+        labels=results.labels,
+        reasoning_accuracies=results.reasoning_accuracies,
+        non_reasoning_accuracies=results.non_reasoning_accuracies,
+        difficulty_scores=results.difficulty_scores,
+        difficulty_stderrs=results.difficulty_stderrs,
+        metric_scores=results.metric_scores,  # Generic name for either metric
+        metric_stderrs=results.metric_stderrs,  # Generic name for either metric
+        take_hints_scores=results.take_hints_scores,
+        samples=results.samples,
+        output_path=config.results_dir,
     )
+
+
+if __name__ == "__main__":
+    main()
