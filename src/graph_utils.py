@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -36,11 +37,40 @@ SHAPE_MAP = {
 }
 
 
+@dataclass
+class GraphMetadata:
+    threshold: float
+    faithfulness: bool
+    question_prompt: str
+    judge_prompt: str
+
+
+def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+        )
+        ax.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=ax.transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
+
+
 def generate_propensity_graph(
     faithfulness_scores: List[float],
     faithfulness_stderrs: List[float],
     difficulty_scores: List[float],
     difficulty_stderrs: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     take_hints_scores: List[float],
     samples: List[int],
@@ -68,7 +98,43 @@ def generate_propensity_graph(
     Returns:
         None
     """
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 7.5))
+
+    # Add metadata box if metadata is provided
+    ax = plt.axes()
+    add_metadata(metadata, ax)
+
+    # Create a proper color legend if show_color is True
+    if show_color:
+        # Only show colors that are actually used in the data
+        used_colors = set()
+        for label in labels:
+            for key in COLOR_MAP:
+                if key != "default" and key in label.lower():
+                    used_colors.add((key, COLOR_MAP[key]))
+                    break
+
+        if used_colors:
+            # Create legend handles
+            from matplotlib.patches import Patch
+
+            legend_elements = [
+                Patch(facecolor=color, label=key.replace("_", " ").title())
+                for key, color in sorted(used_colors)
+            ]
+
+            # Add horizontal legend at the top in three rows
+            import math
+
+            ncols = math.ceil(len(legend_elements) / 3)
+            ax.legend(
+                handles=legend_elements,
+                loc="upper center",
+                bbox_to_anchor=(0.5, 1.08),
+                ncol=ncols,
+                fontsize=8,
+                framealpha=0.9,
+            )
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -90,7 +156,7 @@ def generate_propensity_graph(
 
     # Calculate dot sizes based on take_hints_scores * samples
     dot_sizes = [
-        round(take_hints_scores[i] * samples[i]) * 10
+        round(take_hints_scores[i] * samples[i]) * 3
         for i in range(len(take_hints_scores))
     ]
 
@@ -173,11 +239,11 @@ def generate_propensity_graph(
     plt.xlabel("Clue Difficulty")
     plt.ylabel("Faithfulness Score")
     plt.title(
-        "Propensity for Faithfulness vs Difficulty", loc="left", pad=25, fontsize=25
+        "Propensity for Faithfulness vs Difficulty", loc="left", pad=35, fontsize=25
     )
     plt.suptitle(
         f"{model} on {dataset}, 90% CI",
-        y=0.90,
+        y=0.85,
         fontsize=12,
         color="gray",
         style="italic",
@@ -197,6 +263,7 @@ def generate_propensity_graph(
 
 def generate_taking_hints_graph(
     p_take_hints: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     model: str,
     dataset: str,
@@ -209,6 +276,7 @@ def generate_taking_hints_graph(
     did_not_take_hint = 1 - took_hint  # Will sum to 1 for each bar
 
     fig, ax = plt.subplots(figsize=(12, 6))
+    add_metadata(metadata, ax)
 
     ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
     ax.bar(
@@ -239,6 +307,7 @@ def generate_taking_hints_graph(
 def generate_taking_hints_v_difficulty_graph(
     p_take_hints: List[float],
     difficulty_scores: List[float],
+    metadata: GraphMetadata,
     labels: List[str],
     model: str,
     dataset: str,
@@ -246,6 +315,9 @@ def generate_taking_hints_v_difficulty_graph(
     show_labels: bool = False,
 ) -> None:
     plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -286,18 +358,25 @@ def generate_taking_hints_v_difficulty_graph(
     ax.axis("off")
 
     plt.grid(True)
-    plt.show()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
 
 
 def generate_with_and_without_cot_difficulty_graph(
     reasoning_accuracy_scores: List[float],
     non_reasoning_accuracy_scores: List[float],
+    metadata: GraphMetadata | None,
     labels: List[str],
     model: str,
     dataset: str,
     path: str | None = None,
 ) -> None:
     plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    add_metadata(metadata, plt.axes())
 
     plt.scatter(reasoning_accuracy_scores, non_reasoning_accuracy_scores, alpha=0.6)
 
@@ -326,6 +405,7 @@ def generate_with_and_without_cot_difficulty_graph(
 def generate_boxplot(
     faithfulness_scores: List[float],
     difficulty_scores: List[float],
+    metadata: GraphMetadata | None,
     boxplot_lower_threshold: float,
     boxplot_upper_threshold: float,
     model: str,
@@ -369,24 +449,35 @@ def generate_boxplot(
         ]
     )
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    add_metadata(metadata, plt.axes())
+
+    image = plt.imread("assets/logo.png")
+    plt.rcParams["font.family"] = "Montserrat"
+
+    # Remove top and right spines
+    ax = plt.gca()
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
     # Create boxplot using seaborn (without outliers since swarm plot shows all points)
     sns.boxplot(
         data=df,
         x="Category",
         y="Faithfulness",
-        color="lightblue",
-        boxprops=dict(alpha=0.5),
-        whiskerprops=dict(color="darkblue"),
-        capprops=dict(color="darkblue"),
-        medianprops=dict(color="darkblue", linewidth=2),
+        color="#485F52",
+        boxprops=dict(alpha=0.3),
+        whiskerprops=dict(color="#485F52", alpha=0.6),
+        capprops=dict(color="#485F52", alpha=0.6),
+        medianprops=dict(color="#485F52", linewidth=2),
         showfliers=False,  # Turn off outlier display since swarm plot shows all points
     )
 
     # Overlay swarm plot for individual points
     sns.swarmplot(
-        data=df, x="Category", y="Faithfulness", color="#f9a4a4", size=4, alpha=0.8
+        data=df, x="Category", y="Faithfulness", color="#f9a4a4", size=5, alpha=0.6
     )
 
     # Update x-tick labels to include sample counts
@@ -395,17 +486,19 @@ def generate_boxplot(
     new_labels = []
     for label in current_labels:
         if "<=" in label:
-            new_labels.append(f"{label}, n={low_count}")
+            new_labels.append(f"{label}\nn={low_count}")
         else:
-            new_labels.append(f"{label}, n={high_count}")
+            new_labels.append(f"{label}\nn={high_count}")
     ax.set_xticklabels(new_labels)
 
-    plt.ylabel("Faithfulness")
+    plt.ylabel("Faithfulness Score")
+    plt.xlabel("Clue Difficulty Category")
     plt.title(
-        f"Distribution of Faithfulness Scores by Clue Difficulty for {model.split('/')[-1]} on {dataset}"
+        f"Distribution of Faithfulness Scores by Clue Difficulty\nModel: {model.split('/')[-1]}, Dataset: {dataset}"
     )
     plt.ylim(0, 1)
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.2)
+    plt.tight_layout()
 
     if path:
         plt.savefig(path)
@@ -418,6 +511,7 @@ def generate_violin_plot(
     difficulty_scores: List[float],
     boxplot_lower_threshold: float,
     boxplot_upper_threshold: float,
+    metadata: GraphMetadata | None,
     model: str,
     dataset: str,
     path: str | None = None,
@@ -459,21 +553,32 @@ def generate_violin_plot(
         ]
     )
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 6))
+
+    # Add metadata box if metadata is provided
+    add_metadata(metadata, plt.axes())
+
+    image = plt.imread("assets/logo.png")
+    plt.rcParams["font.family"] = "Montserrat"
+
+    # Remove top and right spines
+    ax = plt.gca()
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
     # Create violin plot using seaborn
     sns.violinplot(
         data=df,
         x="Category",
         y="Faithfulness",
-        color="#f9a4a4",
-        alpha=0.5,
+        color="#485F52",
+        alpha=0.3,
         bw_adjust=0.3,
     )
 
     # Overlay swarm plot for individual points
     sns.swarmplot(
-        data=df, x="Category", y="Faithfulness", color="#f9a4a4", size=4, alpha=1
+        data=df, x="Category", y="Faithfulness", color="#f9a4a4", size=5, alpha=0.6
     )
 
     # Update x-tick labels to include sample counts
@@ -482,17 +587,24 @@ def generate_violin_plot(
     new_labels = []
     for label in current_labels:
         if "<=" in label:
-            new_labels.append(f"{label}, n={low_count}")
+            new_labels.append(f"{label}\nn={low_count}")
         else:
-            new_labels.append(f"{label}, n={high_count}")
+            new_labels.append(f"{label}\nn={high_count}")
     ax.set_xticklabels(new_labels)
 
-    plt.ylabel("Faithfulness")
+    plt.ylabel("Faithfulness Score")
+    plt.xlabel("Clue Difficulty Category")
     plt.title(
-        f"Distribution of Faithfulness Scores by Clue Difficulty for {model.split('/')[-1]} on {dataset}"
+        f"Distribution of Faithfulness Scores by Clue Difficulty\nModel: {model.split('/')[-1]}, Dataset: {dataset}"
     )
     plt.ylim(0, 1)
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.2)
+    plt.tight_layout()
+
+    # Add logo
+    newax = plt.axes([0.8, 0.88, 0.1, 0.1], frameon=True)
+    newax.imshow(image)
+    newax.axis("off")
 
     if path:
         plt.savefig(path)
