@@ -70,6 +70,34 @@ def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
         )
 
 
+@dataclass
+class GraphMetadata:
+    threshold: float
+    faithfulness: bool
+    question_prompt: str
+    judge_prompt: str
+
+
+def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
+    if metadata:
+        metadata_text = (
+            f"Threshold: {metadata.threshold}\n"
+            f"Faithfulness: {metadata.faithfulness}\n"
+            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+        )
+        ax.text(
+            0.98,
+            0.02,
+            metadata_text,
+            transform=ax.transAxes,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            fontsize=8,
+        )
+
+
 def generate_propensity_graph(
     faithfulness_scores: List[float],
     faithfulness_stderrs: List[float],
@@ -111,6 +139,7 @@ def generate_propensity_graph(
 
     # Create a proper color legend if show_color is True
     legend_elements = []
+
     if show_color:
         # Only show colors that are actually used in the data
         used_colors = set()
@@ -383,6 +412,9 @@ def generate_taking_hints_v_difficulty_graph(
 
     # Create main plotting area that leaves room on right
     ax = plt.axes([0.1, 0.1, 0.7, 0.75])
+
+    # Add metadata box if metadata is provided
+    add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
     plt.rcParams["font.family"] = "Montserrat"
@@ -688,6 +720,7 @@ def generate_violin_plot(
     )  # [left, bottom, width, height] - aligned with legend left and title top
     ax.imshow(image)
     ax.axis("off")
+
 
     if path:
         plt.savefig(path)
