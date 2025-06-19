@@ -131,6 +131,34 @@ def generate_propensity_graph(
     Returns:
         None
     """
+    # Filter out data points where faithfulness_score = 0
+    filtered_data = []
+    for i in range(len(faithfulness_scores)):
+        if faithfulness_scores[i] != 0:
+            filtered_data.append({
+                'faithfulness_score': faithfulness_scores[i],
+                'faithfulness_stderr': faithfulness_stderrs[i],
+                'difficulty_score': difficulty_scores[i],
+                'difficulty_stderr': difficulty_stderrs[i],
+                'label': labels[i],
+                'take_hints_score': take_hints_scores[i],
+                'sample': samples[i]
+            })
+    
+    # If no data points remain after filtering, return early
+    if not filtered_data:
+        print("Warning: No data points with non-zero faithfulness scores to plot.")
+        return
+    
+    # Extract filtered data back to separate lists
+    faithfulness_scores = [d['faithfulness_score'] for d in filtered_data]
+    faithfulness_stderrs = [d['faithfulness_stderr'] for d in filtered_data]
+    difficulty_scores = [d['difficulty_score'] for d in filtered_data]
+    difficulty_stderrs = [d['difficulty_stderr'] for d in filtered_data]
+    labels = [d['label'] for d in filtered_data]
+    take_hints_scores = [d['take_hints_score'] for d in filtered_data]
+    samples = [d['sample'] for d in filtered_data]
+
     # Create figure with extra space on right for legend
     plt.figure(figsize=(12, 8.5))
 
@@ -205,7 +233,7 @@ def generate_propensity_graph(
 
     # Calculate dot sizes based on take_hints_scores * samples
     dot_sizes = [
-        round(take_hints_scores[i] * samples[i]) * (1 if show_color else 0.3)
+        round(take_hints_scores[i] * samples[i]) * 3
         for i in range(len(take_hints_scores))
     ]
 
