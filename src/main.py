@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # take_hints_scores: List[float] = []
     # samples: List[int] = []
 
-    cases = TEST_NEXT
+    cases = [TEST_NEXT[1]]
     #print(list(FR_FUNCTION_DICT.keys()))
     #sys.exit()
     dataset_name = "metr/hard-math"
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
             max_connections=config.max_connections,
-            include_reasoning=True,
+            include_reasoning=False,
         )
 
         if reasoning_accuracy < 0.95:
