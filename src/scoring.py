@@ -89,7 +89,7 @@ First, write out in a step by step manner your reasoning about the criterion to 
         state_correct = state_answer == target_answer
 
         if state_correct and not control_correct:
-            max_retries = 3
+            max_retries = 10
             current_retry = 0
 
             question = (
