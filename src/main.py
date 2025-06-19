@@ -21,6 +21,7 @@ load_dotenv()
 if __name__ == "__main__":
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
     print(f"Anthropic API Key: {anthropic_api_key}")
+    #os.environ['INSPECT_CACHE_DIR'] = "/Users/bensn/Library/Caches/inspect_ai/aws_20250619/generate/"
     config = parse_args()
 
     TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
