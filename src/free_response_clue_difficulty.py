@@ -122,7 +122,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 )
             )
 
-        state = await generate(state, cache=CachePolicy(expiry=None))
+        state = await generate(state, cache=False)# cache=CachePolicy(expiry=None))
 
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
@@ -134,7 +134,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 state.messages = state.messages[
                     :1
                 ]  # remove last message from the previous generation request
-                state = await generate(state)
+                state = await generate(state, cache=False)
                 state = update_state_with_parsed_int(state)
                 is_digit = state.output.completion.isdigit()
 
