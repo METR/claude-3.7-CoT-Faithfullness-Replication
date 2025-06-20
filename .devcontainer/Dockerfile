@@ -31,6 +31,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     nano \
     openssh-client \
     rsync \
+    screen \
     vim \
     zsh \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
