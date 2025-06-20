@@ -11,6 +11,7 @@ from inspect_ai.util import DisplayType
 
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from scoring import faithfullness_scorer
+from utils.batch import get_batch_args
 
 
 @solver
@@ -21,25 +22,27 @@ def free_response_thinking_solver(
     prompt_suffix: str = "",
     hint_suffix: str = "",
     provide_hint: bool = True,
+    batch_size: int = 0,
 ) -> Solver:
+    batch_args = get_batch_args(batch_size)
+
     async def solve(state: TaskState, generate: Generate):
         state.original_question = state.user_prompt.text
         state.user_prompt.text = (
-            prompt_prefix
-            + "\n\n"
-            + state.original_question
-            + prompt_suffix
+            prompt_prefix + "\n\n" + state.original_question + prompt_suffix
         )
         if provide_hint:
             state.user_prompt.text += (
-            "\n"
-            + FR_FUNCTION_DICT[behavior](state.target.text)
-            + "\n"
-            + hint_suffix
-        )
+                "\n"
+                + FR_FUNCTION_DICT[behavior](state.target.text)
+                + "\n"
+                + hint_suffix
+            )
         for _ in range(5):
             try:
-                state = await generate(state, cache=CachePolicy(expiry=None))
+                state = await generate(
+                    state, cache=CachePolicy(expiry=None), **batch_args
+                )
                 state_assistant_message = state.messages[-1].content
                 break
             except Exception as e:
@@ -85,7 +88,9 @@ def free_response_llm_faithfulness(
     hint_suffix: str = "",
     faithfulness_flag: bool = True,
     test_monitor_false_positives: bool = False,
+    batch_size: int = 0,
 ) -> Task:
+    batch_args = get_batch_args(batch_size)
     return Task(
         dataset=dataset,
         solver=free_response_thinking_solver(
@@ -94,6 +99,7 @@ def free_response_llm_faithfulness(
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
             provide_hint=not test_monitor_false_positives,
+            batch_size=batch_size,
         ),
         scorer=faithfullness_scorer(
             behavior=behavior,
@@ -104,13 +110,18 @@ def free_response_llm_faithfulness(
                     temperature=1,
                     reasoning_effort="low",
                     max_connections=120,
+                    **batch_args,
                 ),
             ),
             score_faithfulness=faithfulness_flag,
+            batch_size=batch_size,
         ),
         # epochs=Epochs(epochs=2),
         config=GenerateConfig(
-            temperature=temperature, max_tokens=32_000, reasoning_tokens=30_000
+            temperature=temperature,
+            max_tokens=32_000,
+            reasoning_tokens=30_000,
+            **batch_args,
         ),
     )
 
@@ -130,6 +141,7 @@ def get_free_response_faithfulness_score(
     score_faithfulness: bool = True,
     log_dir: str | None = None,
     test_monitor_false_positives: bool = False,
+    batch_size: int = 0,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
         free_response_llm_faithfulness(
@@ -143,6 +155,7 @@ def get_free_response_faithfulness_score(
             hint_suffix=hint_suffix,
             faithfulness_flag=score_faithfulness,
             test_monitor_false_positives=test_monitor_false_positives,
+            batch_size=batch_size,
         ),
         model=model,
         max_connections=max_connections,
@@ -176,12 +189,16 @@ def get_free_response_faithfulness_score(
                 # Get the first scorer (should be our faithfulness scorer)
                 first_scorer = next(iter(sample.scores))
                 score = sample.scores[first_scorer]
-                
-                detailed_data.append({
-                    "problem_id": sample.id,
-                    "state_correct": score.metadata.get("state_correct", False),
-                    "acknowledged_clue": score.metadata.get("state_correct", False) == 1 and score.metadata.get("faithful", False) == 1,
-                })
+
+                detailed_data.append(
+                    {
+                        "problem_id": sample.id,
+                        "state_correct": score.metadata.get("state_correct", False),
+                        "acknowledged_clue": score.metadata.get("state_correct", False)
+                        == 1
+                        and score.metadata.get("faithful", False) == 1,
+                    }
+                )
 
     return (
         p_acknowledged_clue,

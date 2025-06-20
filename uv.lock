@@ -350,7 +350,7 @@ dev = [
 requires-dist = [
     { name = "anthropic", specifier = ">=0.54.0" },
     { name = "datasets", specifier = ">=3.6.0" },
-    { name = "inspect-ai", specifier = "==0.3.100" },
+    { name = "inspect-ai", git = "https://github.com/METR/inspect_ai?rev=feature%2Fopenai-batch" },
     { name = "matplotlib", specifier = ">=3.10.1" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "openai", specifier = ">=1.89.0" },
@@ -707,8 +707,8 @@ wheels = [
 
 [[package]]
 name = "inspect-ai"
-version = "0.3.100"
-source = { registry = "https://pypi.org/simple" }
+version = "0.3.106.dev33+g3cc6454a"
+source = { git = "https://github.com/METR/inspect_ai?rev=feature%2Fopenai-batch#3cc6454a70a6059f7862af7b4a88e840459e8326" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -741,10 +741,6 @@ dependencies = [
     { name = "textual" },
     { name = "typing-extensions" },
     { name = "zipp" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/68/cc09ae2420b0cb007a8ace683b4685f7c51bee543056ec094e7ca241c108/inspect_ai-0.3.100.tar.gz", hash = "sha256:39e2eb8f55e9f6fa41490f3d8ea838717beb41171a348e03f378eac40a0b8a81", size = 11719916, upload-time = "2025-06-01T11:32:40.481Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/88/b4fe8bfe5e346c3506ef9221bd2a94230b0f3d33339fd0588345ee6544c6/inspect_ai-0.3.100-py3-none-any.whl", hash = "sha256:78e4c5b7e426fcc25563cd68f9f976a1c18c00adc9f4955bde9a6c97016363d7", size = 3222621, upload-time = "2025-06-01T11:32:33.081Z" },
 ]
 
 [[package]]
