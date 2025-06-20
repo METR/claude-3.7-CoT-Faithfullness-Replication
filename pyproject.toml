@@ -5,7 +5,9 @@ description = "Evaluate faithfulness and monitorability of LLMs"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "inspect_ai==0.3.100",
+    "anthropic",
+    "datasets",
+    "inspect-ai==0.3.100",
     "matplotlib>=3.10.1",
     "numpy>=2.2.3",
     "pandas>=2.2.3",
