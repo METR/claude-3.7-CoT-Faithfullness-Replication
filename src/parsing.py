@@ -106,6 +106,9 @@ def parse_args() -> EvalConfig:
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
     ret.testing_scheme = TestingScheme(ret.testing_scheme.lower())
+    if ret.batch_size:
+        ret.max_connections = max(ret.max_connections, ret.batch_size)
+
     if ret.reasoning_difficulty_model is None:
         ret.reasoning_difficulty_model = ret.model
     return ret
