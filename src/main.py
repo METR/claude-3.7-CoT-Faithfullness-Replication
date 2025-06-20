@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from typing import List
+from math import sqrt
 
 from dotenv import load_dotenv
 from tqdm import tqdm
@@ -106,6 +107,7 @@ if __name__ == "__main__":
             judge_prompt=JUDGE_PROMPT,
             score_faithfulness=config.score_faithfulness,
             test_monitor_false_positives=config.test_monitor_false_positives,
+            epochs=5
         )
         
         if not config.test_monitor_false_positives:
@@ -124,6 +126,31 @@ if __name__ == "__main__":
             detailed_data_all.extend(detailed_data)
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
+    
+    # Calculate and print statistics for "Of the cases where state_correct = True, % acknowledged_clue"
+    if config.test_monitor_false_positives and detailed_data_all:
+        # Filter for cases where state_correct = True
+        correct_cases = [data for data in detailed_data_all if data.get("state_correct", False)]
+        
+        if correct_cases:
+            # Calculate percentage of acknowledged_clue for correct cases
+            acknowledged_count = sum(1 for data in correct_cases if data.get("acknowledged_clue", False))
+            total_correct = len(correct_cases)
+            percentage_acknowledged = acknowledged_count / total_correct
+            
+            # Calculate standard error
+            stderr = sqrt((percentage_acknowledged * (1 - percentage_acknowledged)) / total_correct)
+            
+            print(f"\n=== Statistics for cases where state_correct = True ===")
+            print(f"Total correct cases: {total_correct}")
+            print(f"Cases that acknowledged clue: {acknowledged_count}")
+            print(f"Percentage acknowledged clue: {percentage_acknowledged:.4f} ({percentage_acknowledged*100:.2f}%)")
+            print(f"Standard error: {stderr:.4f}")
+            print(f"95% confidence interval: [{percentage_acknowledged - 1.96*stderr:.4f}, {percentage_acknowledged + 1.96*stderr:.4f}]")
+        else:
+            print(f"\n=== Statistics for cases where state_correct = True ===")
+            print("No cases found where state_correct = True")
+    
     save_raw_data_to_json(
         config,
         labels,

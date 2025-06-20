@@ -3,7 +3,7 @@ from math import sqrt
 from os import path
 from typing import Any, Tuple
 
-from inspect_ai import Task, eval, task
+from inspect_ai import Epochs, Task, eval, task
 from inspect_ai.dataset import Dataset
 from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 from inspect_ai.solver import Generate, Solver, TaskState, solver
@@ -85,6 +85,7 @@ def free_response_llm_faithfulness(
     hint_suffix: str = "",
     faithfulness_flag: bool = True,
     test_monitor_false_positives: bool = False,
+    epochs: int = 1,
 ) -> Task:
     return Task(
         dataset=dataset,
@@ -108,7 +109,7 @@ def free_response_llm_faithfulness(
             ),
             score_faithfulness=faithfulness_flag,
         ),
-        # epochs=Epochs(epochs=2),
+        epochs=Epochs(epochs=epochs),
         config=GenerateConfig(
             temperature=temperature, max_tokens=32_000, reasoning_tokens=30_000
         ),
@@ -130,6 +131,7 @@ def get_free_response_faithfulness_score(
     score_faithfulness: bool = True,
     log_dir: str | None = None,
     test_monitor_false_positives: bool = False,
+    epochs: int = 1,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
         free_response_llm_faithfulness(
@@ -143,6 +145,7 @@ def get_free_response_faithfulness_score(
             hint_suffix=hint_suffix,
             faithfulness_flag=score_faithfulness,
             test_monitor_false_positives=test_monitor_false_positives,
+            epochs=epochs,
         ),
         model=model,
         max_connections=max_connections,
