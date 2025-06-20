@@ -13,6 +13,7 @@ from inspect_ai.util import DisplayType
 
 from answer_utils import set_choices_based_on_generated_response
 from behaviors import FUNCTION_DICT, Behavior
+from utils.batch import get_batch_args
 from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 
 
@@ -29,6 +30,7 @@ def clue_difficulty(
     epochs: int = 10,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     temperature: float = 0.6,
+    batch_size: int = 0,
 ) -> Task:
     # we first construct the dataset
 
@@ -56,19 +58,24 @@ def clue_difficulty(
     # then we run the model on the dataset
     return Task(
         dataset=dataset,
-        solver=multiple_choice(reasoning=reasoning, testing_scheme=testing_scheme),
+        solver=multiple_choice(
+            reasoning=reasoning, testing_scheme=testing_scheme, batch_size=batch_size
+        ),
         scorer=choice(),
         config=GenerateConfig(
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
             max_tokens=max_tokens,
+            **get_batch_args(batch_size),
         ),
         epochs=epochs,
     )
 
 
 @solver
-def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
+def multiple_choice(
+    reasoning: bool, testing_scheme: TestingScheme, batch_size: int
+) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         state.user_prompt.text = prompt(
             question=state.user_prompt.text,
@@ -76,14 +83,17 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
             clue="",
             template=SINGLE_ANSWER_TEMPLATE,
         )
+        batch_args = get_batch_args(batch_size)
 
         if reasoning:
-            state = await generate(state, cache=CachePolicy(expiry=None))
+            state = await generate(state, cache=CachePolicy(expiry=None), **batch_args)
         elif not reasoning:
             if testing_scheme == TestingScheme.BASE:
                 if "qwen3" in state.model.name.lower():
                     state.user_prompt.text = "/no_think " + state.user_prompt.text
-                state = await generate(state, cache=CachePolicy(expiry=None))
+                state = await generate(
+                    state, cache=CachePolicy(expiry=None), **batch_args
+                )
             elif testing_scheme == TestingScheme.RL_NO_REASONING:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -91,7 +101,9 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=CachePolicy(expiry=None))
+                state = await generate(
+                    state, cache=CachePolicy(expiry=None), **batch_args
+                )
             elif testing_scheme == TestingScheme.RL_DOTS:
                 state.messages.append(
                     ChatMessageAssistant(
@@ -99,7 +111,9 @@ def multiple_choice(reasoning: bool, testing_scheme: TestingScheme) -> Solver:
                         model=state.model.name,
                     )
                 )
-                state = await generate(state, cache=CachePolicy(expiry=None))
+                state = await generate(
+                    state, cache=CachePolicy(expiry=None), **batch_args
+                )
 
         answers = re.search(
             r"(?i)^ANSWER\s*:\s*([A-Za-z ,]+)\s*(?:$|\n)",
@@ -127,6 +141,7 @@ def get_clue_difficulty(
     log_dir: str | None = None,
     temperature: float = 0.6,
     max_connections: int = 10,
+    batch_size: int = 0,
 ) -> Tuple[float, float, float, float]:
     reasoning_evalscore = eval(
         clue_difficulty(
@@ -135,6 +150,7 @@ def get_clue_difficulty(
             epochs=epochs,
             testing_scheme=testing_scheme,
             temperature=temperature,
+            batch_size=batch_size,
         ),
         model=reasoning_model,
         display=display,
@@ -149,6 +165,7 @@ def get_clue_difficulty(
             epochs=epochs,
             testing_scheme=testing_scheme,
             temperature=temperature,
+            batch_size=batch_size,
         ),
         model=non_reasoning_model,
         display=display,

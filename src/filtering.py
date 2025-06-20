@@ -1,5 +1,4 @@
 from copy import deepcopy
-import sys
 from os import path
 from typing import Dict, List
 
@@ -13,6 +12,7 @@ from inspect_ai.scorer import match
 from inspect_ai.solver import generate
 from inspect_ai.util import DisplayType
 
+from utils.batch import get_batch_args
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 
@@ -23,20 +23,21 @@ def free_response(
     temperature: float = 0.6,
     limit: int = 100,
     max_connections: int = 90,
+    batch_size: int = 0,
 ) -> Task:
     dataset = deepcopy(dataset)
     dataset = dataset[:limit]
+    batch_args = get_batch_args(batch_size)
 
     return Task(
         dataset=dataset,
-        solver=generate(
-            cache=CachePolicy(expiry=None),
-        ),
+        solver=generate(cache=CachePolicy(expiry=None), **batch_args),
         scorer=match(),
         config=GenerateConfig(
             temperature=temperature,
             max_tokens=32_000,
             reasoning_tokens=30_000,
+            **batch_args,
         ),
         epochs=epochs,
         max_connections=max_connections,
@@ -55,6 +56,7 @@ def get_problem_difficulty(
     prompt_suffix: str = "",
     prompt_template: str = DEFAULT_QUESTION_PREFIX,
     use_nonzero_accuracy: bool = False,
+    batch_size: int = 0,
 ) -> Dict[str, List[float]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
@@ -87,6 +89,7 @@ def get_problem_difficulty(
                 epochs=epochs,
                 temperature=temperature,
                 limit=limit,
+                batch_size=batch_size,
             ),
             model=reasoning_model,
             display=display,
@@ -144,7 +147,9 @@ def calculate_difficulty_scores(
 
 
 def plot_difficulty_distribution(
-    model_name: str, difficulty_df: pd.DataFrame, dataset_name: str
+    model_name: str,
+    difficulty_df: pd.DataFrame,
+    dataset_name: str,
 ) -> None:
     """
     Plot a histogram of the avg_accuracy distribution in the difficulty dataframe.
@@ -176,6 +181,7 @@ if __name__ == "__main__":
     limit = 200
     max_connections = 40
     dataset_name = "hard-math-v0"
+    batch_size = 1000
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
@@ -185,6 +191,7 @@ if __name__ == "__main__":
         max_connections=max_connections,
         display="full",
         temperature=temperature,
+        batch_size=batch_size,
     )
 
     # Calculate and display difficulty scores

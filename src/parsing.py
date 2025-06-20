@@ -1,12 +1,13 @@
 import argparse
-from dataclasses import dataclass
+import dataclasses
 
 from clue_difficulty import TestingScheme
 
 
-@dataclass
+@dataclasses.dataclass
 class EvalConfig:
     model: str
+    batch_size: int
     reasoning_difficulty_model: str | None
     base_model: str
     display: str
@@ -27,6 +28,12 @@ def parse_args() -> EvalConfig:
         "--model",
         type=str,
         default="anthropic/claude-3-7-sonnet-latest",
+        required=False,
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=0,
         required=False,
     )
     parser.add_argument(

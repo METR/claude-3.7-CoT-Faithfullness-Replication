@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from clue_difficulty import TestingScheme
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
+from utils.batch import get_batch_args
 
 
 class Number(BaseModel):
@@ -39,6 +40,7 @@ def free_response_clue_difficulty(
     epochs: int = 1,
     testing_scheme: TestingScheme = TestingScheme.BASE,
     temperature: float = 0.6,
+    batch_size: int = 0,
 ) -> Task:
     # claude workaround
     reasoning_tokens = 30_000 if reasoning else None
@@ -77,13 +79,14 @@ def free_response_clue_difficulty(
     return Task(
         dataset=dataset,
         solver=[
-            difficulty_solver(testing_scheme, reasoning),
+            difficulty_solver(testing_scheme, reasoning, batch_size),
         ],
         scorer=match() if reasoning else match(location="exact"),
         config=GenerateConfig(
             max_tokens=max_tokens,
             temperature=temperature,
             reasoning_tokens=reasoning_tokens,
+            **get_batch_args(batch_size),
         ),
         epochs=epochs,
     )
@@ -105,7 +108,11 @@ def update_state_with_parsed_int(state: TaskState) -> TaskState:
 
 
 @solver
-def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
+def difficulty_solver(
+    testing_scheme: TestingScheme, reasoning: bool, batch_size: int
+) -> Solver:
+    batch_args = get_batch_args(batch_size)
+
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         if testing_scheme == TestingScheme.RL_NO_REASONING:
             state.messages.append(
@@ -122,7 +129,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 )
             )
 
-        state = await generate(state, cache=CachePolicy(expiry=None))
+        state = await generate(state, cache=CachePolicy(expiry=None), **batch_args)
 
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
@@ -134,7 +141,7 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 state.messages = state.messages[
                     :1
                 ]  # remove last message from the previous generation request
-                state = await generate(state)
+                state = await generate(state, **batch_args)
                 state = update_state_with_parsed_int(state)
                 is_digit = state.output.completion.isdigit()
 
@@ -153,6 +160,7 @@ def get_free_response_clue_difficulty(
     log_dir: str | None = None,
     temperature: float = 0.6,
     max_connections: int = 10,
+    batch_size: int = 0,
 ) -> tuple[float, float, float, float]:
     resoning_result = eval(
         free_response_clue_difficulty(
@@ -162,6 +170,7 @@ def get_free_response_clue_difficulty(
             epochs=epochs,
             testing_scheme=testing_scheme,
             temperature=temperature,
+            batch_size=batch_size,
         ),
         model=reasoning_model,
         display=display,
@@ -177,6 +186,7 @@ def get_free_response_clue_difficulty(
             epochs=epochs,
             testing_scheme=testing_scheme,
             temperature=temperature,
+            batch_size=batch_size,
         ),
         model=non_reasoning_model,
         display=display,
