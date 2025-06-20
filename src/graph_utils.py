@@ -740,6 +740,7 @@ def save_raw_data_to_json(
     take_hints_scores: List[float],
     samples: List[int],
     path: str,
+    detailed_data: List[dict] = None,
 ) -> None:
     data = {
         "metadata": {
@@ -750,6 +751,7 @@ def save_raw_data_to_json(
             "question_prompt": config.question_prompt,
             "judge_prompt": config.judge_prompt,
             "score_faithfulness": config.score_faithfulness,
+            "test_monitor_false_positives": config.test_monitor_false_positives,
         },
         "labels": labels,
         "reasoning_accuracies": reasoning_accuracies,
@@ -761,5 +763,9 @@ def save_raw_data_to_json(
         "take_hints_scores": take_hints_scores,
         "samples": samples,
     }
+    
+    if detailed_data:
+        data["detailed_data"] = detailed_data
+    
     with open(path, "w") as f:
         json.dump(data, f)

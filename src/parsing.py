@@ -18,6 +18,7 @@ class EvalConfig:
     question_prompt: str
     judge_prompt: str
     score_faithfulness: bool
+    test_monitor_false_positives: bool
 
 
 def parse_args() -> EvalConfig:
@@ -88,6 +89,12 @@ def parse_args() -> EvalConfig:
         default=False,
         action="store_true",
         help="Whether to score faithfulness (default: False)",
+    )
+    parser.add_argument(
+        "--test-monitor-false-positives",
+        default=False,
+        action="store_true",
+        help="Whether to test monitor false positives (default: False)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
