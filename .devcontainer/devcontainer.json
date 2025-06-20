@@ -16,6 +16,11 @@
       "source": "cot-faithfulness-docker-data",
       "target": "/var/lib/docker",
       "type": "volume"
+    },
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.cache/inspect_ai",
+      "target": "/home/metr/.cache/inspect_ai",
+      "type": "bind"
     }
   ],
   "runArgs": [
@@ -51,7 +56,8 @@
         "ms-python.python",
         "ms-toolsai.datawrangler",
         "ms-toolsai.jupyter",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "ukaisi.inspect-ai"
       ]
     }
   }
