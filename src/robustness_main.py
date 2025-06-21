@@ -15,6 +15,7 @@ TESTING_SCHEME = TestingScheme.BASE
 TEMPERATURE = 1
 TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{MODEL.replace('/', '-')}-{TESTING_SCHEME.value}/"
 LIMIT = 200
+BATCH_SIZE = 1000
 
 
 def graph_results(results: dict):
@@ -142,6 +143,7 @@ if __name__ == "__main__":
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=TEMPERATURE,
                 function_dict=ALTERED_ORIGINAL_BEHAVIORS,
+                batch_size=BATCH_SIZE,
             )
             faithfulness_results[behavior.value] = {
                 "p_acknowledged_clue": p_acknowledged_clue,
