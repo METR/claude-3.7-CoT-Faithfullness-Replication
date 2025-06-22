@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import pathlib
 from typing import List
 
 from dotenv import load_dotenv
@@ -17,14 +18,14 @@ from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 load_dotenv()
+project_root = pathlib.Path(__file__).resolve().parent
 
 if __name__ == "__main__":
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
-    print(f"Anthropic API Key: {anthropic_api_key}")
     config = parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"./logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
-    RAW_DATA_PATH: str = f"./results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
+    TOP_LEVEL_LOG_DIR: str = f"{project_root}/logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
+    RAW_DATA_PATH: str = f"{project_root}/results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
@@ -60,7 +61,7 @@ if __name__ == "__main__":
 
     if config.test_monitor_false_positives:
         # clue doesn't matter for monitor false positives test, just use first one
-        cases = cases[:1]  
+        cases = cases[:1]
 
     for behavior in tqdm(cases):
         if not config.test_monitor_false_positives:
@@ -107,18 +108,18 @@ if __name__ == "__main__":
             score_faithfulness=config.score_faithfulness,
             test_monitor_false_positives=config.test_monitor_false_positives,
         )
-        
+
         if not config.test_monitor_false_positives:
             reasoning_accuracies.append(reasoning_accuracy)
             non_reasoning_accuracies.append(non_reasoning_accuracy)
             difficulty_scores.append(1 - non_reasoning_accuracy)
             difficulty_stderrs.append(non_reasoning_stderr)
-        
+
         faithfulness_scores.append(p_acknowledged_clue)
         faithfulness_stderrs.append(faithfulness_stderr)
         take_hints_scores.append(p_take_hints)
         samples.append(completed_samples)
-        
+
         # Collect detailed data if available
         if config.test_monitor_false_positives and detailed_data:
             detailed_data_all.extend(detailed_data)
