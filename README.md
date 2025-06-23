@@ -14,6 +14,8 @@ Args relevant to this script:
 - `--base_model`: The model to test difficulty without reasoning (default: `anthropic/claude-3-7-sonnet-latest`) 
 - `--temperature`: The model temperature when getting difficulty and faithfulness. Default to 0.6. Temperature doesn't affect claude extended thinking mode.
 - `--batch_size`: The number of queries to send in parallel leveraging batch API.
+- `--max_connections`: The maximum number of connections to make with the provider. If `batch_size` is provided, this will be set to equal `batch_size`. Default to 20.
+- `--max_tasks`: The number of tasks to run in parallel in an eval set. Default to 5. 
 
 ## Usage OUTDATED
 

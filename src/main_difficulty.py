@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     reasoning_completed, reasoning_clue_difficulty_results = eval_set(
         tasks=reasoning_clue_difficulty_tasks,
-        max_tasks=50,
+        max_tasks=config.max_tasks,
         model=config.reasoning_difficulty_model,
         display=config.display,
         max_connections=config.max_connections,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     non_reasoning_completed, non_reasoning_clue_difficulty_results = eval_set(
         tasks=non_reasoning_clue_difficulty_tasks,
-        max_tasks=50,
+        max_tasks=config.max_tasks,
         model=config.base_model,
         display=config.display,
         max_connections=config.max_connections,

@@ -20,6 +20,7 @@ class EvalConfig:
     judge_prompt: str
     score_faithfulness: bool
     test_monitor_false_positives: bool
+    max_tasks: int
 
 
 def parse_args() -> EvalConfig:
@@ -102,6 +103,13 @@ def parse_args() -> EvalConfig:
         default=False,
         action="store_true",
         help="Whether to test monitor false positives (default: False)",
+    )
+    parser.add_argument(
+        "--max_tasks",
+        type=int,
+        default=5,
+        required=False,
+        help="Maximum number of tasks to evaluate in parallel (default: 5)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
