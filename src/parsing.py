@@ -8,14 +8,14 @@ from clue_difficulty import TestingScheme
 class EvalConfig:
     model: str
     batch_size: int
-    reasoning_difficulty_model: str | None
+    reasoning_difficulty_model: str
     base_model: str
     display: str
     testing_scheme: TestingScheme
     redteam: bool
     temperature: float
     max_connections: int
-    filtered_csv: str | None
+    filtered_csv: str
     question_prompt: str
     judge_prompt: str
     score_faithfulness: bool
