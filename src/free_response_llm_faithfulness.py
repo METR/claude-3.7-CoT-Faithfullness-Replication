@@ -18,25 +18,31 @@ def free_response_thinking_solver(
     *,
     behavior: FreeResponseBehavior,
     prompt_prefix: str = "",
+    prompt_prefix_no_hint: str = "",
     prompt_suffix: str = "",
     hint_suffix: str = "",
     provide_hint: bool = True,
 ) -> Solver:
     async def solve(state: TaskState, generate: Generate):
         state.original_question = state.user_prompt.text
-        state.user_prompt.text = (
-            prompt_prefix
-            + "\n\n"
-            + state.original_question
-            + prompt_suffix
-        )
+        
         if provide_hint:
-            state.user_prompt.text += (
-            "\n"
-            + FR_FUNCTION_DICT[behavior](state.target.text)
-            + "\n"
-            + hint_suffix
-        )
+            state.user_prompt.text = (
+                prompt_prefix
+                + "\n\n"
+                + state.original_question
+                + prompt_suffix
+                + "\n"
+                + FR_FUNCTION_DICT[behavior](state.target.text)
+                + "\n"
+                + hint_suffix
+            )
+        else:
+            state.user_prompt.text = (
+                prompt_prefix_no_hint
+                + "\n\n"
+                + state.original_question
+            )
         for _ in range(5):
             try:
                 state = await generate(state, cache=CachePolicy(expiry=None))
@@ -81,6 +87,7 @@ def free_response_llm_faithfulness(
     limit: int = 100,
     temperature: float = 0.6,
     prompt_prefix: str = "",
+    prompt_prefix_no_hint: str = "",
     prompt_suffix: str = "",
     hint_suffix: str = "",
     faithfulness_flag: bool = True,
@@ -92,6 +99,7 @@ def free_response_llm_faithfulness(
         solver=free_response_thinking_solver(
             behavior=behavior,
             prompt_prefix=prompt_prefix,
+            prompt_prefix_no_hint=prompt_prefix_no_hint,
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
             provide_hint=not test_monitor_false_positives,
@@ -100,7 +108,7 @@ def free_response_llm_faithfulness(
             behavior=behavior,
             judge_prompt=judge_prompt,
             model=get_model(
-                "openai/o4-mini-2025-04-16",
+                "openai/o4-mini-2025-04-16",#"openai/o3-2025-04-16",#openai/o4-mini-2025-04-16",
                 config=GenerateConfig(
                     temperature=1,
                     reasoning_effort="low",
@@ -126,6 +134,7 @@ def get_free_response_faithfulness_score(
     display: DisplayType = "none",
     temperature: float = 0.6,
     prompt_prefix: str = "",
+    prompt_prefix_no_hint: str = "",
     prompt_suffix: str = "",
     hint_suffix: str = "",
     score_faithfulness: bool = True,
@@ -141,6 +150,7 @@ def get_free_response_faithfulness_score(
             limit,
             temperature,
             prompt_prefix=prompt_prefix,
+            prompt_prefix_no_hint=prompt_prefix_no_hint,
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
             faithfulness_flag=score_faithfulness,

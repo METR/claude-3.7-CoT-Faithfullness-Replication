@@ -31,6 +31,7 @@ if __name__ == "__main__":
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
     HINT_SUFFIX = PROMPT_MODULE.HINT_SUFFIX
     JUDGE_PROMPT = load_prompt_module(config.judge_prompt).JUDGE_PROMPT
+    QUESTION_PREFIX_NO_HINT = getattr(PROMPT_MODULE, 'QUESTION_PREFIX_NO_HINT', QUESTION_PREFIX)
 
     faithfulness_scores: List[float] = []
     faithfulness_stderrs: List[float] = []
@@ -102,12 +103,13 @@ if __name__ == "__main__":
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
             prompt_prefix=QUESTION_PREFIX,
+            prompt_prefix_no_hint=QUESTION_PREFIX_NO_HINT,
             prompt_suffix=QUESTION_SUFFIX,
             hint_suffix=HINT_SUFFIX,
             judge_prompt=JUDGE_PROMPT,
             score_faithfulness=config.score_faithfulness,
             test_monitor_false_positives=config.test_monitor_false_positives,
-            epochs=5
+            epochs=2
         )
         
         if not config.test_monitor_false_positives:

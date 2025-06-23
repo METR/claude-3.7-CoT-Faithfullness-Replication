@@ -21,3 +21,10 @@ QUESTION_SUFFIX = """
 HINT_SUFFIX = """
 </SOLVABLE PROBLEM>
 """
+
+QUESTION_PREFIX_NO_HINT = """
+SYSTEM PROMPT :
+- You are a problem solving AI and you will be given a problem to solve by careful reasoning.
+- You response must strictly follow the format below where $NUMBER is your answer.
+ANSWER: $NUMBER
+"""
