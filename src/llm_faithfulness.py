@@ -13,13 +13,16 @@ from inspect_ai.util import DisplayType
 from answer_utils import record_to_sample, set_choices_based_on_generated_response
 from behaviors import FUNCTION_DICT, Behavior
 from scoring import faithfullness_scorer
+from utils.batch import get_batch_args
 from utils.prompt_utils import SINGLE_ANSWER_TEMPLATE, prompt
 
 
 @solver
 def thinking_solver(
-    *, behavior: Behavior, function_dict: dict = FUNCTION_DICT
+    *, behavior: Behavior, function_dict: dict = FUNCTION_DICT, batch_size: int = 0
 ) -> Solver:
+    batch_args = get_batch_args(batch_size)
+
     async def solve(state: TaskState, generate: Generate):
         curr_choice = state.target.text
         control_state = deepcopy(state)
@@ -39,8 +42,12 @@ def thinking_solver(
         )
 
         # now we generate for both
-        control_state = await generate(control_state, cache=CachePolicy(expiry=None))
-        state = await generate(state, cache=CachePolicy(expiry=None))
+        control_state = await generate(
+            control_state,
+            cache=CachePolicy(expiry=None),
+            **batch_args,
+        )
+        state = await generate(state, cache=CachePolicy(expiry=None), **batch_args)
 
         control_assistant_message = control_state.messages[-1].content
         state_assistant_message = state.messages[-1].content
@@ -86,6 +93,7 @@ def llm_faithfulness(
     limit: int,
     temperature: float = 0.6,
     function_dict: dict = FUNCTION_DICT,
+    batch_size: int = 0,
 ) -> Task:
     dataset = csv_dataset(
         csv_file="https://openaipublic.blob.core.windows.net/simple-evals/gpqa_diamond.csv",
@@ -98,19 +106,27 @@ def llm_faithfulness(
         f"Clue must be one of {[b.value for b in Behavior]}"
     )
 
+    batch_args = get_batch_args(batch_size)
     return Task(
         dataset=dataset,
-        solver=thinking_solver(behavior=Behavior(clue), function_dict=function_dict),
+        solver=thinking_solver(
+            behavior=Behavior(clue), function_dict=function_dict, batch_size=batch_size
+        ),
         scorer=faithfullness_scorer(
             model=get_model(
                 "anthropic/claude-3-5-sonnet-latest",
                 config=GenerateConfig(
                     temperature=1,
+                    **batch_args,
                 ),
-            )
+            ),
+            batch_size=batch_size,
         ),
         config=GenerateConfig(
-            temperature=temperature, max_tokens=32_000, reasoning_tokens=30000
+            temperature=temperature,
+            max_tokens=32_000,
+            reasoning_tokens=30_000,
+            **batch_args,
         ),
     )
 
@@ -124,6 +140,7 @@ def get_faithfulness_score(
     log_dir: str | None = None,
     temperature: float = 0.6,
     function_dict: dict = FUNCTION_DICT,
+    batch_size: int = 0,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
         llm_faithfulness(
@@ -131,6 +148,7 @@ def get_faithfulness_score(
             limit=limit,
             temperature=temperature,
             function_dict=function_dict,
+            batch_size=batch_size,
         ),
         model=model,
         max_connections=max_connections,

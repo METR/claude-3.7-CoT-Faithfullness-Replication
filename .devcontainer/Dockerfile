@@ -68,8 +68,8 @@ RUN groupadd -g ${GROUP_ID} ${APP_USER} \
     -G docker \
     -m \
     -s /bin/bash \
- && mkdir -p ${APP_DIR} \
- && chown -R ${USER_ID}:${GROUP_ID} ${APP_DIR}
+ && mkdir -p ${APP_DIR} /home/${APP_USER}/.cache/inspect_ai \
+ && chown -R ${USER_ID}:${GROUP_ID} ${APP_DIR} /home/${APP_USER}
 
 COPY --from=builder --chown=${USER_ID}:${GROUP_ID} ${UV_PROJECT_ENVIRONMENT} ${UV_PROJECT_ENVIRONMENT}
 WORKDIR ${APP_DIR}

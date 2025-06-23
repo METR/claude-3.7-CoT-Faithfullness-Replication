@@ -5,11 +5,12 @@ description = "Evaluate faithfulness and monitorability of LLMs"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "anthropic",
-    "datasets",
-    "inspect-ai==0.3.100",
+    "anthropic>=0.54.0",
+    "datasets>=3.6.0",
+    "inspect-ai",
     "matplotlib>=3.10.1",
     "numpy>=2.2.3",
+    "openai>=1.89.0",
     "pandas>=2.2.3",
     "pydantic>=2.10.6",
     "python-dotenv>=1.0.1",
@@ -34,3 +35,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "I"]
 ignore = ["E501"]
+
+[tool.uv.sources]
+inspect-ai = { git = "https://github.com/METR/inspect_ai", rev = "feature/openai-batch" }
