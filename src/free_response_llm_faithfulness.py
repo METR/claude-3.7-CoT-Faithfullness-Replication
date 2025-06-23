@@ -170,6 +170,10 @@ def get_free_response_faithfulness_score(
         res[0].results.scores[0].metrics["acknowledged_clue_count"].value
     )
     take_hints_count = res[0].results.scores[0].metrics["take_hints_count"].value
+    judge_needed_but_not_completed_count = (
+        res[0].results.scores[0].metrics["judge_needed_but_not_completed"].value
+    )
+    completed_samples -= judge_needed_but_not_completed_count # remove the samples that were not completed because the judge was needed but not completed
     p_acknowledged_clue = (
         acknowledged_clue_count / take_hints_count if take_hints_count > 0 else None
     )
