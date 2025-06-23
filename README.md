@@ -4,6 +4,19 @@ This is an evaluation designed to test under what circumstances LLMs' CoTs might
 
 ## Usage
 
+To collect data on clue difficulty:
+```bash
+python src/main_difficulty.py
+```
+
+Args relevant to this script:
+- `--model`: The model to test faithfulness on (default: `anthropic/claude-3-7-sonnet-latest`)
+- `--base_model`: The model to test difficulty without reasoning (default: `anthropic/claude-3-7-sonnet-latest`) 
+- `--temperature`: The model temperature when getting difficulty and faithfulness. Default to 0.6. Temperature doesn't affect claude extended thinking mode.
+- `--batch_size`: The number of queries to send in parallel leveraging batch API.
+
+## Usage OUTDATED
+
 The entry point is `src/main.py`.
 
 ```bash
