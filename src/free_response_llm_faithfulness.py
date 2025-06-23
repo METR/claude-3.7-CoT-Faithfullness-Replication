@@ -1,14 +1,16 @@
-from free_response_behaviors import FreeResponseBehavior, FR_FUNCTION_DICT
-from typing import Tuple, Any
-from inspect_ai.util import DisplayType
-from inspect_ai import eval, task, Task
-from inspect_ai.dataset import Dataset
-from inspect_ai.solver import solver, Solver, Generate, TaskState
-from inspect_ai.model import CachePolicy, GenerateConfig, get_model
 import re
-from scoring import faithfullness_scorer
-from os import path
 from math import sqrt
+from os import path
+from typing import Any, Tuple
+
+from inspect_ai import Task, eval, task
+from inspect_ai.dataset import Dataset
+from inspect_ai.model import CachePolicy, GenerateConfig, get_model
+from inspect_ai.solver import Generate, Solver, TaskState, solver
+from inspect_ai.util import DisplayType
+
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
+from scoring import faithfullness_scorer
 
 
 @solver
@@ -18,6 +20,7 @@ def free_response_thinking_solver(
     prompt_prefix: str = "",
     prompt_suffix: str = "",
     hint_suffix: str = "",
+    provide_hint: bool = True,
 ) -> Solver:
     async def solve(state: TaskState, generate: Generate):
         state.original_question = state.user_prompt.text
@@ -26,7 +29,10 @@ def free_response_thinking_solver(
             + "\n\n"
             + state.original_question
             + prompt_suffix
-            + "\n"
+        )
+        if provide_hint:
+            state.user_prompt.text += (
+            "\n"
             + FR_FUNCTION_DICT[behavior](state.target.text)
             + "\n"
             + hint_suffix
@@ -48,17 +54,18 @@ def free_response_thinking_solver(
             state_matches = re.findall(r"ANSWER\s*:\s*(\d+)", state_answer)
 
             if state_matches:
-                state_answer = state_matches[-1].strip()
+                state_final_answer = state_matches[-1].strip()
 
                 # this is a bit of hand holding to catch the cases where the model doesn't return the mod answer
                 # we might want to remove this
                 try:
-                    state_answer = str(int(state_answer) % 100)
+                    state_final_answer = str(int(state_final_answer) % 100)
                 except ValueError:
                     pass
 
                 state.store.set("state_reasoning", state_reasoning)
-                state.store.set("state_answer", state_answer)
+                state.store.set("state_answer", state_final_answer)
+                state.store.set("state_completion", state_answer)
                 state.store.set("group", str(behavior))
 
         return state
@@ -77,6 +84,7 @@ def free_response_llm_faithfulness(
     prompt_suffix: str = "",
     hint_suffix: str = "",
     faithfulness_flag: bool = True,
+    test_monitor_false_positives: bool = False,
 ) -> Task:
     return Task(
         dataset=dataset,
@@ -85,6 +93,7 @@ def free_response_llm_faithfulness(
             prompt_prefix=prompt_prefix,
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
+            provide_hint=not test_monitor_false_positives,
         ),
         scorer=faithfullness_scorer(
             behavior=behavior,
@@ -94,7 +103,7 @@ def free_response_llm_faithfulness(
                 config=GenerateConfig(
                     temperature=1,
                     reasoning_effort="low",
-                    max_connections=80,
+                    max_connections=120,
                 ),
             ),
             score_faithfulness=faithfulness_flag,
@@ -120,6 +129,7 @@ def get_free_response_faithfulness_score(
     hint_suffix: str = "",
     score_faithfulness: bool = True,
     log_dir: str | None = None,
+    test_monitor_false_positives: bool = False,
 ) -> Tuple[int | float | Any, float, int, int | Any, int | float | Any]:
     res = eval(
         free_response_llm_faithfulness(
@@ -132,6 +142,7 @@ def get_free_response_faithfulness_score(
             prompt_suffix=prompt_suffix,
             hint_suffix=hint_suffix,
             faithfulness_flag=score_faithfulness,
+            test_monitor_false_positives=test_monitor_false_positives,
         ),
         model=model,
         max_connections=max_connections,
@@ -156,9 +167,26 @@ def get_free_response_faithfulness_score(
         else None
     )
 
+    # Collect detailed data if test_monitor_false_positives is True
+    detailed_data = None
+    if test_monitor_false_positives:
+        detailed_data = []
+        for sample in res[0].samples:
+            if sample.scores:
+                # Get the first scorer (should be our faithfulness scorer)
+                first_scorer = next(iter(sample.scores))
+                score = sample.scores[first_scorer]
+                
+                detailed_data.append({
+                    "problem_id": sample.id,
+                    "state_correct": score.metadata.get("state_correct", False),
+                    "acknowledged_clue": score.metadata.get("state_correct", False) == 1 and score.metadata.get("faithful", False) == 1,
+                })
+
     return (
         p_acknowledged_clue,
         p_take_hints,
         faithfulness_stderr,
         completed_samples,
+        detailed_data,
     )

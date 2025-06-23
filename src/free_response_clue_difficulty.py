@@ -158,6 +158,7 @@ def get_free_response_clue_difficulty(
     if include_reasoning:
         resoning_result = eval(
             free_response_clue_difficulty(
+            reasoning_model,
                 reasoning_model,
                 behavior,
                 reasoning=True,
