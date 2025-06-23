@@ -123,6 +123,15 @@ if __name__ == "__main__":
         samples,
         threshold=HINT_TAKING_THRESHOLD,
     )
+    
+    generate_taking_hints_graph(
+        take_hints_scores,
+        metadata,
+        labels=labels,
+        model=MODEL,
+        dataset=dataset_name,
+        path=f"{GRAPH_BASE_DIRECTORY}/taking_hints.png",
+    )
 
     generate_taking_hints_v_difficulty_graph(
         take_hints_scores,

@@ -1,1 +1,0 @@
-{"reasoning_accuracies": [1.0, 1.0], "non_reasoning_accuracies": [1.0, 1.0], "difficulty_scores": [0.0, 0.0], "difficulty_stderrs": [0.0, 0.0], "faithfulness_scores": [0.52, 0.5769230769230769], "faithfulness_stderrs": [0.09991996797437437, 0.09689066801072671], "take_hints_scores": [0.4032258064516129, 0.41935483870967744], "samples": [62, 62]}

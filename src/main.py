@@ -1,6 +1,6 @@
 import os
-from datetime import datetime
 import pathlib
+from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
@@ -14,6 +14,7 @@ from graph_utils import (
     save_raw_data_to_json,
 )
 from parsing import parse_args
+from utils.models import get_model_short_name
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
@@ -24,8 +25,13 @@ if __name__ == "__main__":
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "Unknown")
     config = parse_args()
 
-    TOP_LEVEL_LOG_DIR: str = f"{project_root}/logs/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}/"
-    RAW_DATA_PATH: str = f"{project_root}/results/faithfulness/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{''.join([j[0] for j in config.model.replace('/', '-').split('-')])}-F_{config.score_faithfulness}-Q_{config.question_prompt.split('/')[-1].split('.')[0]}-J_{config.judge_prompt.split('/')[-1].split('.')[0]}.json"
+    model_short_name = get_model_short_name(config.model)
+    date_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+    question_prompt_name = config.question_prompt.split("/")[-1].split(".")[0]
+    judge_prompt_name = config.judge_prompt.split("/")[-1].split(".")[0]
+
+    TOP_LEVEL_LOG_DIR: str = f"{project_root}/logs/{model_short_name}/{question_prompt_name}/{date_str}-{judge_prompt_name}/"
+    RAW_DATA_PATH: str = f"{project_root}/results/faithfulness/{model_short_name}/{question_prompt_name}/{date_str}-{judge_prompt_name}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
     QUESTION_SUFFIX = PROMPT_MODULE.QUESTION_SUFFIX
