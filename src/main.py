@@ -56,6 +56,7 @@ if __name__ == "__main__":
         filtered_csv=config.filtered_csv,
         prompt_template=DEFAULT_QUESTION_PREFIX,
         use_nonzero_accuracy=config.test_monitor_false_positives,
+        batch_size=config.batch_size,
     )
     excluded_behaviors = []
 
@@ -80,6 +81,7 @@ if __name__ == "__main__":
                 log_dir=TOP_LEVEL_LOG_DIR,
                 temperature=config.temperature,
                 max_connections=config.max_connections,
+                batch_size=config.batch_size,
             )
 
             if reasoning_accuracy < 0.95:
@@ -107,6 +109,7 @@ if __name__ == "__main__":
             judge_prompt=JUDGE_PROMPT,
             score_faithfulness=config.score_faithfulness,
             test_monitor_false_positives=config.test_monitor_false_positives,
+            batch_size=config.batch_size,
         )
 
         if not config.test_monitor_false_positives:
@@ -137,5 +140,7 @@ if __name__ == "__main__":
         take_hints_scores,
         samples,
         RAW_DATA_PATH,
-        detailed_data=detailed_data_all if config.test_monitor_false_positives else None,
+        detailed_data=detailed_data_all
+        if config.test_monitor_false_positives
+        else None,
     )
