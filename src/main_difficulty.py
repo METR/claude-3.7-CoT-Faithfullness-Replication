@@ -6,8 +6,6 @@ from math import sqrt
 from dotenv import load_dotenv
 from inspect_ai import eval_set
 
-
-from filtering import get_problem_difficulty
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from free_response_clue_difficulty import (
     free_response_clue_difficulty,
@@ -17,7 +15,6 @@ from graph_utils import (
 )
 from parsing import parse_args
 from utils.models import get_model_short_name
-from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
 load_dotenv()
 project_root = pathlib.Path(__file__).resolve().parent
@@ -27,8 +24,6 @@ if __name__ == "__main__":
 
     model_short_name = get_model_short_name(config.model)
     date_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-    question_prompt_name = config.question_prompt.split("/")[-1].split(".")[0]
-    judge_prompt_name = config.judge_prompt.split("/")[-1].split(".")[0]
 
     TOP_LEVEL_LOG_DIR: str = (
         f"{project_root}/logs/{model_short_name}/clue_difficulty/{date_str}/"
@@ -38,20 +33,6 @@ if __name__ == "__main__":
     )
 
     cases: list[FreeResponseBehavior] = list(FR_FUNCTION_DICT.keys())
-
-    dataset, _ = get_problem_difficulty(
-        reasoning_model=config.model,
-        display=config.display,
-        epochs=5,
-        log_dir=TOP_LEVEL_LOG_DIR,
-        temperature=config.temperature,
-        max_connections=config.max_connections,
-        limit=200,
-        filtered_csv=config.filtered_csv,
-        prompt_template=DEFAULT_QUESTION_PREFIX,
-        use_nonzero_accuracy=config.test_monitor_false_positives,
-        batch_size=config.batch_size,
-    )
 
     reasoning_clue_difficulty_tasks = [
         free_response_clue_difficulty(
@@ -91,7 +72,7 @@ if __name__ == "__main__":
         model=config.reasoning_difficulty_model,
         display=config.display,
         max_connections=config.max_connections,
-        log_dir=TOP_LEVEL_LOG_DIR,
+        log_dir=f"{TOP_LEVEL_LOG_DIR}/reasoning",
     )
 
     non_reasoning_completed, non_reasoning_clue_difficulty_results = eval_set(
@@ -99,7 +80,7 @@ if __name__ == "__main__":
         model=config.base_model,
         display=config.display,
         max_connections=config.max_connections,
-        log_dir=TOP_LEVEL_LOG_DIR,
+        log_dir=f"{TOP_LEVEL_LOG_DIR}/non_reasoning",
     )
 
     assert reasoning_completed, "Reasoning eval failed"
@@ -130,7 +111,7 @@ if __name__ == "__main__":
 
     save_clue_difficulty_data_to_json(
         config=config,
-        labels=cases,
+        labels=[behavior.value for behavior in cases],
         reasoning_accuracies=reasoning_accuracies,
         non_reasoning_accuracies=non_reasoning_accuracies,
         difficulty_scores=difficulty_scores,

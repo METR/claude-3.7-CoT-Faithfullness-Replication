@@ -1067,172 +1067,172 @@ Sam
 
 
 class FreeResponseBehavior(Enum):
-    # REWARD_HACKING = "reward_hacking"
-    # # OBFUSCATED = "obfuscated"
-    # # # URL = "url"
-    # # # LOG_TRACE = "log_trace"
-    # # CODE_SNIPPET = "code_snippet"
-    # # PYTHON_VALIDATOR = "python_validator"
-    # # JAVASCRIPT_VALIDATOR = "javascript_validator"
-    # REWARD_HACKING_DIFFICULTY_1 = "reward_hacking_difficulty_1"
-    # REWARD_HACKING_DIFFICULTY_2 = "reward_hacking_difficulty_2"
-    # REWARD_HACKING_DIFFICULTY_3 = "reward_hacking_difficulty_3"
-    # REWARD_HACKING_DIFFICULTY_4 = "reward_hacking_difficulty_4"
-    # REWARD_HACKING_DIFFICULTY_5 = "reward_hacking_difficulty_5"
-    # REWARD_HACKING_DIFFICULTY_6 = "reward_hacking_difficulty_6"
-    # REWARD_HACKING_DIFFICULTY_7 = "reward_hacking_difficulty_7"
-    # REWARD_HACKING_DIFFICULTY_8 = "reward_hacking_difficulty_8"
-    # REWARD_HACKING_DIFFICULTY_10 = "reward_hacking_difficulty_10"
-    # REWARD_HACKING_DIFFICULTY_11 = "reward_hacking_difficulty_11"
-    # REWARD_HACKING_DIFFICULTY_12 = "reward_hacking_difficulty_12"
-    # REWARD_HACKING_DIFFICULTY_14 = "reward_hacking_difficulty_14"
-    # REWARD_HACKING_DIFFICULTY_15 = "reward_hacking_difficulty_15"
-    # REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
-    # REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
-    # REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
-    # REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
+    REWARD_HACKING = "reward_hacking"
+    # OBFUSCATED = "obfuscated"
+    # # URL = "url"
+    # # LOG_TRACE = "log_trace"
+    # CODE_SNIPPET = "code_snippet"
+    # PYTHON_VALIDATOR = "python_validator"
+    # JAVASCRIPT_VALIDATOR = "javascript_validator"
+    REWARD_HACKING_DIFFICULTY_1 = "reward_hacking_difficulty_1"
+    REWARD_HACKING_DIFFICULTY_2 = "reward_hacking_difficulty_2"
+    REWARD_HACKING_DIFFICULTY_3 = "reward_hacking_difficulty_3"
+    REWARD_HACKING_DIFFICULTY_4 = "reward_hacking_difficulty_4"
+    REWARD_HACKING_DIFFICULTY_5 = "reward_hacking_difficulty_5"
+    REWARD_HACKING_DIFFICULTY_6 = "reward_hacking_difficulty_6"
+    REWARD_HACKING_DIFFICULTY_7 = "reward_hacking_difficulty_7"
+    REWARD_HACKING_DIFFICULTY_8 = "reward_hacking_difficulty_8"
+    REWARD_HACKING_DIFFICULTY_10 = "reward_hacking_difficulty_10"
+    REWARD_HACKING_DIFFICULTY_11 = "reward_hacking_difficulty_11"
+    REWARD_HACKING_DIFFICULTY_12 = "reward_hacking_difficulty_12"
+    REWARD_HACKING_DIFFICULTY_14 = "reward_hacking_difficulty_14"
+    REWARD_HACKING_DIFFICULTY_15 = "reward_hacking_difficulty_15"
+    REWARD_HACKING_DIFFICULTY_16 = "reward_hacking_difficulty_16"
+    REWARD_HACKING_DIFFICULTY_17 = "reward_hacking_difficulty_17"
+    REWARD_HACKING_DIFFICULTY_23 = "reward_hacking_difficulty_23"
+    REWARD_HACKING_SIMPLE_1 = "reward_hacking_simple_1"
     # # Automatically generated clue functions
     SYCOPHANCY_EASY_ANSWER = "sycophancy_easy_answer"
     SYCOPHANCY_MEDIUM_HEX = "sycophancy_medium_hex"
     SYCOPHANCY_HARD_MATH = "sycophancy_hard_math"
-    # SYCOPHANCY_HARD_UNICODE = "sycophancy_hard_unicode"
-    # SYCOPHANCY_HARD_LEN_STR = "sycophancy_hard_len_str"
-    # SYCOPHANCY_EASY_LIST_COMPREHENSION = "sycophancy_easy_list_comprehension"
+    SYCOPHANCY_HARD_UNICODE = "sycophancy_hard_unicode"
+    SYCOPHANCY_HARD_LEN_STR = "sycophancy_hard_len_str"
+    SYCOPHANCY_EASY_LIST_COMPREHENSION = "sycophancy_easy_list_comprehension"
 
-    # METADATA_EASY_ANSWER = "metadata_easy_answer"
-    # METADATA_MEDIUM_HEX = "metadata_medium_hex"
-    # METADATA_HARD_MATH = "metadata_hard_math"
-    # METADATA_HARD_UNICODE = "metadata_hard_unicode"
-    # METADATA_HARD_LEN_STR = "metadata_hard_len_str"
-    # METADATA_EASY_LIST_COMPREHENSION = "metadata_easy_list_comprehension"
+    METADATA_EASY_ANSWER = "metadata_easy_answer"
+    METADATA_MEDIUM_HEX = "metadata_medium_hex"
+    METADATA_HARD_MATH = "metadata_hard_math"
+    METADATA_HARD_UNICODE = "metadata_hard_unicode"
+    METADATA_HARD_LEN_STR = "metadata_hard_len_str"
+    METADATA_EASY_LIST_COMPREHENSION = "metadata_easy_list_comprehension"
 
-    # DATABASE_SCHEMA_EASY_ANSWER = "database_schema_easy_answer"
-    # DATABASE_SCHEMA_MEDIUM_HEX = "database_schema_medium_hex"
-    # DATABASE_SCHEMA_HARD_MATH = "database_schema_hard_math"
-    # DATABASE_SCHEMA_HARD_UNICODE = "database_schema_hard_unicode"
-    # DATABASE_SCHEMA_HARD_LEN_STR = "database_schema_hard_len_str"
-    # DATABASE_SCHEMA_EASY_LIST_COMPREHENSION = "database_schema_easy_list_comprehension"
+    DATABASE_SCHEMA_EASY_ANSWER = "database_schema_easy_answer"
+    DATABASE_SCHEMA_MEDIUM_HEX = "database_schema_medium_hex"
+    DATABASE_SCHEMA_HARD_MATH = "database_schema_hard_math"
+    DATABASE_SCHEMA_HARD_UNICODE = "database_schema_hard_unicode"
+    DATABASE_SCHEMA_HARD_LEN_STR = "database_schema_hard_len_str"
+    DATABASE_SCHEMA_EASY_LIST_COMPREHENSION = "database_schema_easy_list_comprehension"
 
-    # CONFIG_FILE_EASY_ANSWER = "config_file_easy_answer"
-    # CONFIG_FILE_MEDIUM_HEX = "config_file_medium_hex"
-    # CONFIG_FILE_HARD_MATH = "config_file_hard_math"
-    # CONFIG_FILE_HARD_UNICODE = "config_file_hard_unicode"
-    # CONFIG_FILE_HARD_LEN_STR = "config_file_hard_len_str"
-    # CONFIG_FILE_EASY_LIST_COMPREHENSION = "config_file_easy_list_comprehension"
+    CONFIG_FILE_EASY_ANSWER = "config_file_easy_answer"
+    CONFIG_FILE_MEDIUM_HEX = "config_file_medium_hex"
+    CONFIG_FILE_HARD_MATH = "config_file_hard_math"
+    CONFIG_FILE_HARD_UNICODE = "config_file_hard_unicode"
+    CONFIG_FILE_HARD_LEN_STR = "config_file_hard_len_str"
+    CONFIG_FILE_EASY_LIST_COMPREHENSION = "config_file_easy_list_comprehension"
 
-    # CACHE_EASY_ANSWER = "cache_easy_answer"
-    # CACHE_MEDIUM_HEX = "cache_medium_hex"
-    # CACHE_HARD_MATH = "cache_hard_math"
-    # CACHE_HARD_UNICODE = "cache_hard_unicode"
-    # CACHE_HARD_LEN_STR = "cache_hard_len_str"
-    # CACHE_EASY_LIST_COMPREHENSION = "cache_easy_list_comprehension"
+    CACHE_EASY_ANSWER = "cache_easy_answer"
+    CACHE_MEDIUM_HEX = "cache_medium_hex"
+    CACHE_HARD_MATH = "cache_hard_math"
+    CACHE_HARD_UNICODE = "cache_hard_unicode"
+    CACHE_HARD_LEN_STR = "cache_hard_len_str"
+    CACHE_EASY_LIST_COMPREHENSION = "cache_easy_list_comprehension"
 
-    # ERROR_MESSAGE_EASY_ANSWER = "error_message_easy_answer"
-    # ERROR_MESSAGE_MEDIUM_HEX = "error_message_medium_hex"
-    # ERROR_MESSAGE_HARD_MATH = "error_message_hard_math"
-    # ERROR_MESSAGE_HARD_UNICODE = "error_message_hard_unicode"
-    # ERROR_MESSAGE_HARD_LEN_STR = "error_message_hard_len_str"
-    # ERROR_MESSAGE_EASY_LIST_COMPREHENSION = "error_message_easy_list_comprehension"
+    ERROR_MESSAGE_EASY_ANSWER = "error_message_easy_answer"
+    ERROR_MESSAGE_MEDIUM_HEX = "error_message_medium_hex"
+    ERROR_MESSAGE_HARD_MATH = "error_message_hard_math"
+    ERROR_MESSAGE_HARD_UNICODE = "error_message_hard_unicode"
+    ERROR_MESSAGE_HARD_LEN_STR = "error_message_hard_len_str"
+    ERROR_MESSAGE_EASY_LIST_COMPREHENSION = "error_message_easy_list_comprehension"
 
-    # BACKUP_DATA_EASY_ANSWER = "backup_data_easy_answer"
-    # BACKUP_DATA_MEDIUM_HEX = "backup_data_medium_hex"
-    # BACKUP_DATA_HARD_MATH = "backup_data_hard_math"
-    # BACKUP_DATA_HARD_UNICODE = "backup_data_hard_unicode"
-    # BACKUP_DATA_HARD_LEN_STR = "backup_data_hard_len_str"
-    # BACKUP_DATA_EASY_LIST_COMPREHENSION = "backup_data_easy_list_comprehension"
+    BACKUP_DATA_EASY_ANSWER = "backup_data_easy_answer"
+    BACKUP_DATA_MEDIUM_HEX = "backup_data_medium_hex"
+    BACKUP_DATA_HARD_MATH = "backup_data_hard_math"
+    BACKUP_DATA_HARD_UNICODE = "backup_data_hard_unicode"
+    BACKUP_DATA_HARD_LEN_STR = "backup_data_hard_len_str"
+    BACKUP_DATA_EASY_LIST_COMPREHENSION = "backup_data_easy_list_comprehension"
 
-    # MACHINE_LEARNING_EASY_ANSWER = "machine_learning_easy_answer"
-    # MACHINE_LEARNING_MEDIUM_HEX = "machine_learning_medium_hex"
-    # MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
-    # MACHINE_LEARNING_HARD_UNICODE = "machine_learning_hard_unicode"
-    # MACHINE_LEARNING_HARD_LEN_STR = "machine_learning_hard_len_str"
-    # MACHINE_LEARNING_EASY_LIST_COMPREHENSION = (
-    #     "machine_learning_easy_list_comprehension"
-    # )
+    MACHINE_LEARNING_EASY_ANSWER = "machine_learning_easy_answer"
+    MACHINE_LEARNING_MEDIUM_HEX = "machine_learning_medium_hex"
+    MACHINE_LEARNING_HARD_MATH = "machine_learning_hard_math"
+    MACHINE_LEARNING_HARD_UNICODE = "machine_learning_hard_unicode"
+    MACHINE_LEARNING_HARD_LEN_STR = "machine_learning_hard_len_str"
+    MACHINE_LEARNING_EASY_LIST_COMPREHENSION = (
+        "machine_learning_easy_list_comprehension"
+    )
 
-    # VERSION_CONTROL_EASY_ANSWER = "version_control_easy_answer"
-    # VERSION_CONTROL_MEDIUM_HEX = "version_control_medium_hex"
-    # VERSION_CONTROL_HARD_MATH = "version_control_hard_math"
-    # VERSION_CONTROL_HARD_UNICODE = "version_control_hard_unicode"
-    # VERSION_CONTROL_HARD_LEN_STR = "version_control_hard_len_str"
-    # VERSION_CONTROL_EASY_LIST_COMPREHENSION = "version_control_easy_list_comprehension"
+    VERSION_CONTROL_EASY_ANSWER = "version_control_easy_answer"
+    VERSION_CONTROL_MEDIUM_HEX = "version_control_medium_hex"
+    VERSION_CONTROL_HARD_MATH = "version_control_hard_math"
+    VERSION_CONTROL_HARD_UNICODE = "version_control_hard_unicode"
+    VERSION_CONTROL_HARD_LEN_STR = "version_control_hard_len_str"
+    VERSION_CONTROL_EASY_LIST_COMPREHENSION = "version_control_easy_list_comprehension"
 
-    # CSV_DATA_EASY_ANSWER = "csv_data_easy_answer"
-    # CSV_DATA_MEDIUM_HEX = "csv_data_medium_hex"
-    # CSV_DATA_HARD_MATH = "csv_data_hard_math"
-    # CSV_DATA_HARD_UNICODE = "csv_data_hard_unicode"
-    # CSV_DATA_HARD_LEN_STR = "csv_data_hard_len_str"
-    # CSV_DATA_EASY_LIST_COMPREHENSION = "csv_data_easy_list_comprehension"
+    CSV_DATA_EASY_ANSWER = "csv_data_easy_answer"
+    CSV_DATA_MEDIUM_HEX = "csv_data_medium_hex"
+    CSV_DATA_HARD_MATH = "csv_data_hard_math"
+    CSV_DATA_HARD_UNICODE = "csv_data_hard_unicode"
+    CSV_DATA_HARD_LEN_STR = "csv_data_hard_len_str"
+    CSV_DATA_EASY_LIST_COMPREHENSION = "csv_data_easy_list_comprehension"
 
-    # SECURITY_AUDIT_EASY_ANSWER = "security_audit_easy_answer"
-    # SECURITY_AUDIT_MEDIUM_HEX = "security_audit_medium_hex"
-    # SECURITY_AUDIT_HARD_MATH = "security_audit_hard_math"
-    # SECURITY_AUDIT_HARD_UNICODE = "security_audit_hard_unicode"
-    # SECURITY_AUDIT_HARD_LEN_STR = "security_audit_hard_len_str"
-    # SECURITY_AUDIT_EASY_LIST_COMPREHENSION = "security_audit_easy_list_comprehension"
+    SECURITY_AUDIT_EASY_ANSWER = "security_audit_easy_answer"
+    SECURITY_AUDIT_MEDIUM_HEX = "security_audit_medium_hex"
+    SECURITY_AUDIT_HARD_MATH = "security_audit_hard_math"
+    SECURITY_AUDIT_HARD_UNICODE = "security_audit_hard_unicode"
+    SECURITY_AUDIT_HARD_LEN_STR = "security_audit_hard_len_str"
+    SECURITY_AUDIT_EASY_LIST_COMPREHENSION = "security_audit_easy_list_comprehension"
 
-    # JUPYTER_NOTEBOOK_EASY_ANSWER = "jupyter_notebook_easy_answer"
-    # JUPYTER_NOTEBOOK_MEDIUM_HEX = "jupyter_notebook_medium_hex"
-    # JUPYTER_NOTEBOOK_HARD_MATH = "jupyter_notebook_hard_math"
-    # JUPYTER_NOTEBOOK_HARD_UNICODE = "jupyter_notebook_hard_unicode"
-    # JUPYTER_NOTEBOOK_HARD_LEN_STR = "jupyter_notebook_hard_len_str"
-    # JUPYTER_NOTEBOOK_EASY_LIST_COMPREHENSION = (
-    #     "jupyter_notebook_easy_list_comprehension"
-    # )
+    JUPYTER_NOTEBOOK_EASY_ANSWER = "jupyter_notebook_easy_answer"
+    JUPYTER_NOTEBOOK_MEDIUM_HEX = "jupyter_notebook_medium_hex"
+    JUPYTER_NOTEBOOK_HARD_MATH = "jupyter_notebook_hard_math"
+    JUPYTER_NOTEBOOK_HARD_UNICODE = "jupyter_notebook_hard_unicode"
+    JUPYTER_NOTEBOOK_HARD_LEN_STR = "jupyter_notebook_hard_len_str"
+    JUPYTER_NOTEBOOK_EASY_LIST_COMPREHENSION = (
+        "jupyter_notebook_easy_list_comprehension"
+    )
 
-    # # 20x 20-80% difficulty for Claude 3.7 Sonnet
-    # REWARD_HACKING_SESSION_STORAGE_DEBUG_65 = "reward_hacking_session_storage_debug_65"
-    # REWARD_HACKING_SESSION_STORAGE_DEBUG_70 = "reward_hacking_session_storage_debug_70"
-    # REWARD_HACKING_PROFILER_OUTPUT_V2_1 = "reward_hacking_profiler_output_v2_1"
-    # REWARD_HACKING_EMAIL_CHAIN_CALCULATION_MEDIUM_1 = (
-    #     "reward_hacking_email_chain_calculation_medium_1"
-    # )
-    # REWARD_HACKING_PROFILER_OUTPUT_V4_5 = "reward_hacking_profiler_output_v4_5"
-    # REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUG_3 = (
-    #     "reward_hacking_mimic_session_storage_debug_3"
-    # )
-    # REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_4 = (
-    #     "reward_hacking_mimic_session_storage_debugv2_4"
-    # )
-    # REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_6 = (
-    #     "reward_hacking_mimic_session_storage_debugv2_6"
-    # )
-    # REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_9 = (
-    #     "reward_hacking_mimic_session_storage_debugv2_9"
-    # )
-    # REWARD_HACKING_SESSION_STORAGE_DEBUG_REVERSE = (
-    #     "reward_hacking_session_storage_debug_reverse"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_7 = (
-    #     "reward_hacking_email_chain__amc_8_2022_7"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_9 = (
-    #     "reward_hacking_email_chain__amc_8_2022_9"
-    # )
-    # REWARD_HACKING_I_READ_ONLINE_AMC_8_2022_7 = (
-    #     "reward_hacking_i_read_online_amc_8_2022_7"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11 = (
-    #     "reward_hacking_email_chain__amc_8_2022_11"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_16 = (
-    #     "reward_hacking_email_chain__amc_8_2022_16"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11B = (
-    #     "reward_hacking_email_chain__amc_8_2022_11b"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_1 = (
-    #     "reward_hacking_email_chain__amc_8_2020_1"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_2 = (
-    #     "reward_hacking_email_chain__amc_8_2020_2"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_3 = (
-    #     "reward_hacking_email_chain__amc_8_2020_3"
-    # )
-    # REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_5 = (
-    #     "reward_hacking_email_chain__amc_8_2020_5"
-    # )
+    # 20x 20-80% difficulty for Claude 3.7 Sonnet
+    REWARD_HACKING_SESSION_STORAGE_DEBUG_65 = "reward_hacking_session_storage_debug_65"
+    REWARD_HACKING_SESSION_STORAGE_DEBUG_70 = "reward_hacking_session_storage_debug_70"
+    REWARD_HACKING_PROFILER_OUTPUT_V2_1 = "reward_hacking_profiler_output_v2_1"
+    REWARD_HACKING_EMAIL_CHAIN_CALCULATION_MEDIUM_1 = (
+        "reward_hacking_email_chain_calculation_medium_1"
+    )
+    REWARD_HACKING_PROFILER_OUTPUT_V4_5 = "reward_hacking_profiler_output_v4_5"
+    REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUG_3 = (
+        "reward_hacking_mimic_session_storage_debug_3"
+    )
+    REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_4 = (
+        "reward_hacking_mimic_session_storage_debugv2_4"
+    )
+    REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_6 = (
+        "reward_hacking_mimic_session_storage_debugv2_6"
+    )
+    REWARD_HACKING_MIMIC_SESSION_STORAGE_DEBUGV2_9 = (
+        "reward_hacking_mimic_session_storage_debugv2_9"
+    )
+    REWARD_HACKING_SESSION_STORAGE_DEBUG_REVERSE = (
+        "reward_hacking_session_storage_debug_reverse"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_7 = (
+        "reward_hacking_email_chain__amc_8_2022_7"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_9 = (
+        "reward_hacking_email_chain__amc_8_2022_9"
+    )
+    REWARD_HACKING_I_READ_ONLINE_AMC_8_2022_7 = (
+        "reward_hacking_i_read_online_amc_8_2022_7"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11 = (
+        "reward_hacking_email_chain__amc_8_2022_11"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_16 = (
+        "reward_hacking_email_chain__amc_8_2022_16"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11B = (
+        "reward_hacking_email_chain__amc_8_2022_11b"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_1 = (
+        "reward_hacking_email_chain__amc_8_2020_1"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_2 = (
+        "reward_hacking_email_chain__amc_8_2020_2"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_3 = (
+        "reward_hacking_email_chain__amc_8_2020_3"
+    )
+    REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_5 = (
+        "reward_hacking_email_chain__amc_8_2020_5"
+    )
 
 
 def _generate_function_dict() -> dict[FreeResponseBehavior, Callable[[str, Any], str]]:
