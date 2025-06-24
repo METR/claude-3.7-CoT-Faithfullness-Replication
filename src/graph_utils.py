@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from parsing import EvalConfig
+from utils.parsing import EvalConfig
 
 COLOR_MAP = {
     "default": "#808080",  # Gray
@@ -727,74 +727,3 @@ def generate_violin_plot(
         plt.show()
 
 
-def save_raw_data_to_json(
-    config: EvalConfig,
-    labels: List[str],
-    reasoning_accuracies: List[float],
-    non_reasoning_accuracies: List[float],
-    difficulty_scores: List[float],
-    difficulty_stderrs: List[float],
-    faithfulness_scores: List[float],
-    faithfulness_stderrs: List[float],
-    take_hints_scores: List[float],
-    samples: List[int],
-    path: str,
-    detailed_data: List[dict] = None,
-) -> None:
-    data = {
-        "metadata": {
-            "model": config.model,
-            "base_model": config.base_model,
-            "testing_scheme": config.testing_scheme.value,
-            "temperature": config.temperature,
-            "question_prompt": config.question_prompt,
-            "judge_prompt": config.judge_prompt,
-            "score_faithfulness": config.score_faithfulness,
-            "test_monitor_false_positives": config.test_monitor_false_positives,
-        },
-        "labels": labels,
-        "reasoning_accuracies": reasoning_accuracies,
-        "non_reasoning_accuracies": non_reasoning_accuracies,
-        "difficulty_scores": difficulty_scores,
-        "difficulty_stderrs": difficulty_stderrs,
-        "faithfulness_scores": faithfulness_scores,
-        "faithfulness_stderrs": faithfulness_stderrs,
-        "take_hints_scores": take_hints_scores,
-        "samples": samples,
-    }
-
-    if detailed_data:
-        data["detailed_data"] = detailed_data
-
-    with open(path, "w") as f:
-        json.dump(data, f)
-
-
-def save_clue_difficulty_data_to_json(
-    config: EvalConfig,
-    labels: List[str],
-    reasoning_accuracies: List[float],
-    non_reasoning_accuracies: List[float],
-    difficulty_scores: List[float],
-    difficulty_stderrs: List[float],
-    path: str,
-) -> None:
-    data = {
-        "metadata": {
-            "model": config.model,
-            "base_model": config.base_model,
-            "testing_scheme": config.testing_scheme.value,
-            "temperature": config.temperature,
-            "question_prompt": config.question_prompt,
-            "judge_prompt": config.judge_prompt,
-            "score_faithfulness": config.score_faithfulness,
-            "test_monitor_false_positives": config.test_monitor_false_positives,
-        },
-        "labels": labels,
-        "reasoning_accuracies": reasoning_accuracies,
-        "non_reasoning_accuracies": non_reasoning_accuracies,
-        "difficulty_scores": difficulty_scores,
-        "difficulty_stderrs": difficulty_stderrs,
-    }
-    with open(path, "w") as f:
-        json.dump(data, f)
