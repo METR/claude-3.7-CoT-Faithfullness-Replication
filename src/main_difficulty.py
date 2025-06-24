@@ -5,14 +5,16 @@ from math import sqrt
 
 from dotenv import load_dotenv
 from inspect_ai import eval_set
+from inspect_ai.util import DisplayType
 
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from free_response_clue_difficulty import (
+    TestingScheme,
     free_response_clue_difficulty,
 )
-from parsing import parse_args
 from utils.file_utils import save_clue_difficulty_data_to_json
 from utils.models import get_model_short_name
+from utils.parsing import parse_args
 
 load_dotenv()
 project_root = pathlib.Path(__file__).resolve().parent
@@ -26,9 +28,9 @@ if __name__ == "__main__":
     TOP_LEVEL_LOG_DIR: str = (
         f"{project_root}/logs/{model_short_name}/clue_difficulty/{date_str}/"
     )
-    RAW_DATA_PATH: str = (
-        f"{project_root}/results/clue_difficulty/{model_short_name}/{date_str}.json"
-    )
+    RAW_DATA_DIR = f"{project_root}/results/clue_difficulty/{model_short_name}/"
+    os.makedirs(RAW_DATA_DIR, exist_ok=True)
+    RAW_DATA_PATH: str = f"{RAW_DATA_DIR}/{date_str}.json"
 
     cases: list[FreeResponseBehavior] = list(FR_FUNCTION_DICT.keys())
 
@@ -38,7 +40,7 @@ if __name__ == "__main__":
             behavior,
             reasoning=True,
             epochs=1,
-            testing_scheme=config.testing_scheme,
+            testing_scheme=TestingScheme(config.testing_scheme.value),
             temperature=config.temperature,
             batch_size=config.batch_size,
         )
@@ -51,7 +53,7 @@ if __name__ == "__main__":
             behavior,
             reasoning=False,
             epochs=1,
-            testing_scheme=config.testing_scheme,
+            testing_scheme=TestingScheme(config.testing_scheme.value),
             temperature=config.temperature,
             batch_size=config.batch_size,
         )
@@ -65,11 +67,14 @@ if __name__ == "__main__":
         f"len(non_reasoning_clue_difficulty_tasks): {len(non_reasoning_clue_difficulty_tasks)}"
     )
 
+    # Convert display string to DisplayType - DisplayType is a string literal type
+    display_type: DisplayType = config.display  # type: ignore
+
     reasoning_completed, reasoning_clue_difficulty_results = eval_set(
         tasks=reasoning_clue_difficulty_tasks,
         max_tasks=config.max_tasks,
         model=config.reasoning_difficulty_model,
-        display=config.display,
+        display=display_type,
         max_connections=config.max_connections,
         log_dir=f"{TOP_LEVEL_LOG_DIR}/reasoning",
     )
@@ -78,7 +83,7 @@ if __name__ == "__main__":
         tasks=non_reasoning_clue_difficulty_tasks,
         max_tasks=config.max_tasks,
         model=config.base_model,
-        display=config.display,
+        display=display_type,
         max_connections=config.max_connections,
         log_dir=f"{TOP_LEVEL_LOG_DIR}/non_reasoning",
     )
@@ -89,17 +94,21 @@ if __name__ == "__main__":
     reasoning_accuracies = [
         result.results.scores[0].metrics["accuracy"].value
         for result in reasoning_clue_difficulty_results
+        if result.results is not None
     ]
     non_reasoning_accuracies = [
         result.results.scores[0].metrics["accuracy"].value
         for result in non_reasoning_clue_difficulty_results
+        if result.results is not None
     ]
     difficulty_scores = [
         1 - non_reasoning_accuracy
         for non_reasoning_accuracy in non_reasoning_accuracies
     ]
     completed_samples = [
-        result.results.completed_samples for result in reasoning_clue_difficulty_results
+        result.results.completed_samples
+        for result in reasoning_clue_difficulty_results
+        if result.results is not None
     ]
 
     difficulty_stderrs = [
