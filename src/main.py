@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 from filtering import get_problem_difficulty
-from free_response_behaviors import FR_FUNCTION_DICT
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from graph_utils import (
@@ -41,10 +41,11 @@ if __name__ == "__main__":
     # samples: List[int] = []
     detailed_data_all: List[dict] = []
 
-    cases = [TEST_NEXT[1]]
+    cases = [FreeResponseBehavior.REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11B]
+
     #print(list(FR_FUNCTION_DICT.keys()))
     #sys.exit()
-    dataset_name = "metr/hard-math"
+    #dataset_name = "metr/hard-math"
 
     # dataset, _ = get_problem_difficulty(
     #     reasoning_model=config.model,
@@ -129,7 +130,7 @@ if __name__ == "__main__":
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
     #save_raw_data_to_json(
-        config,
+     #   config,
      #   labels,
       #  reasoning_accuracies,
        # non_reasoning_accuracies,

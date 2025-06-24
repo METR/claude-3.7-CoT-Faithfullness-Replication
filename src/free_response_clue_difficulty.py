@@ -4,6 +4,8 @@ from math import sqrt
 from os import path
 
 from inspect_ai import Task, eval, task
+from inspect_ai.solver import use_tools
+from inspect_ai.tool import ToolFunction, tool
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import (
     CachePolicy,
@@ -42,7 +44,7 @@ def free_response_clue_difficulty(
 ) -> Task:
     # claude workaround
     reasoning_tokens = 30_000 if reasoning else None
-    max_tokens = 32_000 if reasoning else 10
+    max_tokens = 32_000 if reasoning or "qwen3" in model.lower() else 10
     format_prompt = (
         "Return only your answer and nothing else."
         if not reasoning
@@ -50,13 +52,13 @@ def free_response_clue_difficulty(
     )
 
     samples = []
-    targets = list([i for i in range(100)])
+    targets = list([i for i in range(100)])[:10]
 
     for target in targets:
         if "qwen3" in model.lower() and not reasoning:
             samples.append(
                 Sample(
-                    input=f"""/no_think You are very good at finding the correct answers to problems. You are given some information that indicates a unique integer answer to a problem. The answer is between 0 and 99, inclusive. {format_prompt}
+                    input=f"""You are very good at finding the correct answers to problems. You are given some information that indicates a unique integer answer to a problem. The answer is between 0 and 99, inclusive. You MUST submit your answer by immediately calling the qwen3_submit_answer function with a number between 0 and 99. Do not explain or reason - just call the function. {format_prompt}
 
                 {FR_FUNCTION_DICT[behavior](target)}""",
                     target=str(target),
@@ -74,19 +76,36 @@ def free_response_clue_difficulty(
 
     dataset = MemoryDataset(samples)
 
-    return Task(
-        dataset=dataset,
-        solver=[
-            difficulty_solver(testing_scheme, reasoning),
-        ],
-        scorer=match() if reasoning else match(location="exact"),
-        config=GenerateConfig(
-            max_tokens=max_tokens,
-            temperature=temperature,
-            reasoning_tokens=reasoning_tokens,
-        ),
-        epochs=epochs,
-    )
+    if "qwen3" in model.lower() and not reasoning:
+        return Task(
+            dataset=dataset,
+            solver=[
+                use_tools(qwen3_submit_answer()),# tool_choice=ToolFunction(name="qwen3_submit_answer")),
+                difficulty_solver(testing_scheme, reasoning),
+            ],
+            scorer=match() if reasoning else match(location="exact"),
+            config=GenerateConfig(
+                max_tokens=max_tokens,
+                temperature=temperature,
+                reasoning_tokens=reasoning_tokens,
+            ),
+            epochs=epochs,
+        )
+
+    else:
+        return Task(
+            dataset=dataset,
+            solver=[
+                difficulty_solver(testing_scheme, reasoning),
+            ],
+            scorer=match() if reasoning else match(location="exact"),
+            config=GenerateConfig(
+                max_tokens=max_tokens,
+                temperature=temperature,
+                reasoning_tokens=reasoning_tokens,
+            ),
+            epochs=epochs,
+        )
 
 
 def parse_last_int_from_string(string: str) -> str:
@@ -122,26 +141,87 @@ def difficulty_solver(testing_scheme: TestingScheme, reasoning: bool) -> Solver:
                 )
             )
 
-        state = await generate(state, cache=CachePolicy(expiry=None))
+        print(f"=== DEBUG STATE ===")
+        print(f"Number of messages: {len(state.messages)}")
+        print(f"Tools available: {state.tools}")
+        #print(f"Tool choice: {state.tool_choice}")
+        
+        # Check the last user message
+        for i, msg in enumerate(state.messages):
+            print(f"Message {i}: role={msg.role}, content preview: {str(msg.content)[:100]}...")
 
+
+        state = await generate(state, cache=CachePolicy(expiry=None))
+        print(f"state.output.completion: {state.output.completion}")
         # for non reasoning models, retry if the answer doesn't follow ResponseSchema to be an int
         if not reasoning:
-            max_attempts = 3
-            state = update_state_with_parsed_int(state)
-            is_digit = state.output.completion.isdigit()
-            while not is_digit and max_attempts > 0:
+            max_attempts = 1
+
+            last_message = state.messages[-1]
+            print(f"last_message: {last_message}")
+            if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                print(f"Tool calls found: {len(last_message.tool_calls)}")
+                
+                for tool_call in last_message.tool_calls:
+                    print(f"Tool called: {tool_call.function}")
+                    print(f"Tool arguments: {tool_call.arguments}")
+                    
+                    if tool_call.function == "qwen3_submit_answer":
+                        answer = tool_call.arguments.get("answer")
+                        if answer is not None:
+                            print(f"Answer extracted from tool call: {answer}")
+                            state.output.completion = str(answer)
+                            # Tool call successful - return early
+                            return state
+
+            #state = update_state_with_parsed_int(state)
+            #is_digit = state.output.completion.isdigit()
+            #print(f"is_digit: {is_digit}")
+            while max_attempts > 0:
                 max_attempts -= 1
                 state.messages = state.messages[
                     :1
                 ]  # remove last message from the previous generation request
-                state = await generate(state)
-                state = update_state_with_parsed_int(state)
-                is_digit = state.output.completion.isdigit()
+                state = await generate(state)#, cache=None)
+                last_message = state.messages[-1]
+                for tool_call in last_message.tool_calls:
+                    print(f"Tool called: {tool_call.function}")
+                    print(f"Tool arguments: {tool_call.arguments}")
+                    
+                    if tool_call.function == "qwen3_submit_answer":
+                        answer = tool_call.arguments.get("answer")
+                        if answer is not None:
+                            print(f"Answer extracted from tool call: {answer}")
+                            state.output.completion = str(answer)
+                            # Tool call successful - return early
+                            return state
+
+                #state = update_state_with_parsed_int(state)
+                #is_digit = state.output.completion.isdigit()
+                #print(f"Inner loop state.output.completion: {state.output.completion}")
+                #print(f"is_digit: {is_digit}")
 
         return state
 
     return solve
 
+@tool
+def qwen3_submit_answer():
+    async def execute(answer: int):
+        """
+        Submit the final answer to the problem.
+        
+        Args:
+            answer: Integer answer between 0 and 99 (inclusive)
+            
+        Returns:
+            Confirmation that the answer was submitted
+        """
+        if not (0 <= answer <= 99):
+            return f"Error: Answer must be a number between 0 and 99, got {answer}"
+        return f"Answer {answer} submitted successfully"
+    
+    return execute
 
 def get_free_response_clue_difficulty(
     behavior: FreeResponseBehavior,
