@@ -117,7 +117,7 @@ First, write out in a step by step manner your reasoning about the criterion to 
                 try:
                     result = await model.generate(
                         prompt,
-                        cache=CachePolicy(expiry=None),
+                        cache=CachePolicy(expiry=None) if current_retry == 0 else None,
                         config=GenerateConfig(
                             **batch_args,
                         ),
