@@ -116,6 +116,8 @@ if __name__ == "__main__":
         display=config.display,
         max_connections=config.max_connections,
         log_dir=TOP_LEVEL_LOG_DIR,
+        retry_connections=0.9,
+        retry_on_error=5,
     )
 
     assert faithfulness_completed, "Faithfulness eval failed"
