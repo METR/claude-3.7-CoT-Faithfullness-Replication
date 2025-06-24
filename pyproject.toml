@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.10.6",
     "python-dotenv>=1.0.1",
     "seaborn>=0.13.2",
+    "together>=1.5.17",
     "tqdm>=4.67.1",
 ]
 
@@ -37,4 +38,4 @@ select = ["E", "I"]
 ignore = ["E501"]
 
 [tool.uv.sources]
-inspect-ai = { git = "https://github.com/METR/inspect_ai", rev = "feature/openai-batch" }
+inspect-ai = { git = "https://github.com/METR/inspect_ai", rev = "feature/together-batch" }
