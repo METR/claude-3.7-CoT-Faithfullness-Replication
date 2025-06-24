@@ -105,7 +105,6 @@ if __name__ == "__main__":
             behavior,
             model=config.model,
             max_connections=config.max_connections,
-            limit=100,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
