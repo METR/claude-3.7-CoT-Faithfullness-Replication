@@ -1,5 +1,6 @@
 import argparse
 import datetime
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -23,7 +24,7 @@ def graph_question_difficulties(input_path: str, model: str, output_path: str | 
     ax.spines["right"].set_visible(False)
 
     # Set font
-    plt.rcParams["font.family"] = "Montserrat"
+    # Using default font instead of Montserrat
 
     # Create histogram of accuracies (1-difficulty)
     plt.hist(
