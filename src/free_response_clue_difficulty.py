@@ -89,6 +89,7 @@ def free_response_clue_difficulty(
             **get_batch_args(batch_size),
         ),
         epochs=epochs,
+        name=f"{behavior.value}_{'reasoning' if reasoning else 'non_reasoning'}",
     )
 
 
