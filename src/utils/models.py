@@ -4,5 +4,5 @@ def get_model_short_name(model_name: str) -> str:
     elif "Qwen3" in model_name:
         return "Qwen3-235B"
     elif "claude-opus-4" in model_name:
-        return "Claude Opus"
+        return "Claude 4 Opus"
     return "Unknown Model"
