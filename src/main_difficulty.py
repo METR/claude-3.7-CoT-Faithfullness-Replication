@@ -10,10 +10,8 @@ from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from free_response_clue_difficulty import (
     free_response_clue_difficulty,
 )
-from graph_utils import (
-    save_clue_difficulty_data_to_json,
-)
 from parsing import parse_args
+from utils.file_utils import save_clue_difficulty_data_to_json
 from utils.models import get_model_short_name
 
 load_dotenv()
