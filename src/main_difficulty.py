@@ -29,7 +29,6 @@ if __name__ == "__main__":
         f"{project_root}/logs/{model_short_name}/clue_difficulty/{date_str}/"
     )
     RAW_DATA_DIR = f"{project_root}/results/clue_difficulty/{model_short_name}/"
-    os.makedirs(RAW_DATA_DIR, exist_ok=True)
     RAW_DATA_PATH: str = f"{RAW_DATA_DIR}/{date_str}.json"
 
     cases: list[FreeResponseBehavior] = list(FR_FUNCTION_DICT.keys())

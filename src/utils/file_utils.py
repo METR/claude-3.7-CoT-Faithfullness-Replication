@@ -65,6 +65,7 @@ def save_clue_difficulty_data_to_json(
         "difficulty_scores": difficulty_scores,
         "difficulty_stderrs": difficulty_stderrs,
     }
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f)
 
@@ -108,5 +109,6 @@ def save_raw_data_to_json(
     if detailed_data:
         data["detailed_data"] = detailed_data
 
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f)

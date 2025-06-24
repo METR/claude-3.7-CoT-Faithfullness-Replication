@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     TOP_LEVEL_LOG_DIR: str = f"{project_root}/logs/{model_short_name}/{question_prompt_name}/{date_str}-{judge_prompt_name}/"
     RAW_DATA_DIR = f"{project_root}/results/{'faithfulness' if config.score_faithfulness else 'monitorability'}/{model_short_name}/{question_prompt_name}/"
-    os.makedirs(RAW_DATA_DIR, exist_ok=True)
     RAW_DATA_PATH: str = f"{RAW_DATA_DIR}/{date_str}-{judge_prompt_name}.json"
     PROMPT_MODULE = load_prompt_module(config.question_prompt)
     QUESTION_PREFIX = PROMPT_MODULE.QUESTION_PREFIX
