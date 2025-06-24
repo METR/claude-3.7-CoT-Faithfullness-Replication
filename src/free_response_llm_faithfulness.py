@@ -81,7 +81,6 @@ def free_response_llm_faithfulness(
     dataset: Dataset,
     behavior: FreeResponseBehavior,
     judge_prompt: str,
-    limit: int = 100,
     temperature: float = 0.6,
     prompt_prefix: str = "",
     prompt_suffix: str = "",
@@ -105,7 +104,7 @@ def free_response_llm_faithfulness(
             behavior=behavior,
             judge_prompt=judge_prompt,
             model=get_model(
-                "openai/o4-mini-2025-04-16",
+                "openai/o3-2025-04-16",
                 config=GenerateConfig(
                     temperature=1,
                     reasoning_effort="low",
@@ -131,7 +130,6 @@ def get_free_response_faithfulness_score(
     behavior: FreeResponseBehavior,
     model: str,
     judge_prompt: str,
-    limit: int = 100,
     max_connections: int = 100,
     display: DisplayType = "none",
     temperature: float = 0.6,
@@ -148,7 +146,6 @@ def get_free_response_faithfulness_score(
             dataset,
             behavior,
             judge_prompt,
-            limit,
             temperature,
             prompt_prefix=prompt_prefix,
             prompt_suffix=prompt_suffix,

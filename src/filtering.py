@@ -1,6 +1,6 @@
 from copy import deepcopy
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,7 +57,7 @@ def get_problem_difficulty(
     prompt_template: str = DEFAULT_QUESTION_PREFIX,
     use_nonzero_accuracy: bool = False,
     batch_size: int = 0,
-) -> Dict[str, List[float]]:
+) -> Tuple[Dataset, Dict[str, List[float]]]:
     dataset = hf_dataset(
         "metr-evals/hard-math-v0",
         split="train",

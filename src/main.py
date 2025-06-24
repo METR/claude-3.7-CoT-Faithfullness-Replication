@@ -10,11 +10,9 @@ from filtering import get_problem_difficulty
 from free_response_behaviors import FR_FUNCTION_DICT
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
-from graph_utils import (
-    save_raw_data_to_json,
-)
-from parsing import parse_args
+from utils.file_utils import save_raw_data_to_json
 from utils.models import get_model_short_name
+from utils.parsing import parse_args
 from utils.prompt_utils import load_prompt_module
 from utils.question_prompts.default import DEFAULT_QUESTION_PREFIX
 
@@ -105,7 +103,6 @@ if __name__ == "__main__":
             behavior,
             model=config.model,
             max_connections=config.max_connections,
-            limit=100,
             display=config.display,
             log_dir=TOP_LEVEL_LOG_DIR,
             temperature=config.temperature,
