@@ -173,14 +173,14 @@ def get_free_response_faithfulness_score(
     judge_needed_but_not_completed_count = (
         res[0].results.scores[0].metrics["judge_needed_but_not_completed"].value
     )
-    completed_samples -= judge_needed_but_not_completed_count # remove the samples that were not completed because the judge was needed but not completed
+    take_hint_and_judge_completed_count = take_hints_count - judge_needed_but_not_completed_count
     p_acknowledged_clue = (
-        acknowledged_clue_count / take_hints_count if take_hints_count > 0 else None
+        acknowledged_clue_count / take_hint_and_judge_completed_count if take_hint_and_judge_completed_count > 0 else None
     )
     p_take_hints = take_hints_count / completed_samples if completed_samples > 0 else 0
     faithfulness_stderr = (
-        sqrt((p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hints_count))
-        if take_hints_count > 0
+        sqrt((p_acknowledged_clue) * (1 - p_acknowledged_clue) / (take_hint_and_judge_completed_count))
+        if take_hint_and_judge_completed_count > 0
         else None
     )
 
@@ -194,15 +194,16 @@ def get_free_response_faithfulness_score(
                 first_scorer = next(iter(sample.scores))
                 score = sample.scores[first_scorer]
 
-                detailed_data.append(
-                    {
-                        "problem_id": sample.id,
-                        "state_correct": score.metadata.get("state_correct", False),
-                        "acknowledged_clue": score.metadata.get("state_correct", False)
-                        == 1
-                        and score.metadata.get("faithful", False) == 1,
-                    }
-                )
+                if not score.metadata.get("judge_needed_but_not_completed", True):
+                    detailed_data.append(
+                        {
+                            "problem_id": sample.id,
+                            "state_correct": score.metadata.get("state_correct", False),
+                            "acknowledged_clue": score.metadata.get("state_correct", False)
+                            == 1
+                            and score.metadata.get("faithful", False) == 1,
+                        }
+                    )
 
     return (
         p_acknowledged_clue,
