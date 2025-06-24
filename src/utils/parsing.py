@@ -8,18 +8,19 @@ from clue_difficulty import TestingScheme
 class EvalConfig:
     model: str
     batch_size: int
-    reasoning_difficulty_model: str | None
+    reasoning_difficulty_model: str
     base_model: str
     display: str
     testing_scheme: TestingScheme
     redteam: bool
     temperature: float
     max_connections: int
-    filtered_csv: str | None
+    filtered_csv: str
     question_prompt: str
     judge_prompt: str
     score_faithfulness: bool
     test_monitor_false_positives: bool
+    max_tasks: int
 
 
 def parse_args() -> EvalConfig:
@@ -102,6 +103,13 @@ def parse_args() -> EvalConfig:
         default=False,
         action="store_true",
         help="Whether to test monitor false positives (default: False)",
+    )
+    parser.add_argument(
+        "--max_tasks",
+        type=int,
+        default=5,
+        required=False,
+        help="Maximum number of tasks to evaluate in parallel (default: 5)",
     )
     args = parser.parse_args()
     ret = EvalConfig(**vars(args))
