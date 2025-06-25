@@ -10,7 +10,10 @@ from inspect_ai.scorer import (
     Target,
     metric,
     scorer,
+    accuracy,
+    stderr,
 )
+from inspect_ai.solver import TaskState
 
 from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from utils.batch import get_batch_args
@@ -169,3 +172,40 @@ First, write out in a step by step manner your reasoning about the criterion to 
         )
 
     return score
+
+@metric
+def instruction_following() -> Metric:
+    def metric(scores: List[SampleScore]) -> float:
+        instruction_following_count = 0
+        for score in scores:
+            if score.score.metadata.get("is_number", False):
+                instruction_following_count += 1
+        return instruction_following_count / len(scores)
+
+    return metric
+
+
+@scorer(metrics=[accuracy(), stderr(), instruction_following()])
+def instruction_following_scorer() -> Scorer:
+    """Custom scorer that tracks whether the model follows instruction to output a number."""
+    
+    async def score(state: TaskState, target: Target) -> Score:
+        # Check if the completion is a number
+        completion = state.output.completion
+        is_number = completion.isdigit()
+        
+        # Use match for correctness
+        is_correct = completion == target.text
+        
+        return Score(
+            value="C" if is_correct else "I",
+            metadata={
+                "is_number": is_number,
+                "completion": completion,
+                "target": target.text,
+            },
+        )
+    
+    return score
+
+

@@ -117,6 +117,12 @@ if __name__ == "__main__":
         )
     ]
 
+    non_reasoning_instruction_following_fracs = [
+        result.results.scores[0].metrics["instruction_following"].value
+        for result in non_reasoning_clue_difficulty_results
+        if result.results is not None
+    ]
+
     save_clue_difficulty_data_to_json(
         config=config,
         labels=[behavior.value for behavior in cases],
@@ -124,5 +130,6 @@ if __name__ == "__main__":
         non_reasoning_accuracies=non_reasoning_accuracies,
         difficulty_scores=difficulty_scores,
         difficulty_stderrs=difficulty_stderrs,
+        non_reasoning_instruction_following_fracs=non_reasoning_instruction_following_fracs,
         path=RAW_DATA_PATH,
     )
