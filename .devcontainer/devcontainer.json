@@ -24,7 +24,6 @@
     }
   ],
   "runArgs": [
-    "--name=cot-faithfulness-dev-${localEnv:USER}${localEnv:USERNAME}",
     "--hostname=cot-faithfulness",
     "--dns-search=koi-moth.ts.net",
     "--privileged"
