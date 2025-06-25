@@ -46,6 +46,7 @@ def save_clue_difficulty_data_to_json(
     non_reasoning_accuracies: List[float],
     difficulty_scores: List[float],
     difficulty_stderrs: List[float],
+    non_reasoning_instruction_following_fracs: List[float],
     path: str,
 ) -> None:
     data = {
@@ -64,6 +65,7 @@ def save_clue_difficulty_data_to_json(
         "non_reasoning_accuracies": non_reasoning_accuracies,
         "difficulty_scores": difficulty_scores,
         "difficulty_stderrs": difficulty_stderrs,
+        "non_reasoning_instruction_following_fracs": non_reasoning_instruction_following_fracs,
     }
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
