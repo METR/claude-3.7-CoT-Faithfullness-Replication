@@ -257,9 +257,7 @@ def generate_propensity_graph(
                 fontsize=6,
             )
 
-    plt.xlabel(
-        "Clue Difficulty: 1 - success rate without chain of thought", fontsize=16
-    )
+    plt.xlabel("Clue Difficulty: 1 - P(solve clue without CoT)", fontsize=16)
 
     title_metric = (
         "Faithfulness"
