@@ -41,7 +41,10 @@ To generate graphs:
 python graph.py
 ```
 
-By default, this script goes through the faithfulness and monitorability folder under `results/` and create graphs for all the JSON files under the folder, excluding the ones under `subset/` folders. You can also pass in an arg `--file` with a result json path to only create the graph for that particular result file.
+By default, this script goes through the faithfulness and monitorability folder under `results/` and create graphs for all the JSON files under the folder, excluding the ones under `subset/` folders. 
+Args:
+`--file`: You can optionally pass in a result json path to only create the graph for that particular result file.
+`--hint_taking_threshold`: remove clues that has a hint taking rate below the threshold from the propensity graph. Default to 0.1
 
 
 ## Usage OUTDATED
