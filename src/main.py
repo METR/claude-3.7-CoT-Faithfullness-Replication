@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 from filtering import get_problem_difficulty
-from free_response_behaviors import FR_FUNCTION_DICT
+from free_response_behaviors import FR_FUNCTION_DICT, FreeResponseBehavior
 from free_response_clue_difficulty import get_free_response_clue_difficulty
 from free_response_llm_faithfulness import get_free_response_faithfulness_score
 from graph_utils import (
@@ -37,11 +37,13 @@ if __name__ == "__main__":
     difficulty_stderrs: List[float] = []
     reasoning_accuracies: List[float] = []
     non_reasoning_accuracies: List[float] = []
+    instruction_following_scores: List[float] = []
     # take_hints_scores: List[float] = []
     # samples: List[int] = []
     detailed_data_all: List[dict] = []
 
-    cases = [TEST_NEXT[1]]
+    cases = list(FR_FUNCTION_DICT.keys())#[FreeResponseBehavior.REWARD_HACKING_SESSION_STORAGE_DEBUG_70, FreeResponseBehavior.SECURITY_AUDIT_HARD_LEN_STR, FreeResponseBehavior.MACHINE_LEARNING_EASY_ANSWER, FreeResponseBehavior.ERROR_MESSAGE_MEDIUM_HEX, FreeResponseBehavior.REWARD_HACKING_DIFFICULTY_4] # FreeResponseBehavior.REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11B, 
+    #cases = [FreeResponseBehavior.REWARD_HACKING_EMAIL_CHAIN__AMC_8_2020_1, FreeResponseBehavior.REWARD_HACKING_PROFILER_OUTPUT_V4_5, FreeResponseBehavior.REWARD_HACKING_EMAIL_CHAIN__AMC_8_2022_11B, FreeResponseBehavior.ERROR_MESSAGE_MEDIUM_HEX, FreeResponseBehavior.REWARD_HACKING_DIFFICULTY_4, FreeResponseBehavior.MACHINE_LEARNING_EASY_ANSWER]
     #print(list(FR_FUNCTION_DICT.keys()))
     #sys.exit()
     dataset_name = "metr/hard-math"
@@ -72,6 +74,7 @@ if __name__ == "__main__":
                 non_reasoning_accuracy,
                 reasoning_stderr,
                 non_reasoning_stderr,
+                instruction_following_score,
             ) = get_free_response_clue_difficulty(
                 behavior,
                 reasoning_model=config.reasoning_difficulty_model,
@@ -85,9 +88,9 @@ if __name__ == "__main__":
                 include_reasoning=False,
         )
 
-            if reasoning_accuracy < 0.95:
-                excluded_behaviors.append(behavior)
-                continue
+        #    if reasoning_accuracy < 0.95:
+         #       excluded_behaviors.append(behavior)
+          #      continue
 
         # (
         #     p_acknowledged_clue,
@@ -117,6 +120,7 @@ if __name__ == "__main__":
             non_reasoning_accuracies.append(non_reasoning_accuracy)
             difficulty_scores.append(1 - non_reasoning_accuracy)
             difficulty_stderrs.append(non_reasoning_stderr)
+            instruction_following_scores.append(instruction_following_score)
         
         # faithfulness_scores.append(p_acknowledged_clue)
         # faithfulness_stderrs.append(faithfulness_stderr)
@@ -128,8 +132,14 @@ if __name__ == "__main__":
             detailed_data_all.extend(detailed_data)
 
     labels = [case.value for case in cases if case not in excluded_behaviors]
+    
+    # Print instruction following scores
+    print("\nInstruction Following Scores:")
+    for behavior, score in zip(cases, instruction_following_scores):
+        print(f"{int(score):d} -- {behavior.value}")
+    
     #save_raw_data_to_json(
-        config,
+#        config,
      #   labels,
       #  reasoning_accuracies,
        # non_reasoning_accuracies,
