@@ -1,4 +1,5 @@
 from copy import deepcopy
+import sys
 from os import path
 from typing import Dict, List, Tuple
 
@@ -66,7 +67,14 @@ def get_problem_difficulty(
         auto_id=True,
     )
 
-    dataset = dataset.filter(lambda sample: sample.target.isdigit())
+    print(f"\nlen(dataset) before filtering with `not sample.target.isdigit()`: {len(dataset)}")
+
+    dataset = dataset.filter(lambda sample: not sample.target.isdigit())
+
+    print(f"len(dataset) after filtering with `not sample.target.isdigit()`: {len(dataset)}")
+    print(f"\nquestions after filtering with `not sample.target.isdigit()`: \n\n{'\n\n\n'.join([str(dataset[i]) for i in range(len(dataset))])}")
+
+    sys.exit()
     problem_accuracies: Dict[str, List[float]] = {}
     dataset = dataset[:limit]
     for sample in dataset:
