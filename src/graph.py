@@ -12,6 +12,11 @@ from graph_utils import (
     generate_violin_plot,
 )
 
+SHOW_LABELS = False
+dataset_name = "metr/hard-math"
+BOXPLOT_LOWER_THRESHOLD = 0.2
+BOXPLOT_UPPER_THRESHOLD = 0.8
+
 
 def filter_lists_by_threshold(
     filter_list: List[float], *other_lists: List[Any], threshold: float = 0.1
@@ -90,54 +95,81 @@ def create_output_directory(
     return output_dir
 
 
-def process_json_file(
-    json_file_path: Path, output_dir: Path, hint_taking_threshold: float = 0.1
+(
+    filtered_take_hints_scores,
+    filtered_labels,
+    _,  # filtered_reasoning_accuracies (unused)
+    _,  # filtered_non_reasoning_accuracies (unused)
+    filtered_difficulty_scores,
+    filtered_difficulty_stderrs,
+    filtered_faithfulness_scores,
+    filtered_faithfulness_stderrs,
+    filtered_samples,
+) = filter_lists_by_threshold(
+    take_hints_scores,
+    labels,
+    reasoning_accuracies,
+    non_reasoning_accuracies,
+    difficulty_scores,
+    difficulty_stderrs,
+    faithfulness_scores,
+    faithfulness_stderrs,
+    samples,
+    threshold=hint_taking_threshold,
+)
+
+
+def validate_data(data: dict) -> None:
+    """
+    Validate the data from the JSON file.
+    """
+    assert "metadata" in data, f"No metadata found in {data}"
+    for key in [
+        "labels",
+        "reasoning_accuracies",
+        "non_reasoning_accuracies",
+        "difficulty_scores",
+        "difficulty_stderrs",
+        "faithfulness_scores",
+        "faithfulness_stderrs",
+        "take_hints_scores",
+        "samples",
+    ]:
+        assert key in data, f"No {key} found in {data}"
+
+
+def plot_json_file(
+    data: dict,
+    filtered_data: dict,
+    output_dir: Path,
+    hint_taking_threshold: float = 0.1,
 ) -> None:
     """
     Process a single JSON file and generate all graphs.
 
     Args:
-        json_file_path: Path to the JSON file to process
+        data: Data from the JSON file to process
+        filtered_data: Filtered data from the JSON file to process based on the hint taking threshold
         output_dir: Directory to save the graphs in
         hint_taking_threshold: Threshold for hint taking (default 0.1)
     """
-    print(f"Processing: {json_file_path}")
+    model = data["metadata"]["model"]
+    metadata = GraphMetadata(
+        threshold=hint_taking_threshold,
+        faithfulness=data["metadata"]["score_faithfulness"],
+        question_prompt=data["metadata"]["question_prompt"],
+        judge_prompt=data["metadata"]["judge_prompt"],
+    )
 
-    # Load data from JSON file
-    try:
-        with open(json_file_path, "r") as f:
-            data = json.load(f)
-    except Exception as e:
-        print(f"Error loading {json_file_path}: {e}")
-        return
-    # Extract metadata if available
-    if "metadata" in data:
-        model = data["metadata"]["model"]
-        metadata = GraphMetadata(
-            threshold=hint_taking_threshold,
-            faithfulness=data["metadata"]["score_faithfulness"],
-            question_prompt=data["metadata"]["question_prompt"],
-            judge_prompt=data["metadata"]["judge_prompt"],
-        )
-    else:
-        model = "unknown"
-        metadata = None
-        print(f"Warning: No metadata found in {json_file_path}")
-
-    # Extract data arrays
-    try:
-        labels = data["labels"]
-        reasoning_accuracies = data["reasoning_accuracies"]
-        non_reasoning_accuracies = data["non_reasoning_accuracies"]
-        difficulty_scores = data["difficulty_scores"]
-        difficulty_stderrs = data["difficulty_stderrs"]
-        faithfulness_scores = data["faithfulness_scores"]
-        faithfulness_stderrs = data["faithfulness_stderrs"]
-        take_hints_scores = data["take_hints_scores"]
-        samples = data["samples"]
-    except KeyError as e:
-        print(f"Error: Missing required data field {e} in {json_file_path}")
-        return
+    labels = data["labels"]
+    reasoning_accuracies = data["reasoning_accuracies"]
+    non_reasoning_accuracies = data["non_reasoning_accuracies"]
+    difficulty_scores = data["difficulty_scores"]
+    difficulty_stderrs = data["difficulty_stderrs"]
+    faithfulness_scores = data["faithfulness_scores"]
+    faithfulness_stderrs = data["faithfulness_stderrs"]
+    take_hints_scores = data["take_hints_scores"]
+    samples = data["samples"]
 
     # Create filename base without extension
     filename_base = json_file_path.stem
@@ -146,7 +178,6 @@ def process_json_file(
     file_output_dir = output_dir / filename_base
     file_output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"taking hints graph sample size: {len(take_hints_scores)}")
     # Generate taking hints graph
     generate_taking_hints_graph(
         take_hints_scores,
@@ -157,49 +188,21 @@ def process_json_file(
         path=str(output_dir / f"{filename_base}/taking_hints.png"),
     )
 
-    # Generate taking hints vs difficulty graph (only if metadata exists)
-    if metadata is not None:
-        generate_taking_hints_v_difficulty_graph(
-            take_hints_scores,
-            difficulty_scores,
-            metadata,
-            labels=labels,
-            model=model,
-            dataset=dataset_name,
-            show_labels=SHOW_LABELS,
-            path=str(output_dir / f"{filename_base}/taking_hints_v_difficulty.png"),
-        )
-
-    # Filter data by threshold for remaining graphs
-    (
-        filtered_take_hints_scores,
-        filtered_labels,
-        _,  # filtered_reasoning_accuracies (unused)
-        _,  # filtered_non_reasoning_accuracies (unused)
-        filtered_difficulty_scores,
-        filtered_difficulty_stderrs,
-        filtered_faithfulness_scores,
-        filtered_faithfulness_stderrs,
-        filtered_samples,
-    ) = filter_lists_by_threshold(
+    # Generate taking hints vs difficulty graph
+    generate_taking_hints_v_difficulty_graph(
         take_hints_scores,
-        labels,
-        reasoning_accuracies,
-        non_reasoning_accuracies,
         difficulty_scores,
-        difficulty_stderrs,
-        faithfulness_scores,
-        faithfulness_stderrs,
-        samples,
-        threshold=hint_taking_threshold,
+        metadata,
+        labels=labels,
+        model=model,
+        dataset=dataset_name,
+        show_labels=SHOW_LABELS,
+        path=str(output_dir / f"{filename_base}/taking_hints_v_difficulty.png"),
     )
-
-    print(f"propensity graph sample size: {len(filtered_faithfulness_scores)}")
 
     # Check if we have enough data after filtering
     if len(filtered_faithfulness_scores) == 0:
-        print(f"Warning: No data remaining after filtering for {json_file_path}")
-        return
+        raise Exception(f"No data remaining after filtering for {json_file_path}")
 
     # Generate propensity graph
     generate_propensity_graph(
@@ -254,6 +257,69 @@ def process_json_file(
     print(f"Completed processing: {json_file_path}")
 
 
+def process_single_file(
+    json_file_path: Path,
+    hint_taking_threshold: float = 0.1,
+    base_results_dir: Path = None,
+    output_base_dir: Path = None,
+):
+    """
+    Process a single JSON file and generate all graphs.
+    """
+    print(f"Processing single file: {json_file_path}")
+    # Load data from JSON file
+    try:
+        with open(json_file_path, "r") as f:
+            data = json.load(f)
+    except Exception as e:
+        raise Exception(f"Error loading {json_file_path}: {e}")
+
+    # Determine which base directory this file belongs to
+    if data["metadata"]["score_faithfulness"]:
+        base_input_dir = base_results_dir / "faithfulness"
+    else:
+        base_input_dir = base_results_dir / "monitorability"
+
+    # Create mirrored output directory structure
+    output_dir = create_output_directory(
+        json_file_path, base_input_dir, output_base_dir
+    )
+
+    # Process the JSON file
+    plot_json_file(json_file_path, output_dir, hint_taking_threshold)
+    print(f"\nCompleted! Processed 1 file.")
+
+
+def process_all_files(
+    base_results_dir: Path,
+    output_base_dir: Path,
+    hint_taking_threshold: float = 0.1,
+):
+    """
+    Process all JSON files in the faithfulness and monitorability directories.
+    """
+    total_files = 0
+    for input_dir_name in input_dirs:
+        input_dir_path = base_results_dir / input_dir_name
+
+        print(f"\nProcessing directory: {input_dir_name}")
+
+        # Find all JSON files in this directory
+        json_files = find_json_files(str(input_dir_path))
+        print(f"Found {len(json_files)} JSON files in {input_dir_name}")
+
+        for json_file in json_files:
+            # Create mirrored output directory structure
+            output_dir = create_output_directory(
+                json_file, input_dir_path, output_base_dir
+            )
+
+            # Process the JSON file
+            plot_json_file(json_file, output_dir, args.hint_taking_threshold)
+            total_files += 1
+    print(f"\nCompleted! Processed {total_files} JSON files total.")
+
+
 def main():
     """
     Main function to process all JSON files in faithfulness and monitorability directories.
@@ -277,86 +343,22 @@ def main():
         f"Starting graph generation with hint taking threshold: {args.hint_taking_threshold}"
     )
 
+    # Base directories - use current file's directory as anchor
+    script_dir = Path(__file__).parent
+    base_results_dir = script_dir / "results"
+    output_base_dir = script_dir / "results" / "graphs"
+
     # If a specific file is provided, process only that file
     if args.file:
-        json_file_path = Path(args.file)
-
-        if not json_file_path.exists():
-            print(f"Error: File {json_file_path} does not exist!")
-            return
-
-        if not json_file_path.suffix == ".json":
-            print(f"Error: File {json_file_path} is not a JSON file!")
-            return
-
-        print(f"Processing single file: {json_file_path}")
-
-        # Base directories - use current file's directory as anchor
-        script_dir = Path(__file__).parent
-        base_results_dir = script_dir / "results"
-        output_base_dir = script_dir / "results" / "graphs"
-
-        # Determine which base directory this file belongs to
-        if "faithfulness" in str(json_file_path):
-            base_input_dir = base_results_dir / "faithfulness"
-        elif "monitorability" in str(json_file_path):
-            base_input_dir = base_results_dir / "monitorability"
-        else:
-            # Default to faithfulness if can't determine
-            base_input_dir = base_results_dir / "faithfulness"
-            print(
-                f"Warning: Could not determine directory type for {json_file_path}, defaulting to faithfulness"
-            )
-
-        # Create mirrored output directory structure
-        output_dir = create_output_directory(
-            json_file_path, base_input_dir, output_base_dir
+        process_single_file(
+            args.file,
+            args.hint_taking_threshold,
+            base_results_dir,
+            output_base_dir,
         )
-
-        # Process the JSON file
-        process_json_file(json_file_path, output_dir, args.hint_taking_threshold)
-        print(f"\nCompleted! Processed 1 file.")
-
     else:
-        # Process all files (original behavior)
-        # Base directories - use current file's directory as anchor
-        script_dir = Path(__file__).parent
-        base_results_dir = script_dir / "results"
-        input_dirs = ["faithfulness", "monitorability"]
-        output_base_dir = script_dir / "results" / "graphs"
-
-        total_files = 0
-        for input_dir_name in input_dirs:
-            input_dir_path = base_results_dir / input_dir_name
-
-            if not input_dir_path.exists():
-                print(
-                    f"Warning: Directory {input_dir_path} does not exist, skipping..."
-                )
-                continue
-
-            print(f"\nProcessing directory: {input_dir_name}")
-
-            # Find all JSON files in this directory
-            json_files = find_json_files(str(input_dir_path))
-            print(f"Found {len(json_files)} JSON files in {input_dir_name}")
-
-            for json_file in json_files:
-                # Create mirrored output directory structure
-                output_dir = create_output_directory(
-                    json_file, input_dir_path, output_base_dir
-                )
-
-                # Process the JSON file
-                process_json_file(json_file, output_dir, args.hint_taking_threshold)
-                total_files += 1
-
-        print(f"\nCompleted! Processed {total_files} JSON files total.")
+        process_all_files(base_results_dir, output_base_dir, args.hint_taking_threshold)
 
 
 if __name__ == "__main__":
-    SHOW_LABELS = False
-    dataset_name = "metr/hard-math"
-    BOXPLOT_LOWER_THRESHOLD = 0.2
-    BOXPLOT_UPPER_THRESHOLD = 0.8
     main()
