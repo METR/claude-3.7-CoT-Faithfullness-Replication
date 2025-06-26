@@ -47,6 +47,49 @@ def filter_lists_by_threshold(
         return tuple([] for _ in range(len(other_lists) + 1))
 
 
+def filter_data_by_hint_taking_threshold(
+    data: dict,
+    threshold: float = 0.1,
+) -> dict:
+    """
+    Filter the data by the threshold.
+    """
+    filtered_data = {}
+    filtered_data["metadata"] = data["metadata"]
+    (
+        filtered_take_hints_scores,
+        filtered_labels,
+        filtered_reasoning_accuracies,
+        filtered_non_reasoning_accuracies,
+        filtered_difficulty_scores,
+        filtered_difficulty_stderrs,
+        filtered_faithfulness_scores,
+        filtered_faithfulness_stderrs,
+        filtered_samples,
+    ) = filter_lists_by_threshold(
+        data["take_hints_scores"],
+        data["labels"],
+        data["reasoning_accuracies"],
+        data["non_reasoning_accuracies"],
+        data["difficulty_scores"],
+        data["difficulty_stderrs"],
+        data["faithfulness_scores"],
+        data["faithfulness_stderrs"],
+        data["samples"],
+        threshold=threshold,
+    )
+    filtered_data["take_hints_scores"] = filtered_take_hints_scores
+    filtered_data["labels"] = filtered_labels
+    filtered_data["reasoning_accuracies"] = filtered_reasoning_accuracies
+    filtered_data["non_reasoning_accuracies"] = filtered_non_reasoning_accuracies
+    filtered_data["difficulty_scores"] = filtered_difficulty_scores
+    filtered_data["difficulty_stderrs"] = filtered_difficulty_stderrs
+    filtered_data["faithfulness_scores"] = filtered_faithfulness_scores
+    filtered_data["faithfulness_stderrs"] = filtered_faithfulness_stderrs
+    filtered_data["samples"] = filtered_samples
+    return filtered_data
+
+
 def find_json_files(base_directory: str) -> List[Path]:
     """
     Find all JSON files in the given directory, excluding those in 'subset' folders.
@@ -95,30 +138,6 @@ def create_output_directory(
     return output_dir
 
 
-(
-    filtered_take_hints_scores,
-    filtered_labels,
-    _,  # filtered_reasoning_accuracies (unused)
-    _,  # filtered_non_reasoning_accuracies (unused)
-    filtered_difficulty_scores,
-    filtered_difficulty_stderrs,
-    filtered_faithfulness_scores,
-    filtered_faithfulness_stderrs,
-    filtered_samples,
-) = filter_lists_by_threshold(
-    take_hints_scores,
-    labels,
-    reasoning_accuracies,
-    non_reasoning_accuracies,
-    difficulty_scores,
-    difficulty_stderrs,
-    faithfulness_scores,
-    faithfulness_stderrs,
-    samples,
-    threshold=hint_taking_threshold,
-)
-
-
 def validate_data(data: dict) -> None:
     """
     Validate the data from the JSON file.
@@ -142,6 +161,7 @@ def plot_json_file(
     data: dict,
     filtered_data: dict,
     output_dir: Path,
+    filename_base: str,
     hint_taking_threshold: float = 0.1,
 ) -> None:
     """
@@ -161,28 +181,11 @@ def plot_json_file(
         judge_prompt=data["metadata"]["judge_prompt"],
     )
 
-    labels = data["labels"]
-    reasoning_accuracies = data["reasoning_accuracies"]
-    non_reasoning_accuracies = data["non_reasoning_accuracies"]
-    difficulty_scores = data["difficulty_scores"]
-    difficulty_stderrs = data["difficulty_stderrs"]
-    faithfulness_scores = data["faithfulness_scores"]
-    faithfulness_stderrs = data["faithfulness_stderrs"]
-    take_hints_scores = data["take_hints_scores"]
-    samples = data["samples"]
-
-    # Create filename base without extension
-    filename_base = json_file_path.stem
-
-    # Create subdirectory for this JSON file's graphs
-    file_output_dir = output_dir / filename_base
-    file_output_dir.mkdir(parents=True, exist_ok=True)
-
     # Generate taking hints graph
     generate_taking_hints_graph(
-        take_hints_scores,
+        data["take_hints_scores"],
         metadata,
-        labels=labels,
+        labels=data["labels"],
         model=model,
         dataset=dataset_name,
         path=str(output_dir / f"{filename_base}/taking_hints.png"),
@@ -190,10 +193,10 @@ def plot_json_file(
 
     # Generate taking hints vs difficulty graph
     generate_taking_hints_v_difficulty_graph(
-        take_hints_scores,
-        difficulty_scores,
+        data["take_hints_scores"],
+        data["difficulty_scores"],
         metadata,
-        labels=labels,
+        labels=data["labels"],
         model=model,
         dataset=dataset_name,
         show_labels=SHOW_LABELS,
@@ -201,19 +204,19 @@ def plot_json_file(
     )
 
     # Check if we have enough data after filtering
-    if len(filtered_faithfulness_scores) == 0:
+    if len(filtered_data.keys()) == 0:
         raise Exception(f"No data remaining after filtering for {json_file_path}")
 
     # Generate propensity graph
     generate_propensity_graph(
-        filtered_faithfulness_scores,
-        filtered_faithfulness_stderrs,
-        filtered_difficulty_scores,
-        filtered_difficulty_stderrs,
+        filtered_data["faithfulness_scores"],
+        filtered_data["faithfulness_stderrs"],
+        filtered_data["difficulty_scores"],
+        filtered_data["difficulty_stderrs"],
         metadata,
-        labels=filtered_labels,
-        take_hints_scores=filtered_take_hints_scores,
-        samples=filtered_samples,
+        labels=filtered_data["labels"],
+        take_hints_scores=filtered_data["take_hints_scores"],
+        samples=filtered_data["samples"],
         model=model,
         dataset=dataset_name,
         show_labels=SHOW_LABELS,
@@ -227,8 +230,8 @@ def plot_json_file(
 
     # Generate boxplot
     generate_boxplot(
-        filtered_faithfulness_scores,
-        filtered_difficulty_scores,
+        filtered_data["faithfulness_scores"],
+        filtered_data["difficulty_scores"],
         metadata,
         BOXPLOT_LOWER_THRESHOLD,
         BOXPLOT_UPPER_THRESHOLD,
@@ -241,8 +244,8 @@ def plot_json_file(
 
     # Generate violin plot
     generate_violin_plot(
-        filtered_faithfulness_scores,
-        filtered_difficulty_scores,
+        filtered_data["faithfulness_scores"],
+        filtered_data["difficulty_scores"],
         BOXPLOT_LOWER_THRESHOLD,
         BOXPLOT_UPPER_THRESHOLD,
         metadata,
@@ -254,7 +257,7 @@ def plot_json_file(
         ),
     )
 
-    print(f"Completed processing: {json_file_path}")
+    print(f"Completed processing: {filename_base}")
 
 
 def process_single_file(
@@ -284,9 +287,11 @@ def process_single_file(
     output_dir = create_output_directory(
         json_file_path, base_input_dir, output_base_dir
     )
-
-    # Process the JSON file
-    plot_json_file(json_file_path, output_dir, hint_taking_threshold)
+    filename_base = json_file_path.stem
+    filtered_data = filter_data_by_hint_taking_threshold(data, hint_taking_threshold)
+    plot_json_file(
+        data, filtered_data, output_dir, filename_base, hint_taking_threshold
+    )
     print(f"\nCompleted! Processed 1 file.")
 
 
@@ -299,7 +304,7 @@ def process_all_files(
     Process all JSON files in the faithfulness and monitorability directories.
     """
     total_files = 0
-    for input_dir_name in input_dirs:
+    for input_dir_name in ["faithfulness", "monitorability"]:
         input_dir_path = base_results_dir / input_dir_name
 
         print(f"\nProcessing directory: {input_dir_name}")
@@ -310,12 +315,12 @@ def process_all_files(
 
         for json_file in json_files:
             # Create mirrored output directory structure
-            output_dir = create_output_directory(
-                json_file, input_dir_path, output_base_dir
+            process_single_file(
+                json_file,
+                hint_taking_threshold,
+                base_results_dir,
+                output_base_dir,
             )
-
-            # Process the JSON file
-            plot_json_file(json_file, output_dir, args.hint_taking_threshold)
             total_files += 1
     print(f"\nCompleted! Processed {total_files} JSON files total.")
 
@@ -351,7 +356,7 @@ def main():
     # If a specific file is provided, process only that file
     if args.file:
         process_single_file(
-            args.file,
+            Path(args.file),
             args.hint_taking_threshold,
             base_results_dir,
             output_base_dir,
