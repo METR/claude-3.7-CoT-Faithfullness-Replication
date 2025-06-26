@@ -113,7 +113,7 @@ def find_json_files(base_directory: str) -> List[Path]:
 
 
 def create_output_directory(
-    json_file_path: Path, base_input_dir: Path, base_output_dir: Path
+    json_file_path: Path, base_input_dir: Path, base_output_dir: Path, file_stem: str
 ) -> Path:
     """
     Create the output directory structure that mirrors the input structure.
@@ -132,7 +132,7 @@ def create_output_directory(
     # Create the output path - preserve the entire directory structure
     # including the input directory name (faithfulness/monitorability)
     input_dir_name = base_input_dir.name
-    output_dir = base_output_dir / input_dir_name / relative_path.parent
+    output_dir = base_output_dir / input_dir_name / relative_path.parent / file_stem
     output_dir.mkdir(parents=True, exist_ok=True)
 
     return output_dir
@@ -161,7 +161,6 @@ def plot_json_file(
     data: dict,
     filtered_data: dict,
     output_dir: Path,
-    filename_base: str,
     hint_taking_threshold: float = 0.1,
 ) -> None:
     """
@@ -188,7 +187,7 @@ def plot_json_file(
         labels=data["labels"],
         model=model,
         dataset=dataset_name,
-        path=str(output_dir / f"{filename_base}/taking_hints.png"),
+        path=str(output_dir / "taking_hints.png"),
     )
 
     # Generate taking hints vs difficulty graph
@@ -200,7 +199,7 @@ def plot_json_file(
         model=model,
         dataset=dataset_name,
         show_labels=SHOW_LABELS,
-        path=str(output_dir / f"{filename_base}/taking_hints_v_difficulty.png"),
+        path=str(output_dir / "taking_hints_v_difficulty.png"),
     )
 
     # Check if we have enough data after filtering
@@ -222,9 +221,7 @@ def plot_json_file(
         show_labels=SHOW_LABELS,
         show_color=True,
         show_shape=False,
-        path=str(
-            output_dir / f"{filename_base}/propensity_thresh{hint_taking_threshold}.png"
-        ),
+        path=str(output_dir / f"propensity_thresh{hint_taking_threshold}.png"),
         show_dot_size=False,
     )
 
@@ -237,9 +234,7 @@ def plot_json_file(
         BOXPLOT_UPPER_THRESHOLD,
         model,
         dataset_name,
-        path=str(
-            output_dir / f"{filename_base}/boxplot_thresh{hint_taking_threshold}.png"
-        ),
+        path=str(output_dir / f"boxplot_thresh{hint_taking_threshold}.png"),
     )
 
     # Generate violin plot
@@ -251,13 +246,10 @@ def plot_json_file(
         metadata,
         model,
         dataset_name,
-        path=str(
-            output_dir
-            / f"{filename_base}/violin_plot_thresh{hint_taking_threshold}.png"
-        ),
+        path=str(output_dir / f"violin_plot_thresh{hint_taking_threshold}.png"),
     )
 
-    print(f"Completed processing: {filename_base}")
+    print(f"Graphs are saved in {output_dir}")
 
 
 def process_single_file(
@@ -284,14 +276,19 @@ def process_single_file(
         base_input_dir = base_results_dir / "monitorability"
 
     # Create mirrored output directory structure
-    output_dir = create_output_directory(
-        json_file_path, base_input_dir, output_base_dir
-    )
     filename_base = json_file_path.stem
-    filtered_data = filter_data_by_hint_taking_threshold(data, hint_taking_threshold)
-    plot_json_file(
-        data, filtered_data, output_dir, filename_base, hint_taking_threshold
+    if not json_file_path.is_absolute():
+        json_file_path = Path(__file__).parent.resolve() / json_file_path
+    output_dir = create_output_directory(
+        json_file_path, base_input_dir, output_base_dir, filename_base
     )
+    filtered_data = filter_data_by_hint_taking_threshold(data, hint_taking_threshold)
+    assert len(filtered_data["faithfulness_scores"]) <= len(
+        data["faithfulness_scores"]
+    ), (
+        f"filtered data faithfulness scores should be less than or equal to data faithfulness scores, {len(filtered_data['faithfulness_scores'])} is not <= {len(data['faithfulness_scores'])}"
+    )
+    plot_json_file(data, filtered_data, output_dir, hint_taking_threshold)
     print(f"\nCompleted! Processed 1 file.")
 
 
