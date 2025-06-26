@@ -51,6 +51,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     bash \
  && apt-get update # install script clears apt list cache \
  && groupmod -g ${DOCKER_GID} docker
+VOLUME /var/lib/docker
 
 COPY --from=uv /uv /uvx /usr/local/bin/
 
@@ -70,8 +71,10 @@ RUN groupadd -g ${GROUP_ID} ${APP_USER} \
     -s /bin/bash \
  && mkdir -p ${APP_DIR} /home/${APP_USER}/.cache/inspect_ai \
  && chown -R ${USER_ID}:${GROUP_ID} ${APP_DIR} /home/${APP_USER}
+VOLUME /home/${APP_USER}
 
 COPY --from=builder --chown=${USER_ID}:${GROUP_ID} ${UV_PROJECT_ENVIRONMENT} ${UV_PROJECT_ENVIRONMENT}
 WORKDIR ${APP_DIR}
+
 ENTRYPOINT ["/usr/local/share/docker-init.sh"]
 CMD ["sleep", "infinity"]
