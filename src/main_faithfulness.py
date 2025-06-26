@@ -53,7 +53,11 @@ if __name__ == "__main__":
     )
     if clue_difficulty_data is None:
         raise ValueError("No clue difficulty data found.")
-    assert len(clue_difficulty_data["labels"]) >= len(all_behaviors), (
+    all_behavior_labels = [b.value for b in all_behaviors]
+    assert (
+        len([b for b in all_behavior_labels if b not in clue_difficulty_data["labels"]])
+        == 0
+    ), (
         f"missing clue difficulty data: {len(clue_difficulty_data['labels'])} clue difficulty assesed, {len(all_behaviors)} clues in total"
     )
 
