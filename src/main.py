@@ -43,6 +43,7 @@ if __name__ == "__main__":
     reasoning_accuracies: List[float] = []
     non_reasoning_accuracies: List[float] = []
     take_hints_scores: List[float] = []
+    non_reasoning_instruction_following_fracs: List[float] = []
     samples: List[int] = []
     detailed_data_all: List[dict] = []
 
@@ -75,6 +76,7 @@ if __name__ == "__main__":
                 non_reasoning_accuracy,
                 reasoning_stderr,
                 non_reasoning_stderr,
+                non_reasoning_instruction_following,
             ) = get_free_response_clue_difficulty(
                 behavior,
                 reasoning_model=config.reasoning_difficulty_model,
@@ -120,6 +122,7 @@ if __name__ == "__main__":
             non_reasoning_accuracies.append(non_reasoning_accuracy)
             difficulty_scores.append(1 - non_reasoning_accuracy)
             difficulty_stderrs.append(non_reasoning_stderr)
+            non_reasoning_instruction_following_fracs.append(non_reasoning_instruction_following)
 
         faithfulness_scores.append(p_acknowledged_clue)
         faithfulness_stderrs.append(faithfulness_stderr)
@@ -138,6 +141,7 @@ if __name__ == "__main__":
         non_reasoning_accuracies,
         difficulty_scores,
         difficulty_stderrs,
+        non_reasoning_instruction_following_fracs,
         faithfulness_scores,
         faithfulness_stderrs,
         take_hints_scores,

@@ -3,6 +3,7 @@
 import os
 import subprocess
 import time
+from datetime import datetime
 
 # Base configuration
 BATCH_SIZE = 2000
@@ -14,7 +15,7 @@ model_temperatures = {
     "together/Qwen/Qwen3-235B-A22B-fp8-tput": 0.6,
 }
 
-# Define models and their corresponding CSV files
+# Define models and their corresponding CSV files containing problem difficulty scores
 models = {
     "anthropic/claude-3-7-sonnet-latest": "problem_difficulty/claude-3-7-sonnet-latest_hard-math-v0_difficulty.csv",
     "anthropic/claude-opus-4-20250514": "problem_difficulty/claude-opus-4-20250514_hard-math-v0_difficulty.csv",
@@ -28,43 +29,43 @@ model_short_names = {
     "together/Qwen/Qwen3-235B-A22B-fp8-tput": "qwen3-235b",
 }
 
-# Define combinations for each model (question_prompt, judge_prompt)
+# Combinations of question_prompt, judge_prompt, and score_faithfulness flag (True means the flag will be included)
 model_combinations = {
     "anthropic/claude-3-7-sonnet-latest": [
-        "default.py,faithfulness_2_broad_definition.py",
-        "moe_v4.py,faithfulness_2_broad_definition.py",
-        "moe_v4.py,faithfulness_0611.py",
-        "moe_v4.py,monitorability_0624.py",
-        "grug.py,faithfulness_2_broad_definition.py",
-        "grug.py,faithfulness_0611.py",
-        "grug.py,monitorability_0624.py",
-        "cheater_ai.py,faithfulness_2_broad_definition.py",
-        "cheater_ai.py,monitorability_0624.py",
-        "general_instructive.py,faithfulness_2_broad_definition.py",
-        "general_instructive.py,monitorability_0624.py",
-        "tcgs_non_instructive.py,faithfulness_2_broad_definition.py",
-        "tcgs_non_instructive.py,monitorability_0624.py",
+        ("default.py", "faithfulness_2_broad_definition.py", True),
+        ("moe_v4.py", "faithfulness_2_broad_definition.py", True),
+        ("moe_v4.py", "faithfulness_0611.py", True),
+        ("moe_v4.py", "monitorability_0624.py", False),
+        ("grug.py", "faithfulness_2_broad_definition.py", True),
+        ("grug.py", "faithfulness_0611.py", True),
+        ("grug.py", "monitorability_0624.py", False),
+        ("cheater_ai.py", "faithfulness_2_broad_definition.py", True),
+        ("cheater_ai.py", "monitorability_0624.py", False),
+        ("general_instructive.py", "faithfulness_2_broad_definition.py", True),
+        ("general_instructive.py", "monitorability_0624.py", False),
+        ("tcgs_non_instructive.py", "faithfulness_2_broad_definition.py", True),
+        ("tcgs_non_instructive.py", "monitorability_0624.py", False),
     ],
     "anthropic/claude-opus-4-20250514": [
-        "default.py,faithfulness_2_broad_definition.py",
-        "moe_v4.py,faithfulness_2_broad_definition.py",
-        "moe_v4.py,faithfulness_0611.py",
-        "moe_v4.py,monitorability_0624.py",
-        "grug.py,faithfulness_2_broad_definition.py",
-        "grug.py,faithfulness_0611.py",
-        "grug.py,monitorability_0624.py",
-        "cheater_ai.py,faithfulness_2_broad_definition.py",
-        "cheater_ai.py,monitorability_0624.py",
-        "general_instructive.py,faithfulness_2_broad_definition.py",
-        "general_instructive.py,monitorability_0624.py",
-        "tcgs_non_instructive.py,faithfulness_2_broad_definition.py",
-        "tcgs_non_instructive.py,monitorability_0624.py",
+        ("default.py", "faithfulness_2_broad_definition.py", True),
+        ("moe_v4.py", "faithfulness_2_broad_definition.py", True),
+        ("moe_v4.py", "faithfulness_0611.py", True),
+        ("moe_v4.py", "monitorability_0624.py", False),
+        ("grug.py", "faithfulness_2_broad_definition.py", True),
+        ("grug.py", "faithfulness_0611.py", True),
+        ("grug.py", "monitorability_0624.py", False),
+        ("cheater_ai.py", "faithfulness_2_broad_definition.py", True),
+        ("cheater_ai.py", "monitorability_0624.py", False),
+        ("general_instructive.py", "faithfulness_2_broad_definition.py", True),
+        ("general_instructive.py", "monitorability_0624.py", False),
+        ("tcgs_non_instructive.py", "faithfulness_2_broad_definition.py", True),
+        ("tcgs_non_instructive.py", "monitorability_0624.py", False),
     ],
     "together/Qwen/Qwen3-235B-A22B-fp8-tput": [
-        "moe_v4.py,faithfulness_2_broad_definition.py",
-        "moe_v4.py,monitorability_0624.py",
-        "cheater_ai.py,faithfulness_2_broad_definition.py",
-        "cheater_ai.py,monitorability_0624.py",
+        ("moe_v4.py", "faithfulness_2_broad_definition.py", True),
+        ("moe_v4.py", "monitorability_0624.py", False),
+        ("cheater_ai.py", "faithfulness_2_broad_definition.py", True),
+        ("cheater_ai.py", "monitorability_0624.py", False),
     ],
 }
 
@@ -90,6 +91,7 @@ def launch_screen_session(session_name: str, command: str) -> bool:
 
 def main():
     print("Launching runs in screen sessions...")
+    datetime_str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Loop through each model
     for model, filtered_csv in models.items():
@@ -106,23 +108,25 @@ def main():
         print("")
 
         # Get temperature for this model
-        temperature = model_temperatures.get(model, 1)  # Default to 1 if not specified
+        temperature = model_temperatures[model]
 
         # Loop through each combination for this model
         for combo in model_combinations[model]:
-            question_prompt, judge_prompt = combo.split(",")
+            question_prompt, judge_prompt, score_faithfulness = combo
 
             # Remove .py extension for screen session naming
             question_short = os.path.splitext(os.path.basename(question_prompt))[0]
             judge_short = os.path.splitext(os.path.basename(judge_prompt))[0]
 
             # Create screen session name: model-question-judge
-            session_name = f"{model_short}-{question_short}-{judge_short}"
+            session_name = (
+                f"{datetime_str}-{model_short}-{question_short}-{judge_short}"
+            )
 
-            # Check if judge prompt contains "monitorability" to determine score_faithfulness flag
-            score_faithfulness_flag = ""
-            if "monitorability" not in judge_prompt:
-                score_faithfulness_flag = "--score_faithfulness"
+            # Set score_faithfulness flag based on the boolean in the tuple
+            score_faithfulness_flag = (
+                "--score_faithfulness" if score_faithfulness else ""
+            )
 
             # Build the full command
             cmd_parts = [

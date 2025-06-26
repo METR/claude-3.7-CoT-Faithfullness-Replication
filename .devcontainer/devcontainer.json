@@ -8,23 +8,12 @@
   "workspaceFolder": "/home/metr/app",
   "mounts": [
     {
-      "source": "cot-faithfulness-home",
-      "target": "/home/metr",
-      "type": "volume"
-    },
-    {
-      "source": "cot-faithfulness-docker-data",
-      "target": "/var/lib/docker",
-      "type": "volume"
-    },
-    {
       "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.cache/inspect_ai",
       "target": "/home/metr/.cache/inspect_ai",
       "type": "bind"
     }
   ],
   "runArgs": [
-    "--name=cot-faithfulness-dev",
     "--hostname=cot-faithfulness",
     "--dns-search=koi-moth.ts.net",
     "--privileged"

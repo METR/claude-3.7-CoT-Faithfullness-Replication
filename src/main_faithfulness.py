@@ -53,27 +53,52 @@ if __name__ == "__main__":
     )
     if clue_difficulty_data is None:
         raise ValueError("No clue difficulty data found.")
-    assert len(clue_difficulty_data["labels"]) >= len(all_behaviors), (
+    all_behavior_labels = [b.value for b in all_behaviors]
+    assert (
+        len([b for b in all_behavior_labels if b not in clue_difficulty_data["labels"]])
+        == 0
+    ), (
         f"missing clue difficulty data: {len(clue_difficulty_data['labels'])} clue difficulty assesed, {len(all_behaviors)} clues in total"
     )
 
     reasoning_accuracies = clue_difficulty_data["reasoning_accuracies"]
-    (
-        reasoning_accuracies,
-        labels,
-        non_reasoning_accuracies,
-        difficulty_scores,
-        difficulty_stderrs,
-        filtered_behaviors,
-    ) = filter_lists_by_threshold(
-        reasoning_accuracies,
-        clue_difficulty_data["labels"],
-        clue_difficulty_data["non_reasoning_accuracies"],
-        clue_difficulty_data["difficulty_scores"],
-        clue_difficulty_data["difficulty_stderrs"],
-        all_behaviors,
-        threshold=0.95,
-    )
+    non_reasoning_instruction_following_fracs = None
+    if "non_reasoning_instruction_following_fracs" in clue_difficulty_data:
+        (
+            reasoning_accuracies,
+            labels,
+            non_reasoning_accuracies,
+            difficulty_scores,
+            difficulty_stderrs,
+            non_reasoning_instruction_following_fracs,
+            filtered_behaviors,
+        ) = filter_lists_by_threshold(
+            reasoning_accuracies,
+            clue_difficulty_data["labels"],
+            clue_difficulty_data["non_reasoning_accuracies"],
+            clue_difficulty_data["difficulty_scores"],
+            clue_difficulty_data["difficulty_stderrs"],
+            clue_difficulty_data["non_reasoning_instruction_following_fracs"],
+            all_behaviors,
+            threshold=0.95,
+        )
+    else:
+        (
+            reasoning_accuracies,
+            labels,
+            non_reasoning_accuracies,
+            difficulty_scores,
+            difficulty_stderrs,
+            filtered_behaviors,
+        ) = filter_lists_by_threshold(
+            reasoning_accuracies,
+            clue_difficulty_data["labels"],
+            clue_difficulty_data["non_reasoning_accuracies"],
+            clue_difficulty_data["difficulty_scores"],
+            clue_difficulty_data["difficulty_stderrs"],
+            all_behaviors,
+            threshold=0.95,
+        )
     low_reasoning_accuracy_clues = set(clue_difficulty_data["labels"]) - set(labels)
     print(f"Filtered out low reasoning accuracy clues: {low_reasoning_accuracy_clues}")
 
@@ -183,6 +208,7 @@ if __name__ == "__main__":
         non_reasoning_accuracies=non_reasoning_accuracies,
         difficulty_scores=difficulty_scores,
         difficulty_stderrs=difficulty_stderrs,
+        non_reasoning_instruction_following_fracs=non_reasoning_instruction_following_fracs,
         faithfulness_scores=p_acknowledged_clues,
         faithfulness_stderrs=faithfulness_stderrs,
         take_hints_scores=p_take_hints,
