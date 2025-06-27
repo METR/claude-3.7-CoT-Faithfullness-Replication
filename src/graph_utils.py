@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from typing import List
 
@@ -6,8 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-from utils.parsing import EvalConfig
 
 COLOR_MAP = {
     "default": "#808080",  # Gray
@@ -70,34 +67,6 @@ def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
         )
 
 
-@dataclass
-class GraphMetadata:
-    threshold: float
-    faithfulness: bool
-    question_prompt: str
-    judge_prompt: str
-
-
-def add_metadata(metadata: GraphMetadata | None, ax: plt.Axes) -> None:
-    if metadata:
-        metadata_text = (
-            f"Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
-            f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
-            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
-        )
-        ax.text(
-            0.98,
-            0.02,
-            metadata_text,
-            transform=ax.transAxes,
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-            fontsize=8,
-        )
-
-
 def generate_propensity_graph(
     faithfulness_scores: List[float],
     faithfulness_stderrs: List[float],
@@ -112,6 +81,7 @@ def generate_propensity_graph(
     show_labels: bool = False,
     show_color: bool = True,
     show_shape: bool = True,
+    show_dot_size: bool = True,
     path: str | None = None,
 ) -> None:
     """
@@ -171,9 +141,9 @@ def generate_propensity_graph(
     if metadata:
         metadata_text = (
             f"Hint Taking Threshold: {metadata.threshold}\n"
-            f"Faithfulness: {metadata.faithfulness}\n"
             f"Question Prompt: {metadata.question_prompt.split('/')[-1]}\n"
-            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}"
+            f"Judge Prompt: {metadata.judge_prompt.split('/')[-1]}\n"
+            f"Sample Size: {len(labels)}"
         )
         # Position metadata below the legend with more spacing
         metadata_y_pos = 0.5 if legend_elements else 0.75
@@ -187,7 +157,6 @@ def generate_propensity_graph(
         )
 
     image = plt.imread("assets/logo.png")
-    plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
     ax.spines["top"].set_visible(False)
@@ -204,10 +173,13 @@ def generate_propensity_graph(
     difficulty_ci = [se * z_score for se in difficulty_stderrs]
 
     # Calculate dot sizes based on take_hints_scores * samples
-    dot_sizes = [
-        round(take_hints_scores[i] * samples[i]) * (1 if show_color else 0.3)
-        for i in range(len(take_hints_scores))
-    ]
+    if show_dot_size:
+        dot_sizes = [
+            round(take_hints_scores[i] * samples[i]) * 1
+            for i in range(len(take_hints_scores))
+        ]
+    else:
+        dot_sizes = [50] * len(take_hints_scores)  # Normal scatter plot dot size
 
     # Determine colors based on labels and COLOR_MAP (only if show_color is True)
     colors = []
@@ -285,19 +257,24 @@ def generate_propensity_graph(
                 fontsize=6,
             )
 
-    plt.xlabel("Clue Difficulty", fontsize=16)
+    plt.xlabel("Clue Difficulty: 1 - P(solve clue without CoT)", fontsize=16)
 
+    title_metric = (
+        "Faithfulness"
+        if metadata is None or metadata.faithfulness
+        else "Monitorability"
+    )
     # Create ylabel with judge information if metadata is available
     if metadata and metadata.judge_prompt:
         judge_name = metadata.judge_prompt.split("/")[-1]
-        ylabel = f"Faithfulness Score\nas judged by {judge_name} judge"
+        ylabel = f"{title_metric} Score\nas judged by {judge_name} judge"
         plt.ylabel(ylabel, fontsize=16)
         # Make the sub-axis text smaller and gray
         ax.yaxis.label.set_fontsize(16)
         ax.yaxis.label.set_color("black")
         # Get the ylabel text and modify the second line styling
         ylabel_text = ax.get_ylabel()
-        ax.set_ylabel("Faithfulness Score", fontsize=16, color="black", labelpad=15)
+        ax.set_ylabel(f"{title_metric} Score", fontsize=16, color="black", labelpad=15)
         ax.text(
             -0.05,
             0.5,
@@ -310,15 +287,11 @@ def generate_propensity_graph(
             horizontalalignment="center",
         )
     else:
-        plt.ylabel("Faithfulness Score", fontsize=16)
+        plt.ylabel(f"{title_metric} Score", fontsize=16)
 
     # Add main title with model name and prompt
     model_name = model_pretty.get(model.split("/")[-1], model.split("/")[-1])
-    title_metric = (
-        "Faithfulness"
-        if metadata is None or metadata.faithfulness
-        else "Monitorability"
-    )
+
     prompt_name = (
         metadata.question_prompt.split("/")[-1] if metadata else "default prompt"
     )
@@ -334,7 +307,7 @@ def generate_propensity_graph(
     ax.text(
         0,
         1.03,
-        f"90% CI filtered to hints taken more than {(1 - metadata.threshold) * 100:.0f}% of the time\nwith prompt {prompt_name}",
+        f"90% CI filtered to hints taken more than {(metadata.threshold) * 100:.0f}% of the time\nwith prompt {prompt_name}",
         transform=ax.transAxes,
         fontsize=14,
         color="gray",
@@ -367,8 +340,8 @@ def generate_taking_hints_graph(
 
     took_hint = np.array(p_take_hints)
     did_not_take_hint = 1 - took_hint  # Will sum to 1 for each bar
-
-    fig, ax = plt.subplots(figsize=(12, 6))
+    # Increase figure height and adjust for more space at bottom
+    fig, ax = plt.subplots(figsize=(16, 6))
     add_metadata(metadata, ax)
 
     ax.bar(indices, took_hint, width, label="Took Hint", color="#7fc97f")
@@ -384,15 +357,19 @@ def generate_taking_hints_graph(
     ax.set_ylabel("Proportion of Samples")
     ax.set_title(f"Hint-Taking for {model.split('/')[-1]} on {dataset}")
     ax.set_xticks(indices)
-    ax.set_xticklabels(labels, rotation=45, ha="right")
+
+    # Improve label spacing and rotation
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
     ax.legend()
 
     # Set y-axis limits to ensure all bars are same height
     ax.set_ylim(0, 1)
 
+    # Adjust layout with more bottom margin for rotated labels
     plt.tight_layout()
+
     if path:
-        plt.savefig(path)
+        plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
     else:
         plt.show()
 
@@ -417,7 +394,6 @@ def generate_taking_hints_v_difficulty_graph(
     add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
-    plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
     ax.spines["top"].set_visible(False)
@@ -568,7 +544,6 @@ def generate_boxplot(
     add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
-    plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
     ax = plt.gca()
@@ -602,6 +577,7 @@ def generate_boxplot(
             new_labels.append(f"{label}\nn={low_count}")
         else:
             new_labels.append(f"{label}\nn={high_count}")
+    ax.set_xticks(range(len(new_labels)))
     ax.set_xticklabels(new_labels)
 
     plt.ylabel("Faithfulness Score")
@@ -672,7 +648,6 @@ def generate_violin_plot(
     add_metadata(metadata, plt.axes())
 
     image = plt.imread("assets/logo.png")
-    plt.rcParams["font.family"] = "Montserrat"
 
     # Remove top and right spines
     ax = plt.gca()
@@ -703,6 +678,7 @@ def generate_violin_plot(
             new_labels.append(f"{label}\nn={low_count}")
         else:
             new_labels.append(f"{label}\nn={high_count}")
+    ax.set_xticks(range(len(new_labels)))
     ax.set_xticklabels(new_labels)
 
     plt.ylabel("Faithfulness Score")
@@ -725,5 +701,3 @@ def generate_violin_plot(
         plt.savefig(path)
     else:
         plt.show()
-
-

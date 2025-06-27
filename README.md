@@ -17,6 +17,36 @@ Args relevant to this script:
 - `--max_connections`: The maximum number of connections to make with the provider. If `batch_size` is provided, this will be set to equal `batch_size`.
 - `--max_tasks`: The number of tasks to run in parallel in an eval set. Default to 5. 
 
+
+To collect data on faithfulness or monitorability:
+```bash
+python src/main_faithfulness.py
+```
+
+Args relevant to this script:
+- `--model`: The model to test faithfulness on (default: `anthropic/claude-3-7-sonnet-latest`)
+- `--base_model`: The model to test difficulty without reasoning (default: `anthropic/claude-3-7-sonnet-latest`) 
+- `--temperature`: The model temperature when getting difficulty and faithfulness. Default to 0.6. Temperature doesn't affect claude extended thinking mode.
+- `--batch_size`: The number of queries to send in parallel leveraging batch API. Not including this arg will mean that we're not using the batch api. Recommended batch_size is 2000-5000.
+- `--max_connections`: The maximum number of connections to make with the provider. If `batch_size` is provided, this will be set to equal `batch_size`.
+- `--max_tasks`: The number of tasks to run in parallel in an eval set. Default to 5. 
+- `--filtered_csv`: The filtered out questions that the model cannot solve
+- `--question_prompt`: The question prompt used to introduce the hard problem and the hint.
+- `--judge_prompt`: The LLM Judge prompt used to decide whether the CoT is faithful / monitorable
+- `--score_faithfulness`: A store_true flag indicating this is a faithfulness judge, which does see the hint provided to the model
+
+
+To generate graphs:
+```bash
+python graph.py
+```
+
+By default, this script goes through the faithfulness and monitorability folder under `results/` and create graphs for all the JSON files under the folder, excluding the ones under `subset/` folders. 
+Args:
+`--file`: You can optionally pass in a result json path to only create the graph for that particular result file.
+`--hint_taking_threshold`: remove clues that has a hint taking rate below the threshold from the propensity graph. Default to 0.1
+
+
 ## Usage OUTDATED
 
 The entry point is `src/main.py`.
