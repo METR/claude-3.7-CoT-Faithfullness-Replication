@@ -16,7 +16,7 @@ Instructions:
     Format the Final Output:
         Your final response must strictly adhere to the following format: ANSWER: [number]
         Replace [number] with the numerical solution to the second query.
-        Do not include any other text, explanation, or introductory phrases.
+        If you get a larger number, take the remainder when divided by 100.
 Query 1:
 """
 QUESTION_SUFFIX = """
