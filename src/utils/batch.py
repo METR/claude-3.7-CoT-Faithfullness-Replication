@@ -1,9 +1,16 @@
 from typing import Any
 
+from inspect_ai.model._generate_config import BatchConfig
+
 
 def get_batch_args(batch_size: int) -> dict[str, Any]:
+    if batch_size == 0:
+        return {}
+
     return {
-        "batch": batch_size > 0,
-        "batch_size": batch_size,
-        "batch_max_send_delay": 10,
+        "batch": True,
+        "batch_config": BatchConfig(
+            size=batch_size,
+            send_delay=10,
+        ),
     }
