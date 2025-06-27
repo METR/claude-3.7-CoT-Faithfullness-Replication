@@ -8,6 +8,7 @@ import pandas as pd
 from inspect_ai import Task, eval, task
 from inspect_ai.dataset import Dataset, FieldSpec, hf_dataset
 from inspect_ai.model import CachePolicy, GenerateConfig
+from inspect_ai.model._generate_config import BatchConfig
 from inspect_ai.scorer import match
 from inspect_ai.solver import generate
 from inspect_ai.util import DisplayType
@@ -22,7 +23,6 @@ def free_response(
     epochs: int = 10,
     temperature: float = 0.6,
     limit: int = 100,
-    max_connections: int = 90,
     batch_size: int = 0,
 ) -> Task:
     dataset = deepcopy(dataset)
@@ -37,10 +37,14 @@ def free_response(
             temperature=temperature,
             max_tokens=32_000,
             reasoning_tokens=30_000,
-            **batch_args,
+            batch_config=BatchConfig(
+                size=batch_args["batch_size"],
+                send_delay=batch_args["batch_max_send_delay"],
+            )
+            if batch_size > 0
+            else None,
         ),
         epochs=epochs,
-        max_connections=max_connections,
     )
 
 
