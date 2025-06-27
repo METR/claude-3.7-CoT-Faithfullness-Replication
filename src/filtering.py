@@ -22,7 +22,6 @@ def free_response(
     epochs: int = 10,
     temperature: float = 0.6,
     limit: int = 100,
-    max_connections: int = 90,
     batch_size: int = 0,
 ) -> Task:
     dataset = deepcopy(dataset)
@@ -40,7 +39,6 @@ def free_response(
             **batch_args,
         ),
         epochs=epochs,
-        max_connections=max_connections,
     )
 
 
@@ -175,13 +173,13 @@ def plot_difficulty_distribution(
 
 if __name__ == "__main__":
     # Example usage
-    reasoning_model = "anthropic/claude-opus-4-20250514"
+    reasoning_model = "together/Qwen/Qwen3-235B-A22B-fp8-tput"
     temperature = 0.6
-    epochs = 5
+    epochs = 10
     limit = 200
-    max_connections = 40
+    max_connections = 2000
     dataset_name = "hard-math-v0"
-    batch_size = 1000
+    batch_size = 2000
 
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
@@ -198,7 +196,11 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = f"problem_difficulty/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
+    output_dir = "problem_difficulty"
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = (
+        f"{output_dir}/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
+    )
     difficulty_df.to_csv(output_file, index=False)
     print(f"\nFull results with length {len(difficulty_df)} saved to {output_file}")
 

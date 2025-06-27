@@ -40,10 +40,10 @@ def graph_question_difficulties(input_path: str, model: str, output_path: str | 
 
     # Add main title
     plt.title(
-        "Distribution of Question Accuracies",
+        "Distribution of Question Accuracies on DAFT Math",
         loc="left",
         pad=35,
-        fontsize=25,
+        fontsize=22,
     )
 
     # Add subtitle
@@ -51,7 +51,7 @@ def graph_question_difficulties(input_path: str, model: str, output_path: str | 
     ax.text(
         0,
         1.03,
-        f"Based on {len(df)} questions on {model}",
+        f"Based on {len(df)} questions on {model} with {df['num_epochs'][0]} pass @ T=1",
         transform=ax.transAxes,
         fontsize=14,
         color="gray",
