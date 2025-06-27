@@ -198,7 +198,11 @@ if __name__ == "__main__":
     difficulty_df = calculate_difficulty_scores(problem_accuracies)
 
     # Save results to CSV
-    output_file = f"problem_difficulty/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
+    output_dir = "problem_difficulty"
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = (
+        f"{output_dir}/{reasoning_model.split('/')[-1]}_{dataset_name}_difficulty.csv"
+    )
     difficulty_df.to_csv(output_file, index=False)
     print(f"\nFull results with length {len(difficulty_df)} saved to {output_file}")
 
