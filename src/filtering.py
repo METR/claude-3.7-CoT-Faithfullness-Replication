@@ -1,5 +1,5 @@
+import os
 from copy import deepcopy
-from os import path
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
