@@ -1,4 +1,4 @@
-from typing import Any, NotRequired, TypedDict
+from typing import NotRequired, TypedDict
 
 from inspect_ai.model._generate_config import BatchConfig
 

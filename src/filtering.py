@@ -1,5 +1,6 @@
+import argparse
+import os
 from copy import deepcopy
-from os import path
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
@@ -92,7 +93,7 @@ def get_problem_difficulty(
             model=reasoning_model,
             display=display,
             max_connections=max_connections,
-            log_dir=path.join(log_dir, "reasoning") if log_dir else None,
+            log_dir=os.path.join(log_dir, "reasoning") if log_dir else None,
         )
 
         samples = evalscore[0].samples
@@ -171,23 +172,23 @@ def plot_difficulty_distribution(
     plt.show()
 
 
-if __name__ == "__main__":
-    # Example usage
-    reasoning_model = "together/Qwen/Qwen3-235B-A22B-fp8-tput"
-    temperature = 0.6
-    epochs = 10
-    limit = 200
-    max_connections = 2000
-    dataset_name = "hard-math-v0"
-    batch_size = 2000
-
+def main(
+    *,
+    reasoning_model: str,
+    temperature: float,
+    epochs: int,
+    limit: int,
+    dataset_name: str,
+    display: DisplayType,
+    batch_size: int,
+):
     print(f"Running problem difficulty analysis with {epochs} epochs...")
     _, problem_accuracies = get_problem_difficulty(
         reasoning_model=reasoning_model,
         epochs=epochs,
         limit=limit,
-        max_connections=max_connections,
-        display="full",
+        max_connections=batch_size,
+        display=display,
         temperature=temperature,
         batch_size=batch_size,
     )
@@ -206,3 +207,18 @@ if __name__ == "__main__":
 
     # Plot the distribution of problem difficulties
     plot_difficulty_distribution(reasoning_model, difficulty_df, dataset_name)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--reasoning_model", type=str, default="together/Qwen/Qwen3-235B-A22B-fp8-tput"
+    )
+    parser.add_argument("--temperature", type=float, default=0.6)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--limit", type=int, default=200)
+    parser.add_argument("--dataset_name", type=str, default="hard-math-v0")
+    parser.add_argument("--display", type=str, default="full")
+    parser.add_argument("--batch_size", type=int, default=2000)
+
+    main(**vars(parser.parse_args()))
