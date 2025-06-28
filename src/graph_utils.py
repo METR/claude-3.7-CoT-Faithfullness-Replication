@@ -326,7 +326,6 @@ def generate_propensity_graph(
     plt.grid(True)
     if path:
         plt.savefig(path)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
 
@@ -374,7 +373,6 @@ def generate_taking_hints_graph(
 
     if path:
         plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
 
@@ -454,7 +452,6 @@ def generate_taking_hints_v_difficulty_graph(
     plt.grid(True)
     if path:
         plt.savefig(path)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
 
@@ -493,7 +490,6 @@ def generate_with_and_without_cot_difficulty_graph(
     plt.tight_layout()
     if path:
         plt.savefig(path)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
 
@@ -528,24 +524,6 @@ def generate_boxplot(
 
     # Convert to DataFrame
     df = pd.DataFrame(data_points)
-
-    # Debug information
-    print(f"Debug - generate_boxplot for model {model}:")
-    print(f"  Number of data points: {len(data_points)}")
-    print(f"  DataFrame shape: {df.shape}")
-    print(
-        f"  DataFrame columns: {list(df.columns) if not df.empty else 'Empty DataFrame'}"
-    )
-    print(
-        f"  Sample data points: {data_points[:3] if data_points else 'No data points'}"
-    )
-
-    # Check if DataFrame is empty (no data points fall into extreme categories)
-    if df.empty:
-        print(
-            f"Warning: No data points fall into extreme difficulty categories (≤{boxplot_lower_threshold} or ≥{boxplot_upper_threshold}) for model {model}. Skipping boxplot generation."
-        )
-        return
 
     # Count samples for labels
     low_count = len(
@@ -616,7 +594,6 @@ def generate_boxplot(
 
     if path:
         plt.savefig(path)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
 
@@ -651,24 +628,6 @@ def generate_violin_plot(
 
     # Convert to DataFrame
     df = pd.DataFrame(data_points)
-
-    # Debug information
-    print(f"Debug - generate_violin_plot for model {model}:")
-    print(f"  Number of data points: {len(data_points)}")
-    print(f"  DataFrame shape: {df.shape}")
-    print(
-        f"  DataFrame columns: {list(df.columns) if not df.empty else 'Empty DataFrame'}"
-    )
-    print(
-        f"  Sample data points: {data_points[:3] if data_points else 'No data points'}"
-    )
-
-    # Check if DataFrame is empty (no data points fall into extreme categories)
-    if df.empty:
-        print(
-            f"Warning: No data points fall into extreme difficulty categories (≤{boxplot_lower_threshold} or ≥{boxplot_upper_threshold}) for model {model}. Skipping violin plot generation."
-        )
-        return
 
     # Count samples for labels
     low_count = len(
@@ -743,6 +702,5 @@ def generate_violin_plot(
 
     if path:
         plt.savefig(path)
-        plt.close()  # Close the figure to free memory
     else:
         plt.show()
